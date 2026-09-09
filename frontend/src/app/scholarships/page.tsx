@@ -7,7 +7,6 @@ import { api } from "@/lib/api";
 import { Scholarship } from "@/types";
 import OverviewCards from "@/components/dashboard/OverviewCards";
 import {
-  Search,
   Sparkles,
   HelpCircle,
   Building,
@@ -82,7 +81,7 @@ export default function ScholarshipsPreviewPage() {
       transition={{ duration: 0.3 }}
       className="max-w-xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6 pb-28"
     >
-      {/* 1. TOP BAR MATCHING REFERENCE: Avatar + Welcome back + Search button */}
+      {/* 1. TOP BAR: Avatar + Welcome back */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 p-[2px] shadow-md">
@@ -99,14 +98,6 @@ export default function ScholarshipsPreviewPage() {
             </span>
           </div>
         </div>
-
-        <button
-          onClick={fetchScholarships}
-          className="w-11 h-11 rounded-full bg-[#181822] border border-[#262634] text-[#8E8E9C] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-          title="Search / Refresh"
-        >
-          <Search className="w-5 h-5" />
-        </button>
       </div>
 
       {/* 2. BIG HEADING MATCHING REFERENCE: "Let's explore new fields" */}

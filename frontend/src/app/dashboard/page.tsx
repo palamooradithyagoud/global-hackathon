@@ -7,7 +7,6 @@ import { api } from "@/lib/api";
 import { StudentProfile, PersonalizedScholarship } from "@/types";
 import OverviewCards from "@/components/dashboard/OverviewCards";
 import {
-  Search,
   Loader2,
   AlertCircle,
   Home,
@@ -163,19 +162,6 @@ function DashboardContent() {
             </span>
           </div>
         </div>
-
-        {/* Circular Search / Refresh Button matching reference */}
-        <div className="flex items-center gap-2">
-          {studentId && (
-            <button
-              onClick={() => loadData(studentId)}
-              className="w-11 h-11 rounded-full bg-[#181822] border border-[#262634] text-[#8E8E9C] hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-              title="Refresh matches"
-            >
-              <Search className="w-5 h-5" />
-            </button>
-          )}
-        </div>
       </div>
 
       {/* 2. BIG HEADING MATCHING REFERENCE: "Let's explore new fields" */}
@@ -196,9 +182,8 @@ function DashboardContent() {
           <button
             key={pill.id}
             onClick={() => setActivePill(pill.id)}
-            className={`pill-filter cursor-pointer ${
-              activePill === pill.id ? "pill-filter-active" : "pill-filter-inactive"
-            }`}
+            className={`pill-filter cursor-pointer ${activePill === pill.id ? "pill-filter-active" : "pill-filter-inactive"
+              }`}
           >
             {pill.label}
           </button>
