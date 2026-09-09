@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     # Supabase PostgreSQL or SQLite fallback for immediate local testing
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./skillcatalyst.db")
     
+    # External AI and Job APIs
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+    JOOBLE_API_KEY: str = os.getenv("JOOBLE_API_KEY", "")
+    JOOBLE_API_URL: str = os.getenv("JOOBLE_API_URL", "https://jooble.org/api")
+
     # CORS
     CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 

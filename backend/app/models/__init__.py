@@ -10,6 +10,7 @@ from backend.app.models.profile import (
     StudentFinancialContext,
     Scholarship
 )
+from backend.app.models.job import Job
 
 __all__ = [
     "Student",
@@ -21,5 +22,7 @@ __all__ = [
     "StudentInterest",
     "StudentPreference",
     "StudentFinancialContext",
-    "Scholarship"
+    "Scholarship",
+    "Job"
 ]
+

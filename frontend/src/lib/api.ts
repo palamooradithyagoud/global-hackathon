@@ -6,6 +6,8 @@ import {
   ExtractedResumeData,
   AuthSession
 } from "@/types";
+import { MatchedJoobleJob, JobFitAnalysisResult } from "./jobData";
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -117,4 +119,60 @@ export const api = {
       return await res.json();
     },
   },
+
+  jobs: {
+    list: async (params?: {
+      keyword?: string;
+      location?: string;
+      page?: number;
+      limit?: number;
+      experience?: string;
+      remote?: boolean;
+    }): Promise<any> => {
+      const query = new URLSearchParams();
+      if (params?.keyword) query.append("keyword", params.keyword);
+      if (params?.location) query.append("location", params.location);
+      if (params?.page) query.append("page", String(params.page));
+      if (params?.limit) query.append("limit", String(params.limit));
+      if (params?.experience) query.append("experience", params.experience);
+      if (params?.remote !== undefined) query.append("remote", String(params.remote));
+      return fetchJSON(`/jobs?${query.toString()}`);
+    },
+
+    get: async (jobId: string): Promise<any> => {
+      return fetchJSON(`/jobs/${encodeURIComponent(jobId)}`);
+    },
+
+    analyze: async (jobId: string, studentId?: string): Promise<JobFitAnalysisResult> => {
+      const query = studentId ? `?student_id=${encodeURIComponent(studentId)}` : "";
+      return fetchJSON<JobFitAnalysisResult>(`/jobs/${encodeURIComponent(jobId)}/analyze${query}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_id: studentId })
+      });
+    },
+
+    searchBTechJobs: async (params?: {
+      studentId?: string;
+      keywords?: string;
+      location?: string;
+      page?: number;
+    }): Promise<{
+      total_count: number;
+      page: number;
+      location: string;
+      search_keywords: string;
+      student_profile_used?: any;
+      jobs: MatchedJoobleJob[];
+    }> => {
+      const query = new URLSearchParams();
+      if (params?.studentId) query.append("student_id", params.studentId);
+      if (params?.keywords) query.append("keywords", params.keywords);
+      if (params?.location) query.append("location", params.location);
+      if (params?.page) query.append("page", String(params.page));
+
+      return fetchJSON(`/jobs/btech/search?${query.toString()}`);
+    },
+  },
 };
+

@@ -2,17 +2,10 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { api } from "@/lib/api";
-import { StudentProfile, Scholarship, PersonalizedScholarship } from "@/types";
-import {
-  EducationStage,
-  STAGE_CONFIGS,
-  filterByEducationStage,
-  isOpportunityStrictlyEligible
-} from "@/lib/stageIsolation";
-import JobPathCards from "@/components/jobs/JobPathCards";
-import { getJobsForStage } from "@/lib/jobData";
+import { StudentProfile } from "@/types";
+import { EducationStage, STAGE_CONFIGS } from "@/lib/stageIsolation";
 import {
   User,
   GraduationCap,
@@ -22,17 +15,20 @@ import {
   Calendar,
   Briefcase,
   Layers,
-  ChevronRight,
   ExternalLink,
   Loader2,
   Sparkles,
-  ArrowRight,
-  Filter,
-  Info,
-  CheckCircle2,
-  AlertCircle,
+  ArrowLeft,
   FileText,
-  Clock
+  Mail,
+  MapPin,
+  Clock,
+  CheckCircle2,
+  DollarSign,
+  Code,
+  FolderGit2,
+  BookOpen,
+  Target
 } from "lucide-react";
 
 function ProfilePageContent() {
@@ -42,14 +38,16 @@ function ProfilePageContent() {
 
   const [studentId, setStudentId] = useState<string | null>(studentIdParam);
   const [profile, setProfile] = useState<StudentProfile | null>(null);
-  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isUpdatingStage, setIsUpdatingStage] = useState(false);
-  const [activeStage, setActiveStage] = useState<EducationStage>("b_tech");
-  const [activeTab, setActiveTab] = useState<"scholarships" | "jobs" | "academics">("scholarships");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Load session or student ID from storage or param
+  // 1. Resolve studentId with priority to URL query parameter
   useEffect(() => {
+    if (studentIdParam) {
+      setStudentId(studentIdParam);
+      return;
+    }
+
     const saved = localStorage.getItem("skillcatalyst_session");
     if (saved) {
       try {
@@ -62,486 +60,382 @@ function ProfilePageContent() {
         // ignore
       }
     }
-    // Fallback to demo login if none present
-    api.auth.demoLogin("b_tech").then((sess) => {
+
+    // Default fallback demo login
+    api.auth.demoLogin("class_10").then((sess) => {
       if (sess.student_id) {
         setStudentId(sess.student_id);
       }
     });
-  }, []);
+  }, [studentIdParam]);
 
-  // Fetch student profile and stage-isolated scholarships
-  const loadProfileAndScholarships = async (id: string, targetStage?: EducationStage) => {
-    setIsLoading(true);
-    try {
-      const profileData = await api.profile.get(id);
-      setProfile(profileData);
-      const stage = (targetStage || profileData.education_stage || "b_tech") as EducationStage;
-      setActiveStage(stage);
-
-      // Fetch scholarships strictly filtered for this education stage
-      const previewList = await api.scholarships.getPreview(12, stage);
-      const strictlyIsolated = filterByEducationStage(previewList, stage);
-      setScholarships(strictlyIsolated);
-    } catch (err) {
-      console.error("Failed to load profile data:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // 2. Fetch full student profile details
   useEffect(() => {
-    if (studentId) {
-      loadProfileAndScholarships(studentId);
-    }
+    if (!studentId) return;
+
+    let isMounted = true;
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      setErrorMessage(null);
+      try {
+        const data = await api.profile.get(studentId);
+        if (isMounted) {
+          setProfile(data);
+        }
+      } catch (err: any) {
+        console.error("Failed to load profile:", err);
+        if (isMounted) {
+          setErrorMessage(err.message || "Failed to load student profile.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      isMounted = false;
+    };
   }, [studentId]);
 
-  // Handle stage switching in real-time
-  const handleStageSwitch = async (newStage: EducationStage) => {
-    if (newStage === activeStage && !isUpdatingStage) return;
-    setIsUpdatingStage(true);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0E] flex flex-col items-center justify-center text-white gap-3">
+        <Loader2 className="w-9 h-9 animate-spin text-amber-400" />
+        <span className="text-xs text-[#8E8E9C]">Loading Student Profile Details...</span>
+      </div>
+    );
+  }
 
-    try {
-      // 1. Authenticate demo session for the selected stage
-      const session = await api.auth.demoLogin(newStage);
-      localStorage.setItem("skillcatalyst_session", JSON.stringify(session));
+  if (errorMessage || !profile) {
+    return (
+      <div className="min-h-screen bg-[#0A0A0E] text-white flex flex-col items-center justify-center px-4">
+        <div className="p-6 rounded-3xl bg-[#14141E] border border-[#2B2B3E] max-w-md w-full text-center space-y-4">
+          <p className="text-sm text-red-400">{errorMessage || "Student profile not found."}</p>
+          <button
+            onClick={() => router.push("/onboarding")}
+            className="px-5 py-2.5 rounded-full bg-white text-black font-bold text-xs hover:bg-neutral-200 cursor-pointer"
+          >
+            Create Profile in Onboarding
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-      if (session.student_id) {
-        setStudentId(session.student_id);
-        await loadProfileAndScholarships(session.student_id, newStage);
-      }
-    } catch (err) {
-      console.error("Error switching stage:", err);
-    } finally {
-      setIsUpdatingStage(false);
-    }
-  };
-
-  const currentStageConfig = STAGE_CONFIGS[activeStage] || STAGE_CONFIGS.b_tech;
+  const stage = (profile.education_stage || "class_10") as EducationStage;
+  const stageConfig = STAGE_CONFIGS[stage] || STAGE_CONFIGS.class_10;
+  const acad = profile.academic_profile;
+  const completeness = profile.intelligence_summary?.completeness_percentage || 85;
 
   return (
-    <div className="min-h-screen bg-[#0A0A0E] text-white pb-28 pt-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
-        {/* Profile Section Header & Student Card */}
-        <div className="relative rounded-3xl bg-[#12121A] border border-[#262638] p-6 sm:p-8 overflow-hidden shadow-2xl">
-          {/* Ambient Background Gradient */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-violet-600/10 via-purple-500/5 to-transparent blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-[#0A0A0E] text-white pb-28 pt-6">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
+        {/* Top Navigation Bar */}
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => router.push(studentId ? `/dashboard?student_id=${studentId}` : "/dashboard")}
+            className="w-11 h-11 rounded-full bg-[#161622] border border-[#28283C] text-white flex items-center justify-center hover:bg-[#202030] transition-all hover:scale-105 cursor-pointer shadow-md"
+            title="Back to Dashboard"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-            {/* Student Info */}
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => router.push("/onboarding")}
+              className="px-4 py-2 rounded-2xl bg-[#181826] hover:bg-[#222234] border border-[#2A2A40] text-xs font-semibold text-white transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+            >
+              <FileText className="w-4 h-4 text-amber-400" />
+              <span>Edit Profile</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 1. Primary Student Identity Card */}
+        <div className="rounded-3xl bg-[#12121B] border border-[#262638] p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+          {/* Subtle Accent Glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-amber-500/10 via-purple-500/5 to-transparent blur-3xl pointer-events-none" />
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative z-10">
+            {/* Avatar & Core Bio */}
             <div className="flex items-start sm:items-center gap-4">
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr ${currentStageConfig.accentColor} p-[3px] shadow-xl shrink-0`}>
-                <div className="w-full h-full rounded-[22px] bg-[#161622] flex items-center justify-center text-white font-bold text-2xl">
-                  {profile?.name ? profile.name.charAt(0).toUpperCase() : "S"}
+              <div className={`w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr ${stageConfig.accentColor} p-[3px] shadow-xl shrink-0`}>
+                <div className="w-full h-full rounded-[22px] bg-[#161622] flex items-center justify-center text-white font-extrabold text-2xl sm:text-3xl">
+                  {profile.name.charAt(0).toUpperCase()}
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2.5 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
-                    {profile?.name || "Student Profile"}
+                  <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                    {profile.name}
                   </h1>
-                  <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full border ${currentStageConfig.badgeBg}`}>
+                  <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full border ${stageConfig.badgeBg}`}>
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>{currentStageConfig.gradeBadge}</span>
+                    <span>{stageConfig.gradeBadge}</span>
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-[#8E8E9C]">
-                  {profile?.email || "student@skillcatalyst.dev"} • {profile?.location || "India"}
-                </p>
-
-                <div className="flex items-center gap-3 text-xs text-[#A0A0B5] pt-0.5">
+                <div className="flex items-center gap-3 text-xs text-[#A0A0B8] flex-wrap">
                   <span className="flex items-center gap-1">
-                    <GraduationCap className="w-4 h-4 text-[#8E8E9C]" />
-                    <span className="font-medium text-white">
-                      {profile?.academic_profile?.school_or_college ||
-                        (activeStage === "class_10"
-                          ? "Delhi Public School"
-                          : activeStage === "intermediate"
-                          ? "Narayana Junior College"
-                          : "National Institute of Technology")}
-                    </span>
+                    <Mail className="w-3.5 h-3.5 text-[#6E6E85]" />
+                    <span>{profile.email}</span>
                   </span>
-                  <span>•</span>
-                  <span className="text-emerald-400 font-semibold">
-                    {profile?.academic_profile?.cgpa
-                      ? `CGPA ${profile.academic_profile.cgpa} / 10`
-                      : profile?.academic_profile?.percentage
-                      ? `${profile.academic_profile.percentage}% Score`
-                      : activeStage === "class_10"
-                      ? "91.4% Board"
-                      : activeStage === "intermediate"
-                      ? "89.2% Score"
-                      : "8.75 CGPA"}
-                  </span>
+                  {profile.location && (
+                    <>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 text-[#6E6E85]" />
+                        <span>{profile.location}</span>
+                      </span>
+                    </>
+                  )}
+                  {profile.date_of_birth && (
+                    <>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3.5 h-3.5 text-[#6E6E85]" />
+                        <span>DOB: {profile.date_of_birth}</span>
+                      </span>
+                    </>
+                  )}
                 </div>
+
+                {profile.target_role && (
+                  <div className="pt-1 flex items-center gap-1.5 text-xs text-amber-300 font-semibold">
+                    <Target className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Target Career: {profile.target_role}</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => router.push("/onboarding")}
-                className="px-4 py-2.5 rounded-2xl bg-[#1C1C28] hover:bg-[#252538] border border-[#2B2B3E] text-xs font-semibold text-white transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <FileText className="w-4 h-4 text-[#8E8E9C]" />
-                <span>Edit Profile</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => router.push(studentId ? `/dashboard?student_id=${studentId}` : "/dashboard")}
-                className="px-5 py-2.5 rounded-2xl bg-white text-black hover:bg-neutral-200 text-xs font-bold transition-all shadow-md flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>Full Dashboard</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+            {/* Profile Completeness Pill */}
+            <div className="p-3.5 rounded-2xl bg-[#181826] border border-[#28283C] text-right space-y-1 self-start sm:self-auto min-w-[140px]">
+              <span className="text-[11px] text-[#8E8E9C] block">Profile Strength</span>
+              <span className="text-lg font-black text-emerald-400 block font-mono">
+                {completeness}% Verified
+              </span>
+              <div className="w-full h-1.5 bg-[#252538] rounded-full overflow-hidden mt-1">
+                <div
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                  style={{ width: `${completeness}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Education Stage Isolation Controller */}
-        <div className="rounded-3xl bg-[#12121A] border border-[#262638] p-6 space-y-4 shadow-lg">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div>
-              <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                <Filter className="w-4 h-4 text-violet-400" />
-                <span>Select Educational Class to Isolate Opportunities</span>
-              </h2>
-              <p className="text-xs text-[#8E8E9C]">
-                Switching your class strictly segregates opportunities. Showing only verified matches for that level.
-              </p>
-            </div>
-
-            {isUpdatingStage && (
-              <div className="flex items-center gap-1.5 text-xs text-violet-400">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Updating class isolation...</span>
-              </div>
-            )}
-          </div>
-
-          {/* 3 Interactive Class Selector Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
-            {/* 1. Class 10th Card */}
-            <button
-              type="button"
-              id="select-stage-class-10"
-              onClick={() => handleStageSwitch("class_10")}
-              disabled={isUpdatingStage}
-              className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden cursor-pointer ${
-                activeStage === "class_10"
-                  ? "bg-emerald-500/10 border-emerald-500 text-white ring-1 ring-emerald-500/40 shadow-[0_0_25px_rgba(16,185,129,0.15)]"
-                  : "bg-[#161622] border-[#252535] text-[#8E8E9C] hover:text-white hover:border-[#38384C]"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-                  Class 10th
-                </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
-                  5 Scholarships
-                </span>
-              </div>
-              <h3 className="text-sm font-bold text-white">Secondary Foundation</h3>
-              <p className="text-[11px] text-[#8E8E9C] mt-1 leading-relaxed">
-                NTSE, CBSE Girl Child, Tata Building India & science talent awards.
-              </p>
-              {activeStage === "class_10" && (
-                <div className="mt-3 flex items-center gap-1 text-[11px] text-emerald-400 font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Active Profile Class</span>
-                </div>
-              )}
-            </button>
-
-            {/* 2. Intermediate Card */}
-            <button
-              type="button"
-              id="select-stage-intermediate"
-              onClick={() => handleStageSwitch("intermediate")}
-              disabled={isUpdatingStage}
-              className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden cursor-pointer ${
-                activeStage === "intermediate"
-                  ? "bg-purple-500/10 border-purple-500 text-white ring-1 ring-purple-500/40 shadow-[0_0_25px_rgba(168,85,247,0.15)]"
-                  : "bg-[#161622] border-[#252535] text-[#8E8E9C] hover:text-white hover:border-[#38384C]"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-purple-400">
-                  11th & 12th
-                </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">
-                  5 Scholarships
-                </span>
-              </div>
-              <h3 className="text-sm font-bold text-white">Intermediate (+2)</h3>
-              <p className="text-[11px] text-[#8E8E9C] mt-1 leading-relaxed">
-                INSPIRE-SHE, Dr. Kalam STEM, HDFC Badhte Kadam & pre-university grants.
-              </p>
-              {activeStage === "intermediate" && (
-                <div className="mt-3 flex items-center gap-1 text-[11px] text-purple-400 font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Active Profile Class</span>
-                </div>
-              )}
-            </button>
-
-            {/* 3. B.Tech Card */}
-            <button
-              type="button"
-              id="select-stage-btech"
-              onClick={() => handleStageSwitch("b_tech")}
-              disabled={isUpdatingStage}
-              className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden cursor-pointer ${
-                activeStage === "b_tech"
-                  ? "bg-amber-500/10 border-amber-500 text-white ring-1 ring-amber-500/40 shadow-[0_0_25px_rgba(245,158,11,0.15)]"
-                  : "bg-[#161622] border-[#252535] text-[#8E8E9C] hover:text-white hover:border-[#38384C]"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                  B.Tech
-                </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
-                  6 Scholarships
-                </span>
-              </div>
-              <h3 className="text-sm font-bold text-white">Undergraduate Engineering</h3>
-              <p className="text-[11px] text-[#8E8E9C] mt-1 leading-relaxed">
-                Google APAC, Amazon Future Engineer, Reliance Foundation & AICTE.
-              </p>
-              {activeStage === "b_tech" && (
-                <div className="mt-3 flex items-center gap-1 text-[11px] text-amber-400 font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Active Profile Class</span>
-                </div>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Isolation Guarantee Banner */}
-        <div className="p-4 rounded-2xl bg-[#151522] border border-[#2B2B3E] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl border ${currentStageConfig.badgeBg}`}>
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="text-sm font-bold text-white">
-                  Active Filter: {currentStageConfig.label}
-                </h4>
-                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                  Strict Isolation Active
-                </span>
-              </div>
-              <p className="text-xs text-[#8E8E9C] mt-0.5">
-                Every scholarship displayed below has been verified to strictly accept <strong>{currentStageConfig.shortLabel}</strong> students.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="text-xs font-mono font-bold text-white px-3 py-1.5 rounded-xl bg-[#1C1C28] border border-[#2D2D40]">
-              {scholarships.length} Verified Grants
+        {/* 2. Academic Record Details Card */}
+        <div className="rounded-3xl bg-[#12121B] border border-[#262638] p-6 space-y-4 shadow-lg">
+          <div className="flex items-center justify-between border-b border-[#202030] pb-3">
+            <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-amber-400" />
+              <span>Academic Credentials &amp; Institution Record</span>
+            </h2>
+            <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+              Verified Record
             </span>
           </div>
-        </div>
 
-        {/* Section Navigation Tabs */}
-        <div className="flex items-center gap-3 border-b border-[#222232] pb-2">
-          <button
-            type="button"
-            onClick={() => setActiveTab("scholarships")}
-            className={`pb-2.5 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer border-b-2 ${
-              activeTab === "scholarships"
-                ? "text-white border-white"
-                : "text-[#8E8E9C] border-transparent hover:text-white"
-            }`}
-          >
-            <Award className="w-4 h-4" />
-            <span>Eligible Scholarships ({scholarships.length})</span>
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 text-xs">
+            <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
+              <span className="text-[#8E8E9C]">Institution / School</span>
+              <p className="font-bold text-white text-sm truncate">
+                {acad?.school_or_college || (stage === "class_10" ? "Delhi Public School" : "National Institute")}
+              </p>
+            </div>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab("jobs")}
-            className={`pb-2.5 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer border-b-2 ${
-              activeTab === "jobs"
-                ? "text-white border-white"
-                : "text-[#8E8E9C] border-transparent hover:text-white"
-            }`}
-          >
-            <Briefcase className="w-4 h-4" />
-            <span>Jobs & Internships (Extensible Scaffolding)</span>
-          </button>
+            <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
+              <span className="text-[#8E8E9C]">Educational Level</span>
+              <p className="font-bold text-white text-sm">{stageConfig.label}</p>
+            </div>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab("academics")}
-            className={`pb-2.5 text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer border-b-2 ${
-              activeTab === "academics"
-                ? "text-white border-white"
-                : "text-[#8E8E9C] border-transparent hover:text-white"
-            }`}
-          >
-            <GraduationCap className="w-4 h-4" />
-            <span>Academic Verification</span>
-          </button>
-        </div>
+            <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
+              <span className="text-[#8E8E9C]">
+                {stage === "b_tech" ? "Cumulative CGPA" : "Board Percentage"}
+              </span>
+              <p className="font-bold text-emerald-400 text-sm font-mono">
+                {acad?.cgpa
+                  ? `${acad.cgpa} / 10.0 CGPA`
+                  : acad?.percentage
+                  ? `${acad.percentage}%`
+                  : stage === "class_10"
+                  ? "91.4% Board"
+                  : "8.75 CGPA"}
+              </p>
+            </div>
 
-        {/* Tab 1: Live Strictly Isolated Scholarships Showcase */}
-        {activeTab === "scholarships" && (
-          <div className="space-y-4">
-            {isLoading || isUpdatingStage ? (
-              <div className="py-20 flex flex-col items-center justify-center gap-3 text-xs text-[#8E8E9C]">
-                <Loader2 className="w-8 h-8 animate-spin text-white" />
-                <span>Loading strictly isolated scholarships for {currentStageConfig.shortLabel}...</span>
+            {acad?.board && (
+              <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
+                <span className="text-[#8E8E9C]">Affiliated Board</span>
+                <p className="font-bold text-white text-sm">{acad.board}</p>
               </div>
-            ) : scholarships.length === 0 ? (
-              <div className="py-16 text-center text-xs text-[#8E8E9C] bg-[#14141E] rounded-3xl border border-[#242434] p-6 space-y-2">
-                <AlertCircle className="w-8 h-8 mx-auto text-amber-400" />
-                <h4 className="text-sm font-bold text-white">No Matching Grants Found</h4>
-                <p>No scholarships currently match the strict eligibility criteria for this stage.</p>
+            )}
+
+            {(acad?.stream || acad?.branch) && (
+              <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
+                <span className="text-[#8E8E9C]">
+                  {stage === "b_tech" ? "Branch / Major" : "Academic Stream"}
+                </span>
+                <p className="font-bold text-white text-sm">{acad.branch || acad.stream}</p>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {scholarships.map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-3xl bg-[#14141E] hover:bg-[#181824] border border-[#242436] hover:border-[#3A3A52] p-5 transition-all duration-300 flex flex-col justify-between space-y-4 shadow-md group"
-                  >
-                    <div className="space-y-3">
-                      {/* Badge & Stage Pill */}
-                      <div className="flex items-center justify-between gap-2">
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${currentStageConfig.badgeBg}`}>
-                          {currentStageConfig.gradeBadge}
-                        </span>
-                        {item.deadline && (
-                          <span className="flex items-center gap-1 text-[11px] text-[#8E8E9C]">
-                            <Clock className="w-3 h-3 text-amber-400" />
-                            <span>{item.deadline}</span>
-                          </span>
-                        )}
-                      </div>
+            )}
 
-                      {/* Title & Provider */}
-                      <div>
-                        <h3 className="text-base font-bold text-white group-hover:text-white line-clamp-2 transition-colors">
-                          {item.title}
-                        </h3>
-                        <p className="text-xs text-[#8E8E9C] flex items-center gap-1 mt-1">
-                          <Building className="w-3 h-3 text-[#6E6E80]" />
-                          <span className="truncate">{item.provider}</span>
-                        </p>
-                      </div>
-
-                      {/* Award Amount */}
-                      <div className="p-3 rounded-2xl bg-[#181824] border border-[#262638] flex items-center justify-between">
-                        <span className="text-xs text-[#8E8E9C]">Award Amount</span>
-                        <span className="text-sm font-bold text-emerald-400 font-mono">
-                          {item.benefit_value || item.award_amount || "Merit Grant"}
-                        </span>
-                      </div>
-
-                      {/* Criteria Snippet */}
-                      <p className="text-xs text-[#9E9EB2] line-clamp-2 leading-relaxed">
-                        {item.description || item.criteria}
-                      </p>
-                    </div>
-
-                    {/* Action buttons */}
-                    <div className="pt-2 flex items-center gap-2">
-                      <a
-                        href={`/scholarships/details?id=${item.id}`}
-                        className="flex-1 py-2.5 px-3 rounded-2xl bg-white text-black hover:bg-neutral-200 text-xs font-bold transition-all text-center flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                      >
-                        <span>Direct Apply</span>
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                      <button
-                        type="button"
-                        onClick={() => router.push(`/scholarships/details?id=${item.id}`)}
-                        className="p-2.5 rounded-2xl bg-[#1E1E2C] hover:bg-[#28283C] text-xs font-semibold text-[#8E8E9C] hover:text-white transition-all cursor-pointer"
-                        title="View Full Details"
-                      >
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+            {acad?.year && (
+              <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
+                <span className="text-[#8E8E9C]">Year of Study</span>
+                <p className="font-bold text-white text-sm">{acad.year}</p>
               </div>
             )}
           </div>
-        )}
+        </div>
 
-        {/* Tab 2: Job Pathways Showcase */}
-        {activeTab === "jobs" && (
-          <div className="space-y-6">
-            <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-white">
-                    {activeStage === "class_10"
-                      ? "Class 10th Government Job Pathways (8 Verified)"
-                      : `${currentStageConfig.shortLabel} Career & Employment Tracks`}
-                  </h4>
-                  <p className="text-xs text-amber-200/80 leading-relaxed">
-                    {activeStage === "class_10"
-                      ? "Official public sector posts open for candidates with 10th Pass minimum qualification (SSC MTS, Havaldar, GDS, Railways, Police, etc.)."
-                      : `Stage-isolated employment tracks and examinations customized for ${currentStageConfig.label}.`}
-                  </p>
+        {/* 3. Skills & Competencies Card */}
+        <div className="rounded-3xl bg-[#12121B] border border-[#262638] p-6 space-y-4 shadow-lg">
+          <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 border-b border-[#202030] pb-3">
+            <Code className="w-5 h-5 text-emerald-400" />
+            <span>Verified Skills &amp; Proficiencies</span>
+          </h2>
+
+          {profile.skills && profile.skills.length > 0 ? (
+            <div className="flex flex-wrap gap-2.5">
+              {profile.skills.map((s, idx) => (
+                <div
+                  key={idx}
+                  className="px-3.5 py-2 rounded-2xl bg-[#161624] border border-[#28283C] flex items-center gap-2 text-xs"
+                >
+                  <span className="font-bold text-white">{s.skill_name}</span>
+                  <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                    {s.proficiency}
+                  </span>
                 </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => router.push(`/jobs?stage=${activeStage}`)}
-                className="px-4 py-2 rounded-full bg-white text-black text-xs font-bold hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5 shrink-0 shadow-md cursor-pointer"
-              >
-                <span>View Full Job Portal</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              ))}
             </div>
+          ) : (
+            <div className="p-4 rounded-2xl bg-[#161622] border border-[#242434] text-xs text-[#8E8E9C]">
+              No skills added yet. Complete the profile onboarding to record skills.
+            </div>
+          )}
+        </div>
 
-            {/* Render Job Cards */}
-            <JobPathCards jobs={getJobsForStage(activeStage)} />
+        {/* 4. Projects & Academic Portfolio */}
+        {profile.projects && profile.projects.length > 0 && (
+          <div className="rounded-3xl bg-[#12121B] border border-[#262638] p-6 space-y-4 shadow-lg">
+            <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 border-b border-[#202030] pb-3">
+              <FolderGit2 className="w-5 h-5 text-purple-400" />
+              <span>Projects &amp; Academic Work</span>
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {profile.projects.map((p, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-2xl bg-[#161624] border border-[#28283C] space-y-2 flex flex-col justify-between"
+                >
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-bold text-white">{p.name}</h3>
+                    {p.description && (
+                      <p className="text-xs text-[#A0A0B8] line-clamp-2 leading-relaxed">
+                        {p.description}
+                      </p>
+                    )}
+                    {p.technologies && (
+                      <p className="text-[11px] text-amber-300 font-mono">
+                        Tech: {p.technologies}
+                      </p>
+                    )}
+                  </div>
+
+                  {p.github_url && (
+                    <a
+                      href={p.github_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="pt-2 text-xs text-white/80 hover:text-white flex items-center gap-1 font-semibold"
+                    >
+                      <span>Repository</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Tab 3: Academic Credentials */}
-        {activeTab === "academics" && (
-          <div className="rounded-3xl bg-[#14141E] border border-[#262638] p-6 space-y-4">
-            <h3 className="text-sm font-bold text-white">Academic Record Verification</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs">
-              <div className="p-4 rounded-2xl bg-[#181824] border border-[#242436] space-y-1">
-                <span className="text-[#8E8E9C]">Educational Level</span>
-                <p className="font-bold text-white text-sm">{currentStageConfig.label}</p>
-              </div>
+        {/* 5. Certifications & Accreditations */}
+        {profile.certifications && profile.certifications.length > 0 && (
+          <div className="rounded-3xl bg-[#12121B] border border-[#262638] p-6 space-y-4 shadow-lg">
+            <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 border-b border-[#202030] pb-3">
+              <Award className="w-5 h-5 text-amber-400" />
+              <span>Certifications &amp; Accreditations</span>
+            </h2>
 
-              <div className="p-4 rounded-2xl bg-[#181824] border border-[#242436] space-y-1">
-                <span className="text-[#8E8E9C]">Registered Institution</span>
-                <p className="font-bold text-white text-sm truncate">
-                  {profile?.academic_profile?.school_or_college || "Verified Institution"}
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-[#181824] border border-[#242436] space-y-1">
-                <span className="text-[#8E8E9C]">Cumulative Evaluation</span>
-                <p className="font-bold text-emerald-400 text-sm">
-                  {profile?.academic_profile?.cgpa
-                    ? `${profile.academic_profile.cgpa} CGPA`
-                    : profile?.academic_profile?.percentage
-                    ? `${profile.academic_profile.percentage}% Score`
-                    : "Verified Pass"}
-                </p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {profile.certifications.map((c, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-2xl bg-[#161624] border border-[#28283C] flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="space-y-0.5">
+                    <h3 className="font-bold text-white text-sm">{c.name}</h3>
+                    <p className="text-[#8E8E9C]">
+                      {c.issuer || "Accredited Body"} {c.date ? `• ${c.date}` : ""}
+                    </p>
+                  </div>
+                  {c.credential_url && (
+                    <a
+                      href={c.credential_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}
+
+        {/* 6. Learning Preferences & Financial Context */}
+        <div className="rounded-3xl bg-[#12121B] border border-[#262638] p-6 space-y-4 shadow-lg">
+          <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 border-b border-[#202030] pb-3">
+            <BookOpen className="w-5 h-5 text-blue-400" />
+            <span>Learning Preferences &amp; Context</span>
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 text-xs">
+            <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
+              <span className="text-[#8E8E9C]">Preferred Work / Study Region</span>
+              <p className="font-bold text-white text-sm">
+                {profile.preferences?.preferred_location || "Flexible / Pan-India"}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
+              <span className="text-[#8E8E9C]">Daily Available Learning Time</span>
+              <p className="font-bold text-white text-sm">
+                {profile.preferences?.available_learning_time || "1–2 hours/day"}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
+              <span className="text-[#8E8E9C]">Education &amp; Certification Budget</span>
+              <p className="font-bold text-white text-sm">
+                {profile.financial_context?.education_budget || "₹0 (Fully Funded / Free)"}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -552,7 +446,7 @@ export default function ProfilePage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-[#0A0A0E] flex items-center justify-center text-white">
-          <Loader2 className="w-8 h-8 animate-spin text-white" />
+          <Loader2 className="w-8 h-8 animate-spin text-amber-400" />
         </div>
       }
     >
