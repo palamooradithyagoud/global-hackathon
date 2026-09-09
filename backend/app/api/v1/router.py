@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.app.api.v1.endpoints import auth, scholarships, profile, resume, jobs, assistant
+from backend.app.api.v1.endpoints import auth, scholarships, profile, resume, jobs, assistant, skill_tracks
 
 api_router = APIRouter()
 
@@ -9,3 +9,4 @@ api_router.include_router(profile.router)
 api_router.include_router(resume.router)
 api_router.include_router(jobs.router)
 api_router.include_router(assistant.router)
+api_router.include_router(skill_tracks.router)

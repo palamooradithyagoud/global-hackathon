@@ -645,6 +645,113 @@ const DEGREE_OPTIONS: DegreeOptionInfo[] = [
   }
 ];
 
+interface ExamItem {
+  name: string;
+  target: string;
+  badge?: string;
+}
+
+interface ExamGroup {
+  category: string;
+  icon: string;
+  color: string;
+  borderColor: string;
+  bgColor: string;
+  exams: ExamItem[];
+}
+
+const ENTRANCE_EXAMS_10TH: ExamItem[] = [
+  { name: "AP POLYCET", target: "Diploma/Polytechnic", badge: "Andhra Pradesh" },
+  { name: "TG POLYCET", target: "Diploma/Polytechnic", badge: "Telangana" }
+];
+
+const ENTRANCE_EXAMS_INTERMEDIATE: ExamGroup[] = [
+  {
+    category: "Engineering / Technology",
+    icon: "💻",
+    color: "#60A5FA",
+    borderColor: "rgba(96, 165, 250, 0.3)",
+    bgColor: "rgba(96, 165, 250, 0.08)",
+    exams: [
+      { name: "AP EAPCET", target: "AP Engineering", badge: "State Level" },
+      { name: "TG EAPCET", target: "Telangana Engineering", badge: "State Level" },
+      { name: "JEE Main", target: "NITs, IIITs, other engineering colleges", badge: "National" },
+      { name: "JEE Advanced", target: "IITs", badge: "Premier National" },
+      { name: "BITSAT", target: "BITS", badge: "Deemed Univ" },
+      { name: "VITEEE", target: "VIT", badge: "Deemed Univ" },
+      { name: "SRMJEEE", target: "SRM", badge: "Deemed Univ" }
+    ]
+  },
+  {
+    category: "Medical",
+    icon: "🩺",
+    color: "#34D399",
+    borderColor: "rgba(52, 211, 153, 0.3)",
+    bgColor: "rgba(52, 211, 153, 0.08)",
+    exams: [
+      { name: "NEET-UG", target: "MBBS, BDS, AYUSH, etc.", badge: "All India Medical" }
+    ]
+  },
+  {
+    category: "Architecture / Design",
+    icon: "🎨",
+    color: "#C084FC",
+    borderColor: "rgba(192, 132, 252, 0.3)",
+    bgColor: "rgba(192, 132, 252, 0.08)",
+    exams: [
+      { name: "NATA", target: "B.Arch", badge: "National Council" },
+      { name: "JEE Main Paper 2", target: "B.Arch/B.Planning", badge: "NTA National" },
+      { name: "UCEED", target: "Undergraduate Design", badge: "IIT Bombay" }
+    ]
+  }
+];
+
+const ENTRANCE_EXAMS_DEGREE: ExamGroup[] = [
+  {
+    category: "Engineering / Technology",
+    icon: "⚙️",
+    color: "#60A5FA",
+    borderColor: "rgba(96, 165, 250, 0.3)",
+    bgColor: "rgba(96, 165, 250, 0.08)",
+    exams: [
+      { name: "AP PGECET", target: "M.Tech/M.Pharm/related PG", badge: "AP State" },
+      { name: "TG PGECET", target: "M.Tech/M.Pharm/related PG", badge: "TG State" },
+      { name: "GATE", target: "M.Tech/MS/PSU opportunities", badge: "National Premier" }
+    ]
+  },
+  {
+    category: "MBA / Management",
+    icon: "📈",
+    color: "#FBBF24",
+    borderColor: "rgba(251, 191, 36, 0.3)",
+    bgColor: "rgba(251, 191, 36, 0.08)",
+    exams: [
+      { name: "AP ICET", target: "MBA/MCA", badge: "AP State" },
+      { name: "TG ICET", target: "MBA/MCA", badge: "TG State" },
+      { name: "CAT", target: "IIMs and other B-schools", badge: "Premier National" },
+      { name: "XAT", target: "XLRI and other B-schools", badge: "XLRI National" },
+      { name: "CMAT", target: "Management institutes", badge: "AICTE / NTA" },
+      { name: "MAT", target: "Management institutes", badge: "AIMA National" }
+    ]
+  },
+  {
+    category: "Government / Competitive",
+    icon: "🏛️",
+    color: "#F472B6",
+    borderColor: "rgba(244, 114, 182, 0.3)",
+    bgColor: "rgba(244, 114, 182, 0.08)",
+    exams: [
+      { name: "UPSC CSE", target: "Civil Services", badge: "Union UPSC" },
+      { name: "SSC CGL", target: "Central Government jobs", badge: "Staff Selection" },
+      { name: "IBPS PO/Clerk", target: "Banking", badge: "Public Sector Banks" },
+      { name: "SBI PO/Clerk", target: "Banking", badge: "State Bank of India" },
+      { name: "RRB exams", target: "Railways", badge: "Railway Recruitment" },
+      { name: "APPSC exams", target: "Andhra Pradesh government", badge: "AP State Public Service" },
+      { name: "TSPSC/TGPSC exams", target: "Telangana government", badge: "TG State Public Service" }
+    ]
+  }
+];
+
 export default function CareerPathwaysModal({
   isOpen,
   onClose,
@@ -699,6 +806,14 @@ export default function CareerPathwaysModal({
   const [subgroupSearch, setSubgroupSearch] = useState("");
   const [subgroupStreamFilter, setSubgroupStreamFilter] = useState<string>("ALL");
 
+  // Filter and collapse states for Entrance Exams
+  const [interExamCategoryFilter, setInterExamCategoryFilter] = useState<string>("ALL");
+  const [degreeExamCategoryFilter, setDegreeExamCategoryFilter] = useState<string>("ALL");
+  const [is10thExamsExpanded, setIs10thExamsExpanded] = useState(false);
+  const [isInterExamsExpanded, setIsInterExamsExpanded] = useState(false);
+  const [isDegreeExamsExpanded, setIsDegreeExamsExpanded] = useState(false);
+  const [isDiplomaExamsExpanded, setIsDiplomaExamsExpanded] = useState(false);
+
   if (!isOpen) return null;
 
   const handleResetAll = (newStage?: "class_10" | "intermediate" | "b_tech") => {
@@ -711,6 +826,10 @@ export default function CareerPathwaysModal({
     setActiveDegreeOption(null);
     setSubgroupSearch("");
     setSubgroupStreamFilter("ALL");
+    setIs10thExamsExpanded(false);
+    setIsInterExamsExpanded(false);
+    setIsDegreeExamsExpanded(false);
+    setIsDiplomaExamsExpanded(false);
     if (newStage) {
       setCurrentStage(newStage);
     }
@@ -718,15 +837,21 @@ export default function CareerPathwaysModal({
 
   const canGoBack =
     currentStage === "class_10"
-      ? tenthView !== "options"
+      ? tenthView !== "options" || is10thExamsExpanded || isDiplomaExamsExpanded
       : currentStage === "intermediate"
-      ? activeAfterInterSubgroup !== null
-      : activeDegreeOption !== null;
+      ? activeAfterInterSubgroup !== null || isInterExamsExpanded
+      : activeDegreeOption !== null || isDegreeExamsExpanded;
 
   const handleBack = () => {
     if (currentStage === "class_10") {
+      if (is10thExamsExpanded) {
+        setIs10thExamsExpanded(false);
+        return;
+      }
       if (tenthView === "intermediate_diploma") {
-        if (activeStreamDetail) {
+        if (isDiplomaExamsExpanded) {
+          setIsDiplomaExamsExpanded(false);
+        } else if (activeStreamDetail) {
           setActiveStreamDetail(null);
         } else if (activeDiplomaBranch) {
           setActiveDiplomaBranch(null);
@@ -736,22 +861,34 @@ export default function CareerPathwaysModal({
           setTenthView("options");
         }
       } else if (tenthView === "subgroups") {
-        if (activeAfterInterSubgroup) {
+        if (isInterExamsExpanded) {
+          setIsInterExamsExpanded(false);
+        } else if (activeAfterInterSubgroup) {
           setActiveAfterInterSubgroup(null);
         } else {
           setTenthView("intermediate_diploma");
         }
       } else if (tenthView === "degree") {
-        if (activeDegreeOption) {
+        if (isDegreeExamsExpanded) {
+          setIsDegreeExamsExpanded(false);
+        } else if (activeDegreeOption) {
           setActiveDegreeOption(null);
         } else {
           setTenthView("options");
         }
       }
     } else if (currentStage === "intermediate") {
-      setActiveAfterInterSubgroup(null);
+      if (isInterExamsExpanded) {
+        setIsInterExamsExpanded(false);
+      } else if (activeAfterInterSubgroup) {
+        setActiveAfterInterSubgroup(null);
+      }
     } else if (currentStage === "b_tech") {
-      setActiveDegreeOption(null);
+      if (isDegreeExamsExpanded) {
+        setIsDegreeExamsExpanded(false);
+      } else if (activeDegreeOption) {
+        setActiveDegreeOption(null);
+      }
     }
   };
 
@@ -811,9 +948,9 @@ export default function CareerPathwaysModal({
                 </div>
                 <p className="text-xs text-[#8E8E9C] mt-0.5">
                   {currentStage === "class_10"
-                    ? "Post-10th Pathways · Intermediate / Diploma & Future Degree Tracks"
+                    ? "Post-10th Pathways · Intermediate / Diploma & State Entrance Exams"
                     : currentStage === "intermediate"
-                    ? "Degree Pathways · 14 Career Subgroups after Intermediate / Diploma"
+                    ? "Degree Pathways · Career Trajectories after Intermediate / Diploma"
                     : "Post-Degree Specializations · Higher Studies, Placements, Civil & Research"}
                 </p>
               </div>
@@ -882,14 +1019,6 @@ export default function CareerPathwaysModal({
                 </button>
               </div>
             </div>
-
-            <div className="text-[11px] text-[#6E6E82]">
-              {currentStage === "class_10"
-                ? "Post-10th options active"
-                : currentStage === "intermediate"
-                ? "10th skipped · Post-inter tracks"
-                : "Pre-degree skipped · Post-degree active"}
-            </div>
           </div>
         </div>
 
@@ -907,95 +1036,174 @@ export default function CareerPathwaysModal({
               className="space-y-4"
             >
               <div className="flex items-center justify-between pb-1">
-                <span className="text-xs font-semibold text-[#8E8E9C] uppercase tracking-wider">
-                  Post-10th Pathway Choices
-                </span>
-                <span className="text-xs text-pink-400 font-medium">
-                  2 Next-Stage Pathways
-                </span>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="font-semibold text-[#8E8E9C] uppercase tracking-wider">
+                    Post-10th Pathway Choices
+                  </span>
+                  {is10thExamsExpanded && (
+                    <>
+                      <span className="text-[#55556A]">/</span>
+                      <span className="font-bold text-pink-400">Entrance Exams</span>
+                    </>
+                  )}
+                </div>
+                {is10thExamsExpanded ? (
+                  <button
+                    type="button"
+                    onClick={() => setIs10thExamsExpanded(false)}
+                    className="text-xs text-pink-400 hover:text-pink-300 flex items-center gap-1 font-medium transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Show All Choices</span>
+                  </button>
+                ) : (
+                  <span className="text-xs text-pink-400 font-medium">
+                    2 Pathways
+                  </span>
+                )}
               </div>
 
               <div className="space-y-3">
-                {/* 1. Intermediate / Diploma Card */}
-                <motion.div
-                  whileHover={{ scale: 1.01, borderColor: "rgba(244, 114, 182, 0.5)" }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => {
-                    setTenthView("intermediate_diploma");
-                    setSelected10thOption(null);
-                    setActiveStreamDetail(null);
-                    setActiveDiplomaBranch(null);
-                  }}
-                  className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#181824] to-[#14141E] border border-[#2B2B3C] cursor-pointer group transition-all duration-200 shadow-md flex items-center justify-between gap-4"
-                >
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 group-hover:scale-105 transition-transform">
-                      <BookOpen className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-pink-300 transition-colors">
-                          Intermediate / Diploma
-                        </h3>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-pink-500/15 border border-pink-500/30 text-pink-300">
-                          Immediate Next Step
-                        </span>
+                {/* 1. Intermediate / Diploma Card (Only shown when entrance exams not expanded) */}
+                {!is10thExamsExpanded && (
+                  <motion.div
+                    whileHover={{ scale: 1.01, borderColor: "rgba(244, 114, 182, 0.5)" }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => {
+                      setTenthView("intermediate_diploma");
+                      setSelected10thOption(null);
+                      setActiveStreamDetail(null);
+                      setActiveDiplomaBranch(null);
+                    }}
+                    className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#181824] to-[#14141E] border border-[#2B2B3C] cursor-pointer group transition-all duration-200 shadow-md flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 group-hover:scale-105 transition-transform">
+                        <BookOpen className="w-6 h-6" />
                       </div>
-                      <p className="text-xs text-[#8E8E9C] mt-1 leading-relaxed">
-                        Choose between <strong>Intermediate (+2 Junior College: MPC, BiPC, MEC, CEC)</strong> or <strong>Polytechnic (3-Year Technical Diploma)</strong>.
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-pink-300 border border-pink-500/20">MPC</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-emerald-300 border border-emerald-500/20">BiPC</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-amber-300 border border-amber-500/20">MEC</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-pink-300 border border-pink-500/20">CEC</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-indigo-300 border border-indigo-500/20">Polytechnic Diploma</span>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-pink-300 transition-colors">
+                            Intermediate / Diploma
+                          </h3>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-pink-500/15 border border-pink-500/30 text-pink-300">
+                            Immediate Next Step
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#8E8E9C] mt-1 leading-relaxed">
+                          Choose between <strong>Intermediate (+2 Junior College: MPC, BiPC, MEC, CEC)</strong> or <strong>Polytechnic (3-Year Technical Diploma)</strong>.
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-pink-300 border border-pink-500/20">MPC</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-emerald-300 border border-emerald-500/20">BiPC</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-amber-300 border border-amber-500/20">MEC</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-pink-300 border border-pink-500/20">CEC</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-indigo-300 border border-indigo-500/20">Polytechnic Diploma</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-[#1F1F2E] group-hover:bg-pink-500 text-white flex items-center justify-center shrink-0 transition-colors">
-                    <ArrowUpRight className="w-4 h-4" />
-                  </div>
-                </motion.div>
+                    <div className="w-8 h-8 rounded-full bg-[#1F1F2E] group-hover:bg-pink-500 text-white flex items-center justify-center shrink-0 transition-colors">
+                      <ArrowUpRight className="w-4 h-4" />
+                    </div>
+                  </motion.div>
+                )}
 
-                {/* 2. Degree options Card */}
-                <motion.div
-                  whileHover={{ scale: 1.01, borderColor: "rgba(96, 165, 250, 0.5)" }}
-                  whileTap={{ scale: 0.99 }}
-                  onClick={() => {
-                    setTenthView("degree");
-                    setActiveDegreeOption(null);
-                  }}
-                  className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#181824] to-[#14141E] border border-[#2B2B3C] cursor-pointer group transition-all duration-200 shadow-md flex items-center justify-between gap-4"
-                >
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 group-hover:scale-105 transition-transform">
-                      <GraduationCap className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-blue-300 transition-colors">
-                          Degree Options
-                        </h3>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/15 border border-blue-500/30 text-blue-300">
-                          Future Milestone
-                        </span>
+                {/* 2. ENTRANCE EXAMS SECTION: AFTER 10TH (Collapsible / Expandible) */}
+                {!is10thExamsExpanded ? (
+                  <motion.div
+                    whileHover={{ scale: 1.01, borderColor: "rgba(244, 114, 182, 0.5)" }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => setIs10thExamsExpanded(true)}
+                    className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#181824] to-[#14141E] border border-[#2B2B3C] cursor-pointer group transition-all duration-200 shadow-md flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 group-hover:scale-105 transition-transform">
+                        <Award className="w-6 h-6" />
                       </div>
-                      <p className="text-xs text-[#8E8E9C] mt-1 leading-relaxed">
-                        Preview higher undergraduate degrees, competitive entrances, professional outcomes, and long-term milestones after +2.
-                      </p>
-                      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-blue-300 border border-blue-500/20">B.Tech / B.E.</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-emerald-300 border border-emerald-500/20">Medicine / MBBS</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-amber-300 border border-amber-500/20">B.Com / CA</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-purple-300 border border-purple-500/20">BA LLB</span>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-pink-300 transition-colors">
+                            Entrance Exams (After 10th)
+                          </h3>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-pink-500/15 border border-pink-500/30 text-pink-300">
+                            Diploma / Polytechnic · 2 Entrances
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#8E8E9C] mt-1 leading-relaxed">
+                          State-level entrance examinations for direct admission into 3-Year Technical Polytechnic Diplomas.
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-pink-300 border border-pink-500/20">AP POLYCET</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-pink-300 border border-pink-500/20">TG POLYCET</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-[#1F1F2E] group-hover:bg-blue-500 text-white flex items-center justify-center shrink-0 transition-colors">
-                    <ArrowUpRight className="w-4 h-4" />
-                  </div>
-                </motion.div>
+                    <div className="w-8 h-8 rounded-full bg-[#1F1F2E] group-hover:bg-pink-500 text-white flex items-center justify-center shrink-0 transition-colors">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#161624] to-[#12121C] border border-pink-500/40 shadow-xl space-y-3.5 ring-1 ring-pink-500/30"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400">
+                          <Award className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <span>Entrance Exams: After 10th</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 font-semibold border border-pink-500/30">
+                              Diploma / Polytechnic
+                            </span>
+                          </h4>
+                          <p className="text-[11px] text-[#8E8E9C]">
+                            State-level entrance examinations for direct admission into 3-Year Technical Polytechnic Diplomas:
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setIs10thExamsExpanded(false)}
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#1C1C28] hover:bg-[#252536] text-pink-300 border border-pink-500/30 flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                        <span>Collapse</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                      {ENTRANCE_EXAMS_10TH.map((exam, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-xl bg-[#181826] border border-[#2B2B3C] hover:border-pink-500/40 hover:bg-[#1B1B2A] transition-all flex items-center justify-between gap-3 group"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-extrabold text-sm text-pink-300 tracking-tight group-hover:text-pink-200">
+                                {exam.name}
+                              </span>
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20 font-bold">
+                                {exam.badge}
+                              </span>
+                            </div>
+                            <p className="text-xs text-[#CBCBD8] mt-1 flex items-center gap-1.5">
+                              <span className="text-[#6E6E82]">—</span>
+                              <span className="font-medium text-white/90">{exam.target}</span>
+                            </p>
+                          </div>
+                          <div className="w-6 h-6 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400 shrink-0 group-hover:scale-110 transition-transform">
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}
@@ -1534,7 +1742,7 @@ export default function CareerPathwaysModal({
                         )}
 
                         {/* Diploma Expanded Content with single-selection collapse */}
-                        {selected10thOption === "diploma" && (
+                        {selected10thOption === "diploma" && !isDiplomaExamsExpanded && (
                           <div className="border-t border-[#242434] p-4 sm:p-5 bg-[#12121C] rounded-b-2xl space-y-3.5">
                             <div className="flex items-center justify-between">
                               <span className="text-[11px] font-bold uppercase tracking-wider text-[#8E8E9C]">
@@ -1604,7 +1812,7 @@ export default function CareerPathwaysModal({
                                                 {branch.subjects.map((sub, idx) => (
                                                   <span
                                                     key={idx}
-                                                    className="px-2 py-0.5 rounded text-[10px] bg-[#121A15] text-[#C4E5D4]"
+                                                    className="px-2 py-0.5 rounded text-[10px] bg-[#12121A] text-[#C4E5D4]"
                                                   >
                                                     {sub}
                                                   </span>
@@ -1627,6 +1835,103 @@ export default function CareerPathwaysModal({
                     )}
                   </AnimatePresence>
                 </div>
+
+                {/* Entrance Exams for Polytechnic / Diploma (Collapsible / Expandible) */}
+                {!isDiplomaExamsExpanded ? (
+                  <motion.div
+                    whileHover={{ scale: 1.005, borderColor: "rgba(244, 114, 182, 0.5)" }}
+                    whileTap={{ scale: 0.995 }}
+                    onClick={() => setIsDiplomaExamsExpanded(true)}
+                    className="p-4 rounded-xl bg-gradient-to-br from-[#181824] to-[#14141E] border border-[#2B2B3C] cursor-pointer group transition-all duration-200 shadow-md flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-10 h-10 rounded-xl bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400 shrink-0 group-hover:scale-105 transition-transform">
+                        <Award className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h5 className="text-sm font-bold text-white group-hover:text-pink-300 transition-colors">
+                            Entrance Exams: After 10th for Polytechnic
+                          </h5>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 font-semibold border border-pink-500/30">
+                            State Board Entrances · 2 Exams
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#8E8E9C] mt-0.5">
+                          Mandatory state polytechnic entrance tests: AP POLYCET & TG POLYCET.
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#101018] text-pink-300 border border-pink-500/20 font-bold">AP POLYCET</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#101018] text-pink-300 border border-pink-500/20 font-bold">TG POLYCET</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-[#1F1F2E] group-hover:bg-pink-500 text-white flex items-center justify-center shrink-0 transition-colors">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#161624] to-[#12121C] border border-pink-500/40 shadow-xl space-y-3.5 ring-1 ring-pink-500/30"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400">
+                          <Award className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <span>Entrance Exams: After 10th for Polytechnic</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 font-semibold border border-pink-500/30">
+                              State Board Entrances
+                            </span>
+                          </h4>
+                          <p className="text-[11px] text-[#8E8E9C]">
+                            Mandatory state polytechnic entrance tests for Diploma admissions:
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsDiplomaExamsExpanded(false)}
+                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#1C1C28] hover:bg-[#252536] text-pink-300 border border-pink-500/30 flex items-center gap-1 transition-colors cursor-pointer"
+                      >
+                        <ChevronUp className="w-3.5 h-3.5" />
+                        <span>Collapse</span>
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                      {ENTRANCE_EXAMS_10TH.map((exam, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3 rounded-xl bg-[#181826] border border-[#2B2B3C] hover:border-pink-500/40 hover:bg-[#1B1B2A] transition-all flex items-center justify-between gap-3 group"
+                        >
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-extrabold text-sm text-pink-300 tracking-tight group-hover:text-pink-200">
+                                {exam.name}
+                              </span>
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20 font-bold">
+                                {exam.badge}
+                              </span>
+                            </div>
+                            <p className="text-xs text-[#CBCBD8] mt-0.5 flex items-center gap-1.5">
+                              <span className="text-[#6E6E82]">—</span>
+                              <span className="font-medium text-white/90">{exam.target}</span>
+                            </p>
+                          </div>
+                          <div className="w-6 h-6 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400 shrink-0 group-hover:scale-110 transition-transform">
+                            <ArrowUpRight className="w-3.5 h-3.5" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}
@@ -1663,7 +1968,24 @@ export default function CareerPathwaysModal({
                       </span>
                     </>
                   )}
+                  {isInterExamsExpanded && (
+                    <>
+                      <span className="text-[#55556A]">/</span>
+                      <span className="font-bold text-amber-400">Entrance Exams</span>
+                    </>
+                  )}
                 </div>
+
+                {isInterExamsExpanded && (
+                  <button
+                    type="button"
+                    onClick={() => setIsInterExamsExpanded(false)}
+                    className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-medium transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Show All 14 Subgroups</span>
+                  </button>
+                )}
 
                 {activeAfterInterSubgroup && (
                   <button
@@ -1677,227 +1999,362 @@ export default function CareerPathwaysModal({
                 )}
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#161622] border border-[#2B2B3C] space-y-4">
-                {/* Header info */}
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div>
-                    <h3 className="font-bold text-white text-base sm:text-lg flex items-center gap-2">
-                      <span>14 Career Subgroups & Degree Pathways</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                        14 Fields
-                      </span>
-                    </h3>
-                    <p className="text-xs text-[#8E8E9C] mt-0.5">
-                      {activeAfterInterSubgroup
-                        ? "Viewing specialized degrees, careers, and entrance exams. Click again or 'Show All' to restore others."
-                        : "Post-intermediate undergraduate degree paths. Click on any field to inspect career trajectories and collapse others:"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Stream Quick Filter and Search Bar (Only shown when not collapsed) */}
-                {!activeAfterInterSubgroup && (
-                  <div className="space-y-2.5 pt-1">
-                    {/* Search bar */}
-                    <div className="relative">
-                      <Search className="w-4 h-4 text-[#8E8E9C] absolute left-3 top-1/2 -translate-y-1/2" />
-                      <input
-                        type="text"
-                        placeholder="Search subgroups, careers (e.g. Software, Doctor, CA, Pilot, Lawyer)..."
-                        value={subgroupSearch}
-                        onChange={(e) => setSubgroupSearch(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#101018] border border-[#2B2B3C] focus:border-amber-400/60 text-xs text-white placeholder:text-[#6C6C7E] outline-hidden transition-colors"
-                      />
-                      {subgroupSearch && (
-                        <button
-                          type="button"
-                          onClick={() => setSubgroupSearch("")}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#8E8E9C] hover:text-white"
-                        >
-                          ✕
-                        </button>
-                      )}
+              {/* ENTRANCE EXAMS SECTION: AFTER INTERMEDIATE / DIPLOMA (Collapsible / Expandible) */}
+              {!activeAfterInterSubgroup && (
+                !isInterExamsExpanded ? (
+                  <motion.div
+                    whileHover={{ scale: 1.005, borderColor: "rgba(251, 191, 36, 0.5)" }}
+                    whileTap={{ scale: 0.995 }}
+                    onClick={() => setIsInterExamsExpanded(true)}
+                    className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#181824] to-[#14141E] border border-[#2B2B3C] cursor-pointer group transition-all duration-200 shadow-md flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
+                        <Award className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-base sm:text-lg font-bold text-white group-hover:text-amber-300 transition-colors">
+                            Entrance Exams (After Intermediate / Diploma)
+                          </h4>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-semibold border border-amber-500/30">
+                            11 Key Entrances
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#8E8E9C] mt-1 leading-relaxed">
+                          Major entrance tests across Engineering, Medical, and Architecture/Design (AP/TG EAPCET, JEE Main, JEE Adv, NEET-UG, BITSAT, etc.)
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#101018] text-amber-300 border border-amber-500/20 font-bold">Engineering / Tech (7)</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#101018] text-emerald-300 border border-emerald-500/20 font-bold">Medical (1)</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#101018] text-indigo-300 border border-indigo-500/20 font-bold">Architecture / Design (3)</span>
+                        </div>
+                      </div>
                     </div>
-
-                    {/* Stream filter pills */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-[11px] font-bold text-[#7E7E92] mr-1 flex items-center gap-1">
-                        <Filter className="w-3 h-3" />
-                        <span>Filter by Stream:</span>
-                      </span>
-                      {[
-                        { label: "All Fields (14)", value: "ALL" },
-                        { label: "MPC", value: "MPC" },
-                        { label: "BiPC", value: "BiPC" },
-                        { label: "MEC", value: "MEC" },
-                        { label: "CEC", value: "CEC" }
-                      ].map((tab) => (
-                        <button
-                          key={tab.value}
-                          type="button"
-                          onClick={() => setSubgroupStreamFilter(tab.value)}
-                          className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
-                            subgroupStreamFilter === tab.value
-                              ? "bg-amber-400 text-black shadow-xs font-extrabold"
-                              : "bg-[#1C1C28] text-[#8E8E9C] hover:text-white border border-[#2C2C3E]"
-                          }`}
-                        >
-                          {tab.label}
-                        </button>
-                      ))}
+                    <div className="w-8 h-8 rounded-full bg-[#1F1F2E] group-hover:bg-amber-500 text-white flex items-center justify-center shrink-0 transition-colors">
+                      <ChevronDown className="w-4 h-4" />
                     </div>
-                  </div>
-                )}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#161624] to-[#12121C] border border-amber-400/40 shadow-xl space-y-4 ring-1 ring-amber-400/30"
+                  >
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                          <Award className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <span>Entrance Exams: After Intermediate / Diploma</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-semibold border border-amber-500/30">
+                              11 Key Entrances
+                            </span>
+                          </h4>
+                          <p className="text-[11px] text-[#8E8E9C]">
+                            Major entrance tests across Engineering, Medical, and Architecture/Design:
+                          </p>
+                        </div>
+                      </div>
 
-                {/* SUBGROUPS LIST: Exactly 1 per row taking the full space */}
-                <div className="grid grid-cols-1 gap-3.5 w-full transition-all duration-300">
-                  <AnimatePresence>
-                    {filteredSubgroups
-                      .filter((item) => !activeAfterInterSubgroup || activeAfterInterSubgroup === item.id)
-                      .map((item) => {
-                        const isSelected = activeAfterInterSubgroup === item.id;
-                        return (
-                          <motion.div
-                            key={item.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.85, height: 0, padding: 0 }}
-                            transition={{ duration: 0.25 }}
-                            onClick={() => setActiveAfterInterSubgroup(isSelected ? null : item.id)}
-                            className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer w-full ${
-                              isSelected
-                                ? "border-amber-400 bg-[#1A1A2A] shadow-xl ring-1 ring-amber-400/50"
-                                : "border-[#2B2B3C] bg-[#181826] hover:border-[#3E3E56] hover:bg-[#1B1B2A] hover:scale-[1.005] shadow-xs"
+                      <div className="flex items-center gap-2">
+                        {/* Category filter pills */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => setInterExamCategoryFilter("ALL")}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                              interExamCategoryFilter === "ALL"
+                                ? "bg-amber-400 text-black font-extrabold shadow-xs"
+                                : "bg-[#181826] text-[#8E8E9C] hover:text-white border border-[#2B2B3C]"
                             }`}
-                            style={{
-                              borderLeftColor: item.color,
-                              borderLeftWidth: "4px"
-                            }}
                           >
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="flex items-center gap-3.5 min-w-0">
-                                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shrink-0">
-                                  {item.emoji}
-                                </div>
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <h4
-                                      className="font-extrabold text-sm sm:text-base tracking-tight truncate"
-                                      style={{ color: item.color }}
-                                    >
-                                      {item.name}
-                                    </h4>
-                                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-white">
-                                      {item.badge}
+                            All (11)
+                          </button>
+                          {ENTRANCE_EXAMS_INTERMEDIATE.map((cat) => (
+                            <button
+                              key={cat.category}
+                              type="button"
+                              onClick={() => setInterExamCategoryFilter(cat.category)}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                                interExamCategoryFilter === cat.category
+                                  ? "bg-amber-400 text-black font-extrabold shadow-xs"
+                                  : "bg-[#181826] text-[#8E8E9C] hover:text-white border border-[#2B2B3C]"
+                              }`}
+                            >
+                              <span>{cat.icon}</span>
+                              <span>{cat.category.split(" / ")[0]}</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsInterExamsExpanded(false)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#1C1C28] hover:bg-[#252536] text-amber-300 border border-amber-400/30 flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <ChevronUp className="w-3.5 h-3.5" />
+                          <span>Collapse</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3.5">
+                      {ENTRANCE_EXAMS_INTERMEDIATE
+                        .filter((cat) => interExamCategoryFilter === "ALL" || interExamCategoryFilter === cat.category)
+                        .map((cat) => (
+                          <div key={cat.category} className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">{cat.icon}</span>
+                              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: cat.color }}>
+                                {cat.category}
+                              </span>
+                              <span className="text-[10px] text-[#6E6E82]">({cat.exams.length} exams)</span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                              {cat.exams.map((exam, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-2.5 rounded-xl bg-[#181826] border border-[#262638] hover:border-[#3E3E56] hover:bg-[#1B1B2A] transition-all flex flex-col justify-between gap-1 group"
+                                  style={{ borderLeftColor: cat.color, borderLeftWidth: "3px" }}
+                                >
+                                  <div className="flex items-center justify-between gap-1.5">
+                                    <span className="font-extrabold text-xs tracking-tight text-white group-hover:text-amber-300 transition-colors">
+                                      {exam.name}
+                                    </span>
+                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/5 text-[#A6A6BC] font-semibold border border-white/10 shrink-0">
+                                      {exam.badge}
                                     </span>
                                   </div>
-                                  <p className="text-xs text-[#CBCBD8] mt-1 leading-relaxed">
-                                    {item.tagline}
+                                  <p className="text-[11px] text-[#A6A6BC] flex items-center gap-1">
+                                    <span className="text-[#6E6E82] shrink-0">—</span>
+                                    <span className="truncate">{exam.target}</span>
                                   </p>
                                 </div>
-                              </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </motion.div>
+                )
+              )}
 
-                              <div className="flex items-center gap-3 shrink-0">
-                                <div className="hidden sm:flex items-center gap-1">
-                                  {item.eligibleStreams.map((s, idx) => (
-                                    <span
-                                      key={idx}
-                                      className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#12121A] text-amber-300 border border-[#2E2E40]"
-                                    >
-                                      {s}
-                                    </span>
-                                  ))}
+              {/* 14 CAREER SUBGROUPS (Only shown when Entrance Exams is NOT expanded) */}
+              {!isInterExamsExpanded && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#161622] border border-[#2B2B3C] space-y-4">
+                  {/* Header info */}
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div>
+                      <h3 className="font-bold text-white text-base sm:text-lg flex items-center gap-2">
+                        <span>Degree Pathways</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                          14 Fields
+                        </span>
+                      </h3>
+                      <p className="text-xs text-[#8E8E9C] mt-0.5">
+                        {activeAfterInterSubgroup
+                          ? "Viewing specialized degrees, careers, and entrance exams. Click again or 'Show All' to restore others."
+                          : "Post-intermediate undergraduate degree paths. Click on any field to inspect career trajectories and collapse others:"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Stream Quick Filter and Search Bar (Only shown when not collapsed) */}
+                  {!activeAfterInterSubgroup && (
+                    <div className="space-y-2.5 pt-1">
+                      {/* Search bar */}
+                      <div className="relative">
+                        <Search className="w-4 h-4 text-[#8E8E9C] absolute left-3 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          placeholder="Search subgroups, careers (e.g. Software, Doctor, CA, Pilot, Lawyer)..."
+                          value={subgroupSearch}
+                          onChange={(e) => setSubgroupSearch(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#101018] border border-[#2B2B3C] focus:border-amber-400/60 text-xs text-white placeholder:text-[#6C6C7E] outline-hidden transition-colors"
+                        />
+                        {subgroupSearch && (
+                          <button
+                            type="button"
+                            onClick={() => setSubgroupSearch("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#8E8E9C] hover:text-white"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Stream filter pills */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-bold text-[#7E7E92] mr-1 flex items-center gap-1">
+                          <Filter className="w-3 h-3" />
+                          <span>Filter by Stream:</span>
+                        </span>
+                        {[
+                          { label: "All Fields (14)", value: "ALL" },
+                          { label: "MPC", value: "MPC" },
+                          { label: "BiPC", value: "BiPC" },
+                          { label: "MEC", value: "MEC" },
+                          { label: "CEC", value: "CEC" }
+                        ].map((tab) => (
+                          <button
+                            key={tab.value}
+                            type="button"
+                            onClick={() => setSubgroupStreamFilter(tab.value)}
+                            className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
+                              subgroupStreamFilter === tab.value
+                                ? "bg-amber-400 text-black shadow-xs font-extrabold"
+                                : "bg-[#1C1C28] text-[#8E8E9C] hover:text-white border border-[#2C2C3E]"
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SUBGROUPS LIST: Exactly 1 per row taking the full space */}
+                  <div className="grid grid-cols-1 gap-3.5 w-full transition-all duration-300">
+                    <AnimatePresence>
+                      {filteredSubgroups
+                        .filter((item) => !activeAfterInterSubgroup || activeAfterInterSubgroup === item.id)
+                        .map((item) => {
+                          const isSelected = activeAfterInterSubgroup === item.id;
+                          return (
+                            <motion.div
+                              key={item.id}
+                              layout
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.85, height: 0, padding: 0 }}
+                              transition={{ duration: 0.25 }}
+                              onClick={() => setActiveAfterInterSubgroup(isSelected ? null : item.id)}
+                              className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer w-full ${
+                                isSelected
+                                  ? "border-amber-400 bg-[#1A1A2A] shadow-xl ring-1 ring-amber-400/50"
+                                  : "border-[#2B2B3C] bg-[#181826] hover:border-[#3E3E56] hover:bg-[#1B1B2A] hover:scale-[1.005] shadow-xs"
+                              }`}
+                              style={{
+                                borderLeftColor: item.color,
+                                borderLeftWidth: "4px"
+                              }}
+                            >
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3.5 min-w-0">
+                                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xl shrink-0">
+                                    {item.emoji}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <h4
+                                        className="font-extrabold text-sm sm:text-base tracking-tight truncate"
+                                        style={{ color: item.color }}
+                                      >
+                                        {item.name}
+                                      </h4>
+                                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-white">
+                                        {item.badge}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-[#8E8E9C] mt-0.5 line-clamp-1">
+                                      {item.tagline}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[#8E8E9C]">
+                                <div className="flex items-center gap-2 shrink-0">
                                   <ChevronDown
-                                    className={`w-4 h-4 transition-transform duration-200 ${
+                                    className={`w-4 h-4 text-[#8E8E9C] transition-transform duration-300 ${
                                       isSelected ? "rotate-180 text-amber-400" : ""
                                     }`}
                                   />
                                 </div>
                               </div>
-                            </div>
 
-                            {/* EXPANDED CONTENT FOR ACTIVE SUBGROUP */}
-                            {isSelected && (
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="mt-4 pt-4 border-t border-[#26263A] space-y-3.5"
-                              >
-                                {/* Key Degrees & Programs */}
-                                <div>
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 block mb-1.5">
-                                    🎓 Premier Undergrad Degrees & Programs:
-                                  </span>
-                                  <ul className="space-y-1">
-                                    {item.degrees.map((deg, idx) => (
-                                      <li key={idx} className="flex items-start gap-2 text-xs text-[#E2E2EC]">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
-                                        <span>{deg}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-
-                                {/* Key Career Roles */}
-                                <div>
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 block mb-1.5">
-                                    💼 Top Career Trajectories & Roles:
-                                  </span>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {item.roles.map((role, idx) => (
-                                      <span
-                                        key={idx}
-                                        className="px-2.5 py-1 rounded-lg text-xs bg-[#12121A] text-[#D8E6DF] border border-[#2B2B3C]"
-                                      >
-                                        {role}
-                                      </span>
-                                    ))}
+                              {/* EXPANDED CONTENT FOR ACTIVE SUBGROUP */}
+                              {isSelected && (
+                                <motion.div
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  className="mt-4 pt-4 border-t border-[#26263A] space-y-3.5"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {/* Key Degrees & Programs */}
+                                  <div>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 block mb-1.5">
+                                      🎓 Premier Undergrad Degrees & Programs:
+                                    </span>
+                                    <ul className="space-y-1">
+                                      {item.degrees.map((deg, idx) => (
+                                        <li key={idx} className="flex items-start gap-2 text-xs text-[#E2E2EC]">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
+                                          <span>{deg}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
                                   </div>
-                                </div>
 
-                                {/* Major Entrance Exams */}
-                                <div>
-                                  <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 block mb-1.5">
-                                    📝 Major Entrance Exams & Gateways:
-                                  </span>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {item.exams.map((exam, idx) => (
-                                      <span
-                                        key={idx}
-                                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20"
-                                      >
-                                        {exam}
-                                      </span>
-                                    ))}
+                                  {/* Key Career Roles */}
+                                  <div>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 block mb-1.5">
+                                      💼 Top Career Trajectories & Roles:
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {item.roles.map((role, idx) => (
+                                        <span
+                                          key={idx}
+                                          className="px-2.5 py-1 rounded-lg text-xs bg-[#12121A] text-[#D8E6DF] border border-[#2B2B3C]"
+                                        >
+                                          {role}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </div>
-                                </div>
 
-                                <div className="pt-2 flex items-center justify-between border-t border-white/5">
-                                  <span className="text-[11px] text-[#8E8E9C]">
-                                    Click this card again to restore all 14 subgroups
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActiveAfterInterSubgroup(null);
-                                    }}
-                                    className="px-3 py-1 rounded-full text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 transition-colors cursor-pointer"
-                                  >
-                                    Show All 14 Subgroups
-                                  </button>
-                                </div>
-                              </motion.div>
-                            )}
-                          </motion.div>
-                        );
-                      })}
-                  </AnimatePresence>
+                                  {/* Major Entrance Exams */}
+                                  <div>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300 block mb-1.5">
+                                      📝 Major Entrance Exams & Gateways:
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {item.exams.map((exam, idx) => (
+                                        <span
+                                          key={idx}
+                                          className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20"
+                                        >
+                                          {exam}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  <div className="pt-2 flex items-center justify-between border-t border-white/5">
+                                    <span className="text-[11px] text-[#8E8E9C]">
+                                      Click this card again to restore all 14 subgroups
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setActiveAfterInterSubgroup(null);
+                                      }}
+                                      className="px-3 py-1 rounded-full text-xs font-bold text-amber-300 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 transition-colors cursor-pointer"
+                                    >
+                                      Show All 14 Subgroups
+                                    </button>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </motion.div>
+                          );
+                        })}
+                    </AnimatePresence>
+                  </div>
                 </div>
-              </div>
+              )}
             </motion.div>
           )}
 
@@ -1933,7 +2390,24 @@ export default function CareerPathwaysModal({
                       </span>
                     </>
                   )}
+                  {isDegreeExamsExpanded && (
+                    <>
+                      <span className="text-[#55556A]">/</span>
+                      <span className="font-bold text-blue-400">Entrance & Competitive Exams</span>
+                    </>
+                  )}
                 </div>
+
+                {isDegreeExamsExpanded && (
+                  <button
+                    type="button"
+                    onClick={() => setIsDegreeExamsExpanded(false)}
+                    className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 font-medium transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Show All Options</span>
+                  </button>
+                )}
 
                 {activeDegreeOption && (
                   <button
@@ -1947,109 +2421,256 @@ export default function CareerPathwaysModal({
                 )}
               </div>
 
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#161622] border border-[#2B2B3C] space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-white text-base">
-                      {currentStage === "b_tech"
-                        ? "Post-Degree & Career Milestones"
-                        : "Graduation & Degree Pathways"}
-                    </h3>
-                    <p className="text-xs text-[#8E8E9C] mt-0.5">
-                      {activeDegreeOption
-                        ? "Click the active card again or 'Show All' to restore other options."
-                        : currentStage === "b_tech"
-                        ? "Specialized post-undergrad pathways: Higher studies, tech corporate placements, civil services, and research:"
-                        : "Preview undergraduate degree trajectories and future outcomes after 10+2:"}
-                    </p>
-                  </div>
-                </div>
+              {/* ENTRANCE & COMPETITIVE EXAMS SECTION: AFTER DEGREE / UNDERGRADUATE (Collapsible / Expandible) */}
+              {!activeDegreeOption && (
+                !isDegreeExamsExpanded ? (
+                  <motion.div
+                    whileHover={{ scale: 1.005, borderColor: "rgba(96, 165, 250, 0.5)" }}
+                    whileTap={{ scale: 0.995 }}
+                    onClick={() => setIsDegreeExamsExpanded(true)}
+                    className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#181824] to-[#14141E] border border-[#2B2B3C] cursor-pointer group transition-all duration-200 shadow-md flex items-center justify-between gap-4"
+                  >
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 group-hover:scale-105 transition-transform">
+                        <Award className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="text-base sm:text-lg font-bold text-white group-hover:text-blue-300 transition-colors">
+                            Entrance & Competitive Exams (After Degree)
+                          </h4>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-semibold border border-blue-500/30">
+                            16 Key Gateways
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#8E8E9C] mt-1 leading-relaxed">
+                          Premier national & state competitive examinations across Engineering, MBA, and Government (GATE, CAT, ICET, UPSC, SSC, Banking, etc.)
+                        </p>
+                        <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#101018] text-blue-300 border border-blue-500/20 font-bold">Engineering / Tech (3)</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#101018] text-emerald-300 border border-emerald-500/20 font-bold">MBA / Management (6)</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-[#101018] text-purple-300 border border-purple-500/20 font-bold">Government / Competitive (7)</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-[#1F1F2E] group-hover:bg-blue-500 text-white flex items-center justify-center shrink-0 transition-colors">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#161624] to-[#12121C] border border-blue-500/40 shadow-xl space-y-4 ring-1 ring-blue-500/30"
+                  >
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                          <Award className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                            <span>Entrance & Competitive Exams: After Degree</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-semibold border border-blue-500/30">
+                              16 Key Gateways
+                            </span>
+                          </h4>
+                          <p className="text-[11px] text-[#8E8E9C]">
+                            Premier national & state competitive examinations across Engineering, MBA, and Government:
+                          </p>
+                        </div>
+                      </div>
 
-                <div
-                  className={`grid transition-all duration-300 ${
-                    activeDegreeOption ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 gap-3"
-                  }`}
-                >
-                  <AnimatePresence>
-                    {DEGREE_OPTIONS
-                      .filter((item) => !activeDegreeOption || activeDegreeOption === item.id)
-                      .map((item) => {
-                        const isSelected = activeDegreeOption === item.id;
-                        return (
-                          <motion.div
-                            key={item.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.85, height: 0 }}
-                            transition={{ duration: 0.25 }}
-                            onClick={() => setActiveDegreeOption(isSelected ? null : item.id)}
-                            className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-                              isSelected
-                                ? "border-blue-400 bg-[#1A1A2A] shadow-lg ring-1 ring-blue-400/50"
-                                : "border-[#2B2B3C] bg-[#181826] hover:border-[#3E3E56]"
+                      <div className="flex items-center gap-2">
+                        {/* Category filter pills */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => setDegreeExamCategoryFilter("ALL")}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                              degreeExamCategoryFilter === "ALL"
+                                ? "bg-blue-400 text-black font-extrabold shadow-xs"
+                                : "bg-[#181826] text-[#8E8E9C] hover:text-white border border-[#2B2B3C]"
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-sm" style={{ color: item.color }}>
-                                {item.title}
+                            All (16)
+                          </button>
+                          {ENTRANCE_EXAMS_DEGREE.map((cat) => (
+                            <button
+                              key={cat.category}
+                              type="button"
+                              onClick={() => setDegreeExamCategoryFilter(cat.category)}
+                              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                                degreeExamCategoryFilter === cat.category
+                                  ? "bg-blue-400 text-black font-extrabold shadow-xs"
+                                  : "bg-[#181826] text-[#8E8E9C] hover:text-white border border-[#2B2B3C]"
+                              }`}
+                            >
+                              <span>{cat.icon}</span>
+                              <span>{cat.category.split(" / ")[0]}</span>
+                            </button>
+                          ))}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setIsDegreeExamsExpanded(false)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#1C1C28] hover:bg-[#252536] text-blue-300 border border-blue-500/30 flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <ChevronUp className="w-3.5 h-3.5" />
+                          <span>Collapse</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3.5">
+                      {ENTRANCE_EXAMS_DEGREE
+                        .filter((cat) => degreeExamCategoryFilter === "ALL" || degreeExamCategoryFilter === cat.category)
+                        .map((cat) => (
+                          <div key={cat.category} className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">{cat.icon}</span>
+                              <span className="text-xs font-bold uppercase tracking-wider" style={{ color: cat.color }}>
+                                {cat.category}
                               </span>
-                              <div className="flex items-center gap-1.5">
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white">
-                                  {item.badge}
-                                </span>
-                                <ChevronDown
-                                  className={`w-4 h-4 text-[#8E8E9C] transition-transform duration-200 ${
-                                    isSelected ? "rotate-180 text-blue-400" : ""
-                                  }`}
-                                />
-                              </div>
+                              <span className="text-[10px] text-[#6E6E82]">({cat.exams.length} exams)</span>
                             </div>
-                            <p className="text-[11px] text-[#8E8E9C] mt-1">{item.desc}</p>
 
-                            {isSelected && (
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="mt-3 pt-3 border-t border-[#26263A] space-y-2.5"
-                              >
-                                <div>
-                                  <span className="text-[10px] font-bold text-blue-300 uppercase tracking-wider block mb-1">
-                                    Pathway Focus Areas:
-                                  </span>
-                                  <ul className="text-[11px] text-[#A6A6BC] space-y-1">
-                                    {item.highlights.map((h, idx) => (
-                                      <li key={idx} className="flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
-                                        <span>{h}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-
-                                <div>
-                                  <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider block mb-1">
-                                    Key Career Roles:
-                                  </span>
-                                  <div className="flex flex-wrap gap-1">
-                                    {item.careers.map((career, idx) => (
-                                      <span
-                                        key={idx}
-                                        className="px-2 py-0.5 rounded text-[10px] bg-[#12121A] text-[#E2E2EC] border border-[#2B2B3C]"
-                                      >
-                                        {career}
-                                      </span>
-                                    ))}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                              {cat.exams.map((exam, idx) => (
+                                <div
+                                  key={idx}
+                                  className="p-2.5 rounded-xl bg-[#181826] border border-[#262638] hover:border-[#3E3E56] hover:bg-[#1B1B2A] transition-all flex flex-col justify-between gap-1 group"
+                                  style={{ borderLeftColor: cat.color, borderLeftWidth: "3px" }}
+                                >
+                                  <div className="flex items-center justify-between gap-1.5">
+                                    <span className="font-extrabold text-xs tracking-tight text-white group-hover:text-blue-300 transition-colors">
+                                      {exam.name}
+                                    </span>
+                                    <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/5 text-[#A6A6BC] font-semibold border border-white/10 shrink-0">
+                                      {exam.badge}
+                                    </span>
                                   </div>
+                                  <p className="text-[11px] text-[#A6A6BC] flex items-center gap-1">
+                                    <span className="text-[#6E6E82] shrink-0">—</span>
+                                    <span className="truncate">{exam.target}</span>
+                                  </p>
                                 </div>
-                              </motion.div>
-                            )}
-                          </motion.div>
-                        );
-                      })}
-                  </AnimatePresence>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </motion.div>
+                )
+              )}
+
+              {/* POST-DEGREE OPTIONS (Only shown when Entrance Exams is NOT expanded) */}
+              {!isDegreeExamsExpanded && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-[#161622] border border-[#2B2B3C] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-white text-base">
+                        {currentStage === "b_tech"
+                          ? "Post-Degree & Career Milestones"
+                          : "Graduation & Degree Pathways"}
+                      </h3>
+                      <p className="text-xs text-[#8E8E9C] mt-0.5">
+                        {activeDegreeOption
+                          ? "Click the active card again or 'Show All' to restore other options."
+                          : currentStage === "b_tech"
+                          ? "Specialized post-undergrad pathways: Higher studies, tech corporate placements, civil services, and research:"
+                          : "Preview undergraduate degree trajectories and future outcomes after 10+2:"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`grid transition-all duration-300 ${
+                      activeDegreeOption ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 gap-3"
+                    }`}
+                  >
+                    <AnimatePresence>
+                      {DEGREE_OPTIONS
+                        .filter((item) => !activeDegreeOption || activeDegreeOption === item.id)
+                        .map((item) => {
+                          const isSelected = activeDegreeOption === item.id;
+                          return (
+                            <motion.div
+                              key={item.id}
+                              layout
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.85, height: 0 }}
+                              transition={{ duration: 0.25 }}
+                              onClick={() => setActiveDegreeOption(isSelected ? null : item.id)}
+                              className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
+                                isSelected
+                                  ? "border-blue-400 bg-[#1A1A2A] shadow-lg ring-1 ring-blue-400/50"
+                                  : "border-[#2B2B3C] bg-[#181826] hover:border-[#3E3E56]"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-sm" style={{ color: item.color }}>
+                                  {item.title}
+                                </span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/10 text-white">
+                                    {item.badge}
+                                  </span>
+                                  <ChevronDown
+                                    className={`w-4 h-4 text-[#8E8E9C] transition-transform duration-200 ${
+                                      isSelected ? "rotate-180 text-blue-400" : ""
+                                    }`}
+                                  />
+                                </div>
+                              </div>
+                              <p className="text-[11px] text-[#8E8E9C] mt-1">{item.desc}</p>
+
+                              {isSelected && (
+                                <motion.div
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  className="mt-3 pt-3 border-t border-[#26263A] space-y-2.5"
+                                >
+                                  <div>
+                                    <span className="text-[10px] font-bold text-blue-300 uppercase tracking-wider block mb-1">
+                                      Pathway Focus Areas:
+                                    </span>
+                                    <ul className="text-[11px] text-[#A6A6BC] space-y-1">
+                                      {item.highlights.map((h, idx) => (
+                                        <li key={idx} className="flex items-center gap-1.5">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
+                                          <span>{h}</span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+
+                                  <div>
+                                    <span className="text-[10px] font-bold text-emerald-300 uppercase tracking-wider block mb-1">
+                                      Key Career Roles:
+                                    </span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {item.careers.map((career, idx) => (
+                                        <span
+                                          key={idx}
+                                          className="px-2 py-0.5 rounded text-[10px] bg-[#12121A] text-[#E2E2EC] border border-[#2B2B3C]"
+                                        >
+                                          {career}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </motion.div>
+                          );
+                        })}
+                    </AnimatePresence>
+                  </div>
                 </div>
-              </div>
+              )}
             </motion.div>
           )}
 

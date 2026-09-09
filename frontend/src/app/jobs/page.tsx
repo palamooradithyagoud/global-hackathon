@@ -68,6 +68,8 @@ function JobsPageContent() {
   const [joobleJobs, setJoobleJobs] = useState<MatchedJoobleJob[]>([]);
   const [isJoobleLoading, setIsJoobleLoading] = useState<boolean>(false);
   const [joobleTotalCount, setJoobleTotalCount] = useState<number>(0);
+  const [jooblePage, setJooblePage] = useState<number>(1);
+  const [refreshNotice, setRefreshNotice] = useState<string | null>(null);
 
   // Job Fit & Skill Gap Engine Modal State
   const [selectedJobForFit, setSelectedJobForFit] = useState<any | null>(null);
@@ -75,7 +77,7 @@ function JobsPageContent() {
 
   // Load Jooble jobs from backend
   const fetchJoobleJobs = useCallback(
-    async (sId?: string | null, customKeywords?: string) => {
+    async (sId?: string | null, customKeywords?: string, pageNum: number = 1) => {
       setIsJoobleLoading(true);
       try {
         const queryKeywords =
@@ -87,7 +89,7 @@ function JobsPageContent() {
           studentId: sId || undefined,
           keywords: queryKeywords,
           location: "India",
-          page: 1
+          page: pageNum
         });
 
         if (res && res.jobs) {
@@ -102,6 +104,14 @@ function JobsPageContent() {
     },
     []
   );
+
+  const handleRefreshJobs = async () => {
+    const nextPage = (jooblePage % 10) + 1;
+    setJooblePage(nextPage);
+    await fetchJoobleJobs(studentId, selectedPill, nextPage);
+    setRefreshNotice(`Fetched fresh page ${nextPage} from Jooble & stored in database!`);
+    setTimeout(() => setRefreshNotice(null), 4000);
+  };
 
   // Authoritatively resolve student profile to match Age, Skills, and Education
   useEffect(() => {
@@ -383,13 +393,13 @@ function JobsPageContent() {
               <button
                 suppressHydrationWarning
                 type="button"
-                onClick={() => fetchJoobleJobs(studentId, selectedPill)}
+                onClick={handleRefreshJobs}
                 disabled={isJoobleLoading}
-                className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-[#1D1D2C] hover:bg-[#252538] border border-[#2F2F45] text-blue-300 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-                title="Refresh Live Jooble Feed"
+                className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-[#1D1D2C] hover:bg-[#252538] border border-[#2F2F45] text-blue-300 flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 shadow-sm"
+                title="Fetch new live jobs from Jooble and store in database"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isJoobleLoading ? "animate-spin" : ""}`} />
-                <span className="hidden sm:inline">Refresh</span>
+                <span>{isJoobleLoading ? "Fetching..." : "Fetch New Jobs"}</span>
               </button>
             )}
             <span className="text-xs font-mono font-bold text-white px-3 py-1.5 rounded-xl bg-[#1A1A28] border border-[#2C2C40] whitespace-nowrap">
@@ -397,6 +407,13 @@ function JobsPageContent() {
             </span>
           </div>
         </div>
+
+        {refreshNotice && (
+          <div className="p-3 rounded-xl bg-blue-950/40 border border-blue-800/40 text-xs text-blue-200 flex items-center gap-2 animate-fadeIn">
+            <Sparkles className="w-4 h-4 text-cyan-400 shrink-0" />
+            <span>{refreshNotice}</span>
+          </div>
+        )}
 
         {/* B.Tech Sector Filter Tabs (Private Sector Jooble vs PSU/GATE vs All) */}
         {activeStage === "b_tech" && (

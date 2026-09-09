@@ -69,8 +69,9 @@ In your Railway project service view, navigate to the **"Variables"** tab and ad
 | `ENVIRONMENT` | `production` | Production environment flag |
 | `GROQ_API_KEY` | `gsk_...` | Groq API Key for AI profile extraction & fit scoring |
 | `GROQ_MODEL` | `qwen/qwen3.8-27b` | AI model identifier |
-| `JOOBLE_API_KEY` | `32197298-2cb7-41f1-84ab-27595953ea45` | Jooble API Key for live jobs |
+| `JOOBLE_API_KEY` | `your_jooble_api_key_here` | Jooble API Key for live jobs |
 | `JOOBLE_API_URL` | `https://jooble.org/api` | Jooble API Base Endpoint |
+| `YOUTUBE_API_KEY` | `your_youtube_api_key_here` | YouTube Data API v3 Key for playlists & lectures |
 
 > [!NOTE]
 > `PORT` is automatically generated and injected by Railway at runtime. The Dockerfile and `railway.json` automatically bind uvicorn to `0.0.0.0:$PORT`.

@@ -21,10 +21,13 @@ import {
   ChevronRight,
   TrendingUp,
   Cpu,
-  UserCheck
+  UserCheck,
+  BookmarkPlus,
+  Check
 } from "lucide-react";
 import { JobFitAnalysisResult, SkillGapItem, PriorityGap, LearningStep } from "@/lib/jobData";
 import { api } from "@/lib/api";
+import { saveRoadmap, isRoadmapSaved, SavedSkillRoadmap } from "@/lib/roadmapStorage";
 
 interface JobFitModalProps {
   job: any | null;
@@ -43,13 +46,18 @@ export default function JobFitModal({
   const [analysisResult, setAnalysisResult] = useState<JobFitAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !job) {
       setAnalysisResult(null);
       setError(null);
+      setIsSaved(false);
       return;
     }
+
+    const jobId = String(job.id || job.external_id || "");
+    setIsSaved(isRoadmapSaved(jobId));
 
     let isMounted = true;
 
@@ -108,6 +116,73 @@ export default function JobFitModal({
         <span>Major Skill Gaps</span>
       </span>
     );
+  };
+
+  const handleSaveRoadmap = () => {
+    if (!job) return;
+    const jobId = String(job.id || job.external_id || `job-${Date.now()}`);
+
+    // WHAT SKILLS I HAVE
+    const skillsIHave: string[] = [];
+    if (analysis?.matched_skills && analysis.matched_skills.length > 0) {
+      analysis.matched_skills.forEach((m: any) => {
+        skillsIHave.push(`${m.skill}${m.level_label ? ` (${m.level_label})` : ""}`);
+      });
+    } else if (aiInsight?.strengths && aiInsight.strengths.length > 0) {
+      aiInsight.strengths.forEach((str: string) => skillsIHave.push(str));
+    } else {
+      skillsIHave.push("Baseline profile match");
+    }
+
+    // WHAT TO LEARN
+    const missingSkills = (analysis?.missing_skills || []).map((m: any) =>
+      `${m.skill}${m.required_level_label ? ` (${m.required_level_label})` : ""}`
+    );
+    const needsDevelopment = (analysis?.partial_skills || []).map((p: any) =>
+      `${p.skill} (Lvl ${p.student_level} → ${p.required_level})`
+    );
+
+    // ALL JOB REQUIREMENTS
+    const allRequiredSkills: string[] = [];
+    (analysis?.matched_skills || []).forEach((m: any) => {
+      allRequiredSkills.push(`${m.skill}${m.required_level_label ? ` (${m.required_level_label})` : ""}`);
+    });
+    (analysis?.partial_skills || []).forEach((p: any) => {
+      allRequiredSkills.push(`${p.skill} (Required Lvl: ${p.required_level})`);
+    });
+    (analysis?.missing_skills || []).forEach((m: any) => {
+      allRequiredSkills.push(`${m.skill}${m.required_level_label ? ` (${m.required_level_label})` : ""}`);
+    });
+
+    const roadmap: SavedSkillRoadmap = {
+      id: jobId,
+      savedAt: new Date().toISOString(),
+      job: {
+        title: job.title || "Career Role",
+        company: job.company || "Hiring Partner",
+        location: job.location || "India",
+        salary: job.salary || "Competitive / Industry Standard",
+        applyLink: job.apply_link || job.source_url || "https://jooble.org",
+        description: job.description || undefined,
+      },
+      skillsIHave,
+      requirements: {
+        allRequiredSkills: allRequiredSkills.length > 0 ? allRequiredSkills : (job.skills || []),
+        missingSkills,
+        needsDevelopment,
+        learningSteps: aiInsight?.learning_plan || [],
+        projectRecommendation: aiInsight?.project_recommendation || undefined,
+      },
+      whatToLearn: {
+        missingSkills,
+        needsDevelopment,
+        learningSteps: aiInsight?.learning_plan || [],
+        projectRecommendation: aiInsight?.project_recommendation || undefined,
+      },
+    };
+
+    saveRoadmap(roadmap);
+    setIsSaved(true);
   };
 
   return (
@@ -432,13 +507,30 @@ export default function JobFitModal({
               <button
                 type="button"
                 onClick={() => {
-                  onClose();
-                  router.push(studentId ? `/profile?student_id=${studentId}` : "/profile");
+                  if (!isSaved) {
+                    handleSaveRoadmap();
+                  } else {
+                    onClose();
+                    router.push(studentId ? `/dashboard/skill-tracks?student_id=${studentId}` : "/dashboard/skill-tracks");
+                  }
                 }}
-                className="px-5 py-2 rounded-full bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-extrabold shadow-lg shadow-purple-500/25 flex items-center gap-1.5 transition-all hover:scale-105 cursor-pointer"
+                className={`px-5 py-2 rounded-full text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer shadow-lg ${
+                  isSaved
+                    ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/25"
+                    : "bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-purple-500/25 hover:scale-105"
+                }`}
               >
-                <span>Start Skill Roadmap</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                {isSaved ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-white" />
+                    <span>View in Skill Tracks →</span>
+                  </>
+                ) : (
+                  <>
+                    <BookmarkPlus className="w-3.5 h-3.5" />
+                    <span>Save Roadmap</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

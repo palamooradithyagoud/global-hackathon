@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     JOOBLE_API_KEY: str = os.getenv("JOOBLE_API_KEY", "")
     JOOBLE_API_URL: str = os.getenv("JOOBLE_API_URL", "https://jooble.org/api")
+    YOUTUBE_API_KEY: str = os.getenv("YOUTUBE_API_KEY", "")
 
     # CORS
     CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
