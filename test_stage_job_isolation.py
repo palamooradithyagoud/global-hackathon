@@ -27,7 +27,7 @@ def verify_stage_isolation():
         
     # 3. B.Tech Profile
     print("\n[Stage 3: B.Tech Undergraduate]")
-    print("  [OK] Private Sector Tab: Live Jooble API (Key: 32197298-2cb7-41f1-84ab-27595953ea45)")
+    print("  [OK] Private Sector Tab: Live Jooble API (Key configured in env)")
     print("  [OK] Location: Strictly 'India'")
     print("  [OK] PSU & GATE Tab: Executive Trainee / Engineer via GATE")
     print("  [OK] Match breakdown: 86%-98% Match based on Student Profile Skills")

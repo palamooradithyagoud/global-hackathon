@@ -153,14 +153,19 @@ export default function ProfileSectionModal({
   };
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 15 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="bg-[#13131B] border border-[#28283C] rounded-3xl p-5 sm:p-7 max-w-2xl w-full text-left space-y-5 shadow-2xl relative overflow-hidden my-auto max-h-[92vh] flex flex-col"
+    <>
+      <AnimatePresence>
+        <div
+          key="profile-section-modal-backdrop"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto"
         >
+          <motion.div
+            key="profile-section-modal-card"
+            initial={{ opacity: 0, scale: 0.95, y: 15 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            className="bg-[#13131B] border border-[#28283C] rounded-3xl p-5 sm:p-7 max-w-2xl w-full text-left space-y-5 shadow-2xl relative overflow-hidden my-auto max-h-[92vh] flex flex-col"
+          >
           {/* Subtle Ambient Glow */}
           <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-violet-600/15 blur-3xl pointer-events-none" />
 
@@ -404,9 +409,9 @@ export default function ProfileSectionModal({
                   </div>
                 ) : (
                   <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
-                    {stageScholarships.map((s) => (
+                    {stageScholarships.map((s, idx) => (
                       <div
-                        key={s.id}
+                        key={s.id || s.title || `stage-scholarship-${idx}`}
                         className="p-3.5 rounded-2xl bg-[#181826] hover:bg-[#1E1E30] border border-[#28283C] hover:border-[#383852] transition-all flex items-center justify-between gap-3 group"
                       >
                         <div className="space-y-1 min-w-0 flex-1">
@@ -481,9 +486,9 @@ export default function ProfileSectionModal({
                 </div>
 
                 <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
-                  {getJobsForStage(activeStage).map((job) => (
+                  {getJobsForStage(activeStage).map((job, idx) => (
                     <div
-                      key={job.id}
+                      key={job.id || job.title || `stage-job-${idx}`}
                       className="p-3.5 rounded-2xl bg-[#181826] hover:bg-[#1E1E30] border border-[#28283C] hover:border-amber-500/40 transition-all space-y-2"
                     >
                       <div className="flex items-center justify-between gap-2">
@@ -552,13 +557,15 @@ export default function ProfileSectionModal({
           </div>
         </motion.div>
       </div>
-
-      <CreateAccountModal
-        isOpen={isCreateAccountOpen}
-        onClose={() => setIsCreateAccountOpen(false)}
-        onSuccess={handleAccountCreated}
-        initialStage={activeStage}
-      />
     </AnimatePresence>
-  );
+
+    <CreateAccountModal
+      key="profile-section-create-account-modal"
+      isOpen={isCreateAccountOpen}
+      onClose={() => setIsCreateAccountOpen(false)}
+      onSuccess={handleAccountCreated}
+      initialStage={activeStage}
+    />
+  </>
+);
 }

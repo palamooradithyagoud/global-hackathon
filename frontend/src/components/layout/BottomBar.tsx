@@ -8,15 +8,19 @@ export default function BottomBar() {
   const pathname = usePathname();
   const router = useRouter();
   const [studentId, setStudentId] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [hasActiveModal, setHasActiveModal] = useState<boolean>(false);
 
+  // Check login state
   useEffect(() => {
     const checkSession = () => {
       try {
         const saved = localStorage.getItem("skillcatalyst_session");
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed?.student_id) {
-            setStudentId(parsed.student_id);
+          if (parsed?.token || parsed?.student_id || parsed?.email) {
+            setStudentId(parsed.student_id || null);
+            setIsLoggedIn(true);
             return;
           }
         }
@@ -24,36 +28,73 @@ export default function BottomBar() {
         // ignore
       }
       setStudentId(null);
+      setIsLoggedIn(false);
     };
 
     checkSession();
+    window.addEventListener("storage", checkSession);
+    return () => window.removeEventListener("storage", checkSession);
   }, [pathname]);
 
-  // Hide on login screen if appropriate
-  if (pathname === "/login") return null;
+  // Detect if any modal or full-screen dialog is currently open in the DOM
+  useEffect(() => {
+    const detectModal = () => {
+      // Any fixed modal backdrop
+      const modalElement = document.querySelector(".fixed.inset-0.z-50, [role='dialog']");
+      setHasActiveModal(!!modalElement);
+    };
 
-  const isOnboarding = pathname.startsWith("/onboarding");
-  const isProfile = pathname.startsWith("/profile");
-  const isDashboardOverview = pathname === "/dashboard";
-  const isScholarshipsOverview = pathname === "/scholarships";
-  const isLanding = pathname === "/";
+    detectModal();
 
-  // Home is active on dashboard/scholarship/landing pages, Hub is active on profile & onboarding
-  const isHubActive = isProfile || isOnboarding;
+    const observer = new MutationObserver(() => {
+      detectModal();
+    });
+
+    if (typeof document !== "undefined" && document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  // Only show the bottom navigation bar after the user has logged in
+  if (!isLoggedIn) return null;
+
+  if (!pathname) return null;
+
+  // Never show bottom bar when any modal/overlay is open
+  if (hasActiveModal) return null;
+
+  const cleanPath = pathname.toLowerCase().replace(/\/+$/, "") || "/";
+
+  // STRICT: Only show on the primary sections to allow switching between sections.
+  // Explicitly excluded from /jobs, /scholarships/details, /onboarding, /login, /signup, etc.
+  const isSectionOverview =
+    cleanPath === "/dashboard" ||
+    cleanPath === "/scholarships" ||
+    cleanPath === "/profile";
+
+  if (!isSectionOverview) return null;
+
+  const isProfile = cleanPath.startsWith("/profile");
+  const isDashboardOverview = cleanPath === "/dashboard";
+  const isScholarshipsOverview = cleanPath === "/scholarships";
+
+  // Home is active on dashboard/scholarship pages, Hub is active on profile
+  const isHubActive = isProfile;
   const isHomeActive = !isHubActive;
 
   const handleGoHome = () => {
     // If already on overview, smoothly scroll up
-    if (isDashboardOverview || isScholarshipsOverview || isLanding) {
+    if (isDashboardOverview || isScholarshipsOverview) {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
 
-    // If on subpage or onboarding, navigate back to overview / home page
     if (studentId) {
       router.push(`/dashboard?student_id=${studentId}`);
     } else {
-      router.push("/scholarships");
+      router.push("/dashboard");
     }
   };
 
@@ -70,7 +111,7 @@ export default function BottomBar() {
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 select-none">
+    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-30 select-none">
       <div className="bg-[#12121A]/95 backdrop-blur-xl border border-[#2B2B3C] rounded-full p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.8)] flex items-center gap-1.5">
         {/* Left Side: Home Button */}
         <button
@@ -81,13 +122,13 @@ export default function BottomBar() {
               ? "bg-white text-black shadow-lg scale-[1.02]"
               : "bg-transparent text-[#8E8E9C] hover:text-white hover:bg-white/10"
           }`}
-          title="Go to Home"
+          title="Go to Home / Dashboard"
           aria-label="Home"
         >
           <Home className="w-5 h-5 stroke-[2.2]" />
         </button>
 
-        {/* Right Side: Hub / Profile Button with reference 3-node connected network icon */}
+        {/* Right Side: Hub / Profile Button */}
         <button
           type="button"
           onClick={handleGoHub}
@@ -96,7 +137,7 @@ export default function BottomBar() {
               ? "bg-white text-black shadow-lg scale-[1.02]"
               : "bg-transparent text-[#8E8E9C] hover:text-white hover:bg-white/10"
           }`}
-          title="Build / View Student Profile"
+          title="View Student Profile Section"
           aria-label="Profile Hub"
         >
           <svg

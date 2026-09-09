@@ -160,11 +160,21 @@ class JoobleService:
             raw_items = FALLBACK_JOBS
             total_count = len(FALLBACK_JOBS)
 
-        # Normalize and persist jobs
-        normalized_jobs = []
-        for item in raw_items:
-            ext_id = str(item.get("id") or "")
-            if not ext_id:
+        # Collect valid items with an id
+        valid_items = [item for item in raw_items if item.get("id")]
+        ext_ids = [str(item.get("id")) for item in valid_items]
+
+        # Fast single query for existing jobs in database
+        existing_jobs_map: Dict[str, Job] = {}
+        if ext_ids:
+            found_jobs = db.query(Job).filter(Job.external_id.in_(ext_ids)).all()
+            for fj in found_jobs:
+                existing_jobs_map[fj.external_id] = fj
+
+        new_jobs_to_insert = []
+        for item in valid_items:
+            ext_id = str(item.get("id"))
+            if ext_id in existing_jobs_map:
                 continue
 
             title = item.get("title", "").strip()
@@ -177,43 +187,76 @@ class JoobleService:
             apply_link = item.get("link") or "https://jooble.org"
             source = item.get("source") or "jooble.org"
 
-            # Extract normalized skills from title & snippet
             extracted_skills = extract_skills_from_text(title, snippet)
 
-            # Check if job already exists in DB
-            db_job = db.query(Job).filter(Job.external_id == ext_id).first()
-            if not db_job:
-                db_job = Job(
-                    external_id=ext_id,
-                    title=title,
-                    company=company,
-                    location=job_loc,
-                    description=snippet,
-                    salary_min=sal_min,
-                    salary_max=sal_max,
-                    salary_raw=salary_raw,
-                    employment_type=job_type,
-                    source=source,
-                    source_url=apply_link,
-                    required_skills_json=json.dumps(extracted_skills),
-                    posted_at=datetime.utcnow()
-                )
-                db.add(db_job)
-                try:
-                    db.commit()
-                    db.refresh(db_job)
-                except Exception:
-                    db.rollback()
-                    db_job = db.query(Job).filter(Job.external_id == ext_id).first()
+            db_job = Job(
+                external_id=ext_id,
+                title=title,
+                company=company,
+                location=job_loc,
+                description=snippet,
+                salary_min=sal_min,
+                salary_max=sal_max,
+                salary_raw=salary_raw,
+                employment_type=job_type,
+                source=source,
+                source_url=apply_link,
+                required_skills_json=json.dumps(extracted_skills),
+                posted_at=datetime.utcnow()
+            )
+            new_jobs_to_insert.append(db_job)
+            db.add(db_job)
 
-            job_dict = self.job_model_to_dict(db_job, extracted_skills)
-            normalized_jobs.append(job_dict)
+        if new_jobs_to_insert:
+            try:
+                db.commit()
+                for job_obj in new_jobs_to_insert:
+                    db.refresh(job_obj)
+                    existing_jobs_map[job_obj.external_id] = job_obj
+            except Exception as exc:
+                db.rollback()
+                logger.warning(f"Failed to batch commit new Jooble jobs: {exc}")
+                found_jobs = db.query(Job).filter(Job.external_id.in_(ext_ids)).all()
+                for fj in found_jobs:
+                    existing_jobs_map[fj.external_id] = fj
+
+        # Build normalized response for all returned items
+        normalized_jobs = []
+        for item in valid_items:
+            ext_id = str(item.get("id"))
+            job_obj = existing_jobs_map.get(ext_id)
+            if job_obj:
+                job_dict = self.job_model_to_dict(job_obj)
+                normalized_jobs.append(job_dict)
+            else:
+                title = item.get("title", "").strip()
+                snippet = clean_html_snippet(item.get("snippet", ""))
+                extracted = extract_skills_from_text(title, snippet)
+                normalized_jobs.append({
+                    "id": ext_id,
+                    "external_id": ext_id,
+                    "title": title,
+                    "company": item.get("company", "Tech Enterprise").strip(),
+                    "location": item.get("location") or location or "India",
+                    "description": snippet,
+                    "snippet": snippet,
+                    "salary": item.get("salary") or "Competitive Package / Industry Standard",
+                    "employment_type": item.get("type") or "Full-time",
+                    "experience_required": "0-2 years (Freshers / B.Tech)",
+                    "source": item.get("source") or "jooble.org",
+                    "apply_link": item.get("link") or "https://jooble.org",
+                    "required_skills": extracted,
+                    "matched_skills": [s["skill"] for s in extracted[:3]],
+                    "posted_at": datetime.utcnow().isoformat(),
+                    "is_live_jooble": True
+                })
 
         return {
             "total_count": total_count,
             "page": page,
             "location": location,
             "keyword": keyword,
+            "new_jobs_persisted": len(new_jobs_to_insert),
             "jobs": normalized_jobs
         }
 

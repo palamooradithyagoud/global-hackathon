@@ -28,6 +28,7 @@ export default function Navbar() {
     localStorage.removeItem("skillcatalyst_session");
     localStorage.removeItem("skillcatalyst_profile");
     setUserName(null);
+    window.dispatchEvent(new Event("storage"));
     router.push("/login");
   };
 
