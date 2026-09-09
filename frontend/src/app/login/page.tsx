@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import { ArrowRight, Loader2, Sparkles, ShieldCheck, AlertCircle, ArrowUpRight, Lock, Mail } from "lucide-react";
+import AscendLogo from "@/components/common/AscendLogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -79,17 +80,14 @@ export default function LoginPage() {
         {/* Ambient top-right glow */}
         <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-violet-600/15 blur-2xl pointer-events-none" />
 
-        {/* User Avatar & Greeting matching reference "Welcome back" */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 via-pink-500 to-violet-600 p-[2px]">
-            <div className="w-full h-full rounded-full bg-[#14141C] flex items-center justify-center text-white font-bold text-sm">
-              AW
-            </div>
-          </div>
+        {/* ASCEND Logo & Greeting matching reference */}
+        <div className="flex items-center gap-3.5 mb-6">
+          <AscendLogo size="md" variant="icon" />
           <div>
             <span className="text-xs text-[#8E8E9C] block">Welcome back</span>
-            <h1 className="text-xl font-bold text-white tracking-tight">
-              Sign In to SkillCatalyst
+            <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-1.5">
+              <span>Sign In to</span>
+              <span className="text-amber-400">ASCEND</span>
             </h1>
           </div>
         </div>

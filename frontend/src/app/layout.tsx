@@ -4,9 +4,13 @@ import Navbar from "@/components/layout/Navbar";
 import BottomBar from "@/components/layout/BottomBar";
 
 export const metadata: Metadata = {
-  title: "SkillCatalyst — Student Career & Education Intelligence",
+  title: "ASCEND — Student Career & Education Intelligence",
   description:
     "An AI-powered student career and education navigation platform mapping verified profiles to curated scholarships and institutional pathways.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/ascend-icon.png",
+  },
 };
 
 export default function RootLayout({

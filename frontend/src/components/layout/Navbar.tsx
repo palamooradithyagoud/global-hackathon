@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Compass, Sparkles, User, LogOut, ArrowUpRight } from "lucide-react";
 
+import AscendLogo from "@/components/common/AscendLogo";
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -32,21 +34,12 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-40 w-full bg-[#0C0C10]/85 backdrop-blur-md border-b border-[#20202C]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        {/* Brand with 3D gradient dot */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 via-pink-500 to-amber-400 p-[1px] shadow-sm">
-            <div className="w-full h-full rounded-full bg-[#0C0C10] flex items-center justify-center">
-              <Compass className="w-4 h-4 text-violet-400 group-hover:rotate-45 transition-transform duration-300" />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-base tracking-tight text-white">
-              SkillCatalyst
-            </span>
-            <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300">
-              Phase 1.1
-            </span>
-          </div>
+        {/* Brand with ASCEND Logo */}
+        <Link href="/" className="flex items-center gap-2 group">
+          <AscendLogo size="sm" showText={true} />
+          <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300">
+            Phase 1.1
+          </span>
         </Link>
 
         {/* Center Pill Navigation */}

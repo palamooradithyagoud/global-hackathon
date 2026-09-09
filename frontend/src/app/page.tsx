@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Compass, Sparkles, Award } from "lucide-react";
+import AscendLogo from "@/components/common/AscendLogo";
 
 export default function LandingPage() {
   return (
@@ -17,9 +18,10 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold bg-[#181824] border border-[#2B2B3C] text-violet-300 mb-6 shadow-xs"
+            className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full text-xs font-semibold bg-[#181824] border border-[#2B2B3C] text-amber-300 mb-6 shadow-xs"
           >
-            <span className="w-2 h-2 rounded-full bg-gradient-to-r from-violet-500 to-pink-500 animate-pulse" />
+            <AscendLogo size="xs" variant="icon" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
             <span>Phase 1.1 · Student Onboarding & Intelligence Profile</span>
           </motion.div>
 
@@ -31,7 +33,7 @@ export default function LandingPage() {
             className="text-4xl sm:text-6xl font-bold tracking-tight text-white leading-[1.08] mb-6"
           >
             Your career journey, <br />
-            <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-amber-300 via-violet-400 to-pink-400 bg-clip-text text-transparent">
               intelligently
             </span>{" "}
             navigated.
@@ -43,10 +45,10 @@ export default function LandingPage() {
             transition={{ duration: 0.4, delay: 0.2 }}
             className="text-base sm:text-lg text-[#8E8E9C] leading-relaxed mb-10 max-w-xl"
           >
-            SkillCatalyst creates a structured intelligence profile of who you are—adapting whether you are in
+            <strong className="text-white font-semibold">ASCEND</strong> creates a structured intelligence profile of who you are—adapting whether you are in
             <strong className="text-white font-medium"> Class 10</strong>,
             <strong className="text-white font-medium"> Intermediate</strong>, or
-            <strong className="text-white font-medium"> B.Tech</strong>—and directly matches you to vetted institutional scholarships and career opportunities.
+            <strong className="text-white font-medium"> B.Tech</strong>—and directly matches you to vetted institutional scholarships and career pathways.
           </motion.p>
 
           {/* Action Row with Reference Circular Progress Button */}
@@ -124,40 +126,19 @@ export default function LandingPage() {
         >
           <div className="relative w-72 h-80 sm:w-88 sm:h-96 rounded-3xl bg-gradient-to-b from-[#181824] to-[#0E0E14] border border-[#262634] p-6 shadow-2xl flex flex-col justify-between overflow-hidden">
             {/* Ambient inner glow */}
-            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-amber-500/15 blur-3xl pointer-events-none" />
+            <div className="absolute -top-12 -right-12 w-48 h-48 rounded-full bg-amber-500/20 blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-12 -left-12 w-48 h-48 rounded-full bg-violet-600/20 blur-3xl pointer-events-none" />
 
-            {/* Fluid organic loop art */}
-            <div className="relative z-10 flex-1 flex items-center justify-center">
-              <svg viewBox="0 0 200 220" className="w-48 h-56 drop-shadow-2xl">
-                <defs>
-                  <linearGradient id="fluidLoop" x1="10%" y1="0%" x2="90%" y2="100%">
-                    <stop offset="0%" stopColor="#818CF8" />
-                    <stop offset="35%" stopColor="#C084FC" />
-                    <stop offset="65%" stopColor="#FB7185" />
-                    <stop offset="100%" stopColor="#FBBF24" />
-                  </linearGradient>
-                  <filter id="shadowGlow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#8B5CF6" floodOpacity="0.4" />
-                  </filter>
-                </defs>
-                {/* 3D Helix / Loop Path matching the reference screenshot */}
-                <path
-                  d="M 100 20 C 145 20 170 55 170 85 C 170 125 120 135 90 145 C 60 155 35 175 40 200 C 45 220 85 220 120 200 C 150 180 165 140 160 100"
-                  fill="none"
-                  stroke="url(#fluidLoop)"
-                  strokeWidth="32"
-                  strokeLinecap="round"
-                  filter="url(#shadowGlow)"
-                />
-              </svg>
+            {/* Ascend Logo Centerpiece Display */}
+            <div className="relative z-10 flex-1 flex flex-col items-center justify-center">
+              <AscendLogo size="2xl" variant="stacked" />
             </div>
 
             {/* Floating Info Pill inside preview */}
             <div className="relative z-10 bg-[#12121A]/90 backdrop-blur-md border border-[#2B2B3C] rounded-xl p-3 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-violet-400 font-semibold uppercase tracking-wider block">
-                  Intelligence Metric
+                <span className="text-[10px] text-amber-400 font-semibold uppercase tracking-wider block">
+                  ASCEND Platform
                 </span>
                 <span className="text-xs font-bold text-white">Stage-Aware Opportunity Matching</span>
               </div>
