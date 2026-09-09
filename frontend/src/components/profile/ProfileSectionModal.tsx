@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { StudentProfile, EducationStage, Scholarship, PersonalizedScholarship } from "@/types";
 import { api } from "@/lib/api";
 import { STAGE_CONFIGS, isOpportunityStrictlyEligible } from "@/lib/stageIsolation";
+import { getJobsForStage } from "@/lib/jobData";
 import {
   X,
   GraduationCap,
@@ -287,7 +288,9 @@ export default function ProfileSectionModal({
                 }`}
               >
                 <Briefcase className="w-3.5 h-3.5" />
-                <span>Jobs & Roadmaps (Scaffolded)</span>
+                <span>
+                  {activeStage === "class_10" ? "Govt Jobs (8)" : `Jobs (${getJobsForStage(activeStage).length})`}
+                </span>
               </button>
             </div>
 
@@ -353,45 +356,72 @@ export default function ProfileSectionModal({
               </div>
             )}
 
-            {/* Tab 2: Extensible Future Modules (Jobs & Career Roadmaps) */}
+            {/* Tab 2: Job Pathways Showcase */}
             {activeTab === "future_modules" && (
               <div className="space-y-3">
-                <div className="p-4 rounded-2xl bg-[#161622] border border-[#262638] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4 text-violet-400" />
-                      <span className="text-xs font-bold text-white">
-                        Jobs & Apprenticeships Isolation
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-bold text-violet-300 px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20">
-                      {currentConfig.modules.jobs.plannedPhase}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    <span>
+                      {activeStage === "class_10"
+                        ? "8 Verified Government Jobs for 10th Pass"
+                        : `${currentConfig.shortLabel} Job Pathways`}
                     </span>
-                  </div>
-                  <p className="text-xs text-[#A0A0B5] leading-relaxed">
-                    {currentConfig.modules.jobs.description}
-                  </p>
-                  <div className="text-[11px] text-[#6E6E85] pt-1 border-t border-[#202030] flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-[#8E8E9C]" />
-                    <span>Configured in stageIsolation.ts schema for clean zero-leak rollout.</span>
-                  </div>
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      router.push(`/jobs?stage=${activeStage}`);
+                    }}
+                    className="text-[11px] font-bold text-amber-300 hover:text-amber-200 flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Full Job Portal</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#161622] border border-[#262638] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Layers className="w-4 h-4 text-amber-400" />
-                      <span className="text-xs font-bold text-white">
-                        Internships & Fellowships Isolation
-                      </span>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                  {getJobsForStage(activeStage).map((job) => (
+                    <div
+                      key={job.id}
+                      className="p-3.5 rounded-2xl bg-[#181826] hover:bg-[#1E1E30] border border-[#28283C] hover:border-amber-500/40 transition-all space-y-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-xs sm:text-sm font-bold text-white">
+                            {job.title}
+                          </h4>
+                          <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                            {job.minEducation}
+                          </span>
+                        </div>
+                        {job.payScale && (
+                          <span className="text-[10px] font-mono text-white/80 bg-white/10 px-2 py-0.5 rounded-md">
+                            {job.payScale}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] text-[#A0A0C0] line-clamp-2">
+                        <strong>Requirements: </strong>{job.keyRequirements}
+                      </p>
+
+                      <div className="flex items-center justify-between pt-1 text-[10px] text-[#8E8E9C] border-t border-[#222234]">
+                        <span>Age: {job.ageLimit}</span>
+                        <a
+                          href={job.officialPortal || "https://ssc.gov.in"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-amber-300 hover:text-white font-semibold flex items-center gap-1"
+                        >
+                          <span>Portal</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     </div>
-                    <span className="text-[10px] font-bold text-amber-300 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                      {currentConfig.modules.internships.plannedPhase}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#A0A0B5] leading-relaxed">
-                    {currentConfig.modules.internships.description}
-                  </p>
+                  ))}
                 </div>
               </div>
             )}

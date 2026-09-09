@@ -11,6 +11,8 @@ import {
   filterByEducationStage,
   isOpportunityStrictlyEligible
 } from "@/lib/stageIsolation";
+import JobPathCards from "@/components/jobs/JobPathCards";
+import { getJobsForStage } from "@/lib/jobData";
 import {
   User,
   GraduationCap,
@@ -475,66 +477,38 @@ function ProfilePageContent() {
           </div>
         )}
 
-        {/* Tab 2: Future Modules Scaffolding (Jobs & Internships) */}
+        {/* Tab 2: Job Pathways Showcase */}
         {activeTab === "jobs" && (
-          <div className="space-y-4">
-            <div className="p-4 rounded-2xl bg-violet-950/20 border border-violet-800/30 flex items-start gap-3">
-              <Info className="w-5 h-5 text-violet-400 shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-white">
-                  Extensible Stage Isolation Engine Ready
-                </h4>
-                <p className="text-xs text-violet-200/80 leading-relaxed">
-                  Per system architecture, educational stage isolation is fully structured for jobs, internships, and skill roadmaps. As requested, jobs are strictly held for subsequent rollout phases while scholarships operate live today.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Jobs Card */}
-              <div className="p-6 rounded-3xl bg-[#14141E] border border-[#262638] space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Briefcase className="w-5 h-5 text-violet-400" />
-                    <h3 className="text-sm font-bold text-white">
-                      {currentStageConfig.shortLabel} Employment & Apprenticeship Track
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-bold text-violet-300 px-2.5 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20">
-                    {currentStageConfig.modules.jobs.plannedPhase}
-                  </span>
-                </div>
-                <p className="text-xs text-[#A0A0B5] leading-relaxed">
-                  {currentStageConfig.modules.jobs.description}
-                </p>
-                <div className="pt-2 text-[11px] text-[#6E6E85] flex items-center gap-1.5 border-t border-[#202030]">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Isolation key: eligible_stages = [&quot;{activeStage}&quot;]</span>
+          <div className="space-y-6">
+            <div className="p-4 rounded-2xl bg-amber-950/20 border border-amber-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-white">
+                    {activeStage === "class_10"
+                      ? "Class 10th Government Job Pathways (8 Verified)"
+                      : `${currentStageConfig.shortLabel} Career & Employment Tracks`}
+                  </h4>
+                  <p className="text-xs text-amber-200/80 leading-relaxed">
+                    {activeStage === "class_10"
+                      ? "Official public sector posts open for candidates with 10th Pass minimum qualification (SSC MTS, Havaldar, GDS, Railways, Police, etc.)."
+                      : `Stage-isolated employment tracks and examinations customized for ${currentStageConfig.label}.`}
+                  </p>
                 </div>
               </div>
 
-              {/* Internships Card */}
-              <div className="p-6 rounded-3xl bg-[#14141E] border border-[#262638] space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-5 h-5 text-amber-400" />
-                    <h3 className="text-sm font-bold text-white">
-                      {currentStageConfig.shortLabel} Internships & Research Fellowships
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-bold text-amber-300 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                    {currentStageConfig.modules.internships.plannedPhase}
-                  </span>
-                </div>
-                <p className="text-xs text-[#A0A0B5] leading-relaxed">
-                  {currentStageConfig.modules.internships.description}
-                </p>
-                <div className="pt-2 text-[11px] text-[#6E6E85] flex items-center gap-1.5 border-t border-[#202030]">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Isolation key: eligible_stages = [&quot;{activeStage}&quot;]</span>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => router.push(`/jobs?stage=${activeStage}`)}
+                className="px-4 py-2 rounded-full bg-white text-black text-xs font-bold hover:bg-neutral-200 transition-all flex items-center justify-center gap-1.5 shrink-0 shadow-md cursor-pointer"
+              >
+                <span>View Full Job Portal</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
+
+            {/* Render Job Cards */}
+            <JobPathCards jobs={getJobsForStage(activeStage)} />
           </div>
         )}
 

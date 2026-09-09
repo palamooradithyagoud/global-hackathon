@@ -90,7 +90,8 @@ function DashboardContent() {
     if (card === "scholarships") {
       router.push(studentId ? `/dashboard/scholarships?student_id=${studentId}` : "/dashboard/scholarships");
     } else if (card === "job") {
-      setModalCategory("Job & Internship Pathways");
+      const stage = profile?.education_stage || "class_10";
+      router.push(`/jobs?stage=${stage}`);
     } else if (card === "learning") {
       setModalCategory("Skill & Learning Tracks");
     } else if (card === "explore") {

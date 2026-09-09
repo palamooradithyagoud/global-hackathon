@@ -69,7 +69,7 @@ export default function ScholarshipsPreviewPage() {
     if (card === "scholarships") {
       router.push("/scholarships/details");
     } else if (card === "job") {
-      setModalCategory("Job & Internship Pathways");
+      router.push(`/jobs?stage=${educationStage || "class_10"}`);
     } else if (card === "learning") {
       setModalCategory("Skill & Learning Tracks");
     } else if (card === "explore") {
