@@ -11,6 +11,7 @@ from backend.app.models.profile import (
     Scholarship
 )
 from backend.app.models.job import Job
+from backend.app.models.assistant import AssistantMessage, AssistantMemory
 from backend.app.models.skill_track import SkillTrack
 
 __all__ = [
@@ -25,6 +26,7 @@ __all__ = [
     "StudentFinancialContext",
     "Scholarship",
     "Job",
+    "AssistantMessage",
+    "AssistantMemory",
     "SkillTrack"
 ]
-
