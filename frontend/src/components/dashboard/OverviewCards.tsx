@@ -6,8 +6,8 @@ import { ArrowUpRight, Sparkles } from "lucide-react";
 
 interface OverviewCardsProps {
   scholarshipsCount: number;
-  selectedCard?: "scholarships" | "job" | "learning" | "explore";
-  onSelectCard: (card: "scholarships" | "job" | "learning" | "explore") => void;
+  selectedCard?: "scholarships" | "job" | "learning" | "explore" | "career";
+  onSelectCard: (card: "scholarships" | "job" | "learning" | "explore" | "career") => void;
 }
 
 export default function OverviewCards({
@@ -147,11 +147,11 @@ export default function OverviewCards({
         </div>
       </motion.div>
 
-      {/* 4. EXPLORE CARD (Soft Pastel Carnation Pink) */}
+      {/* 4. CAREER PATHWAYS CARD (Soft Pastel Carnation Pink) */}
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        onClick={() => onSelectCard("explore")}
+        onClick={() => onSelectCard("career")}
         className="relative h-48 sm:h-52 rounded-[28px] p-5 flex flex-col justify-between cursor-pointer overflow-hidden select-none shadow-xl group transition-shadow hover:shadow-2xl"
         style={{
           backgroundColor: "#FBCFE8",
@@ -172,7 +172,7 @@ export default function OverviewCards({
 
         <div className="flex items-center justify-between z-10">
           <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#831843]/20 text-[#500724] tracking-wide backdrop-blur-xs">
-            Explore
+            Pathways
           </span>
           <div className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center font-bold shadow-md transition-transform group-hover:scale-110">
             <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
@@ -181,10 +181,10 @@ export default function OverviewCards({
 
         <div className="z-10 mt-auto">
           <h3 className="font-extrabold text-xl sm:text-2xl text-[#500724] tracking-tight leading-none mb-1 group-hover:text-black transition-colors">
-            New Pathways
+            Career Pathways
           </h3>
           <p className="text-xs font-semibold text-[#700A38]/80">
-            Future Exploration
+            Interactive Career Map
           </p>
         </div>
       </motion.div>

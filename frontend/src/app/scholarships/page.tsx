@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api";
 import { Scholarship } from "@/types";
 import OverviewCards from "@/components/dashboard/OverviewCards";
+import CareerPathwaysModal from "@/components/dashboard/CareerPathwaysModal";
 import {
   Sparkles,
   HelpCircle,
@@ -30,6 +31,7 @@ export default function ScholarshipsPreviewPage() {
 
   // Modal state for Job, Learning, Explore placeholders
   const [modalCategory, setModalCategory] = useState<string | null>(null);
+  const [isCareerModalOpen, setIsCareerModalOpen] = useState(false);
 
   const [educationStage, setEducationStage] = useState<string | null>(null);
   const [studentId, setStudentId] = useState<string | null>(null);
@@ -65,15 +67,15 @@ export default function ScholarshipsPreviewPage() {
     fetchScholarships(educationStage);
   }, [educationStage]);
 
-  const handleSelectCard = (card: "scholarships" | "job" | "learning" | "explore") => {
+  const handleSelectCard = (card: "scholarships" | "job" | "learning" | "explore" | "career") => {
     if (card === "scholarships") {
       router.push("/scholarships/details");
     } else if (card === "job") {
       setModalCategory("Job & Internship Pathways");
     } else if (card === "learning") {
       setModalCategory("Skill & Learning Tracks");
-    } else if (card === "explore") {
-      setModalCategory("Future Educational Pathways");
+    } else if (card === "explore" || card === "career") {
+      setIsCareerModalOpen(true);
     }
   };
 
@@ -204,6 +206,13 @@ export default function ScholarshipsPreviewPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Career Pathways Interactive Roadmap Modal */}
+      <CareerPathwaysModal
+        isOpen={isCareerModalOpen}
+        onClose={() => setIsCareerModalOpen(false)}
+        educationStage={educationStage}
+      />
     </motion.div>
   );
 }

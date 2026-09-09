@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { StudentProfile, PersonalizedScholarship } from "@/types";
 import OverviewCards from "@/components/dashboard/OverviewCards";
 import ProfileSectionModal from "@/components/profile/ProfileSectionModal";
+import CareerPathwaysModal from "@/components/dashboard/CareerPathwaysModal";
 import {
   Loader2,
   AlertCircle,
@@ -31,8 +32,9 @@ function DashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isCareerModalOpen, setIsCareerModalOpen] = useState(false);
 
-  // Modal state for Job, Learning, Explore placeholders
+  // Modal state for Job, Learning placeholders
   const [modalCategory, setModalCategory] = useState<string | null>(null);
 
   useEffect(() => {
@@ -86,15 +88,15 @@ function DashboardContent() {
 
   // Handler for card selection:
   // Scholarships navigates to dedicated new page with animation!
-  const handleSelectCard = (card: "scholarships" | "job" | "learning" | "explore") => {
+  const handleSelectCard = (card: "scholarships" | "job" | "learning" | "explore" | "career") => {
     if (card === "scholarships") {
       router.push(studentId ? `/dashboard/scholarships?student_id=${studentId}` : "/dashboard/scholarships");
     } else if (card === "job") {
       setModalCategory("Job & Internship Pathways");
     } else if (card === "learning") {
       setModalCategory("Skill & Learning Tracks");
-    } else if (card === "explore") {
-      setModalCategory("Future Educational Pathways");
+    } else if (card === "explore" || card === "career") {
+      setIsCareerModalOpen(true);
     }
   };
 
@@ -280,6 +282,13 @@ function DashboardContent() {
           setStudentId(updated.id);
           loadData(updated.id);
         }}
+      />
+
+      {/* Career Pathways Interactive Roadmap Modal */}
+      <CareerPathwaysModal
+        isOpen={isCareerModalOpen}
+        onClose={() => setIsCareerModalOpen(false)}
+        educationStage={profile?.education_stage}
       />
     </motion.div>
   );
