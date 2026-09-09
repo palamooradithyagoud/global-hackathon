@@ -22,6 +22,7 @@ from backend.app.schemas.profile import (
     PersonalizedScholarshipResponse,
     DemoAuthRequest,
     LoginRequest,
+    RegisterRequest,
     AuthResponse
 )
 

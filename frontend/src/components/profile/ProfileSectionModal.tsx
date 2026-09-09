@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { StudentProfile, EducationStage, Scholarship, PersonalizedScholarship } from "@/types";
 import { api } from "@/lib/api";
 import { STAGE_CONFIGS, isOpportunityStrictlyEligible } from "@/lib/stageIsolation";
+import { getJobsForStage } from "@/lib/jobData";
 import {
   X,
   GraduationCap,
@@ -23,8 +24,10 @@ import {
   Calendar,
   ExternalLink,
   ChevronRight,
-  Filter
+  Filter,
+  UserPlus
 } from "lucide-react";
+import CreateAccountModal from "@/components/common/CreateAccountModal";
 
 interface ProfileSectionModalProps {
   isOpen: boolean;
@@ -41,19 +44,54 @@ export default function ProfileSectionModal({
 }: ProfileSectionModalProps) {
   const router = useRouter();
   const [isSwitching, setIsSwitching] = useState(false);
+  const [isCreateAccountOpen, setIsCreateAccountOpen] = useState(false);
   const [activeStage, setActiveStage] = useState<EducationStage>(
     profile?.education_stage || "b_tech"
   );
+  const [btechYear, setBtechYear] = useState<string>(
+    profile?.academic_profile?.year || "1st Year"
+  );
+  const [isUpdatingYear, setIsUpdatingYear] = useState(false);
   const [stageScholarships, setStageScholarships] = useState<Scholarship[]>([]);
   const [isLoadingScholarships, setIsLoadingScholarships] = useState(false);
   const [activeTab, setActiveTab] = useState<"scholarships" | "future_modules">("scholarships");
 
-  // Keep activeStage in sync when profile loads
+  // Keep activeStage & btechYear in sync when profile loads
   useEffect(() => {
     if (profile?.education_stage) {
       setActiveStage(profile.education_stage);
     }
-  }, [profile?.education_stage]);
+    if (profile?.academic_profile?.year) {
+      setBtechYear(profile.academic_profile.year);
+    }
+  }, [profile]);
+
+  const handleUpdateYear = async (newYear: string) => {
+    setBtechYear(newYear);
+    if (!profile?.id) return;
+    setIsUpdatingYear(true);
+    try {
+      const updated = await api.profile.update(profile.id, {
+        academic_profile: {
+          year: newYear,
+        },
+      });
+      if (onProfileUpdated) {
+        onProfileUpdated(updated);
+      }
+    } catch (err) {
+      console.error("Failed to update B.Tech year:", err);
+    } finally {
+      setIsUpdatingYear(false);
+    }
+  };
+
+  const handleAccountCreated = (session: any) => {
+    if (session.student_id) {
+      onClose();
+      router.push(`/profile?student_id=${session.student_id}`);
+    }
+  };
 
   // Fetch strictly isolated scholarships whenever activeStage changes
   useEffect(() => {
@@ -150,13 +188,26 @@ export default function ProfileSectionModal({
               </div>
             </div>
 
-            <button
-              onClick={onClose}
-              className="p-2 text-[#8E8E9C] hover:text-white rounded-full bg-[#1C1C28] hover:bg-[#262638] transition-colors cursor-pointer"
-              title="Close modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsCreateAccountOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/40 text-amber-300 text-xs font-bold transition-all cursor-pointer shadow-sm"
+                title="Create a new student account"
+              >
+                <UserPlus className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden sm:inline">Create Account</span>
+                <span className="sm:hidden">+ Account</span>
+              </button>
+
+              <button
+                onClick={onClose}
+                className="p-2 text-[#8E8E9C] hover:text-white rounded-full bg-[#1C1C28] hover:bg-[#262638] transition-colors cursor-pointer"
+                title="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* Scrollable Body */}
@@ -231,10 +282,56 @@ export default function ProfileSectionModal({
                 >
                   <span className="block text-xs sm:text-sm font-bold">B.Tech</span>
                   <span className="block text-[10px] mt-0.5 text-amber-400 font-medium">
-                    6 Scholarships
+                    15 Scholarships
                   </span>
                 </button>
               </div>
+
+              {/* B.Tech Year of Study selector when B.Tech is active */}
+              {activeStage === "b_tech" && (
+                <div className="pt-3 border-t border-[#26263A] mt-2 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                      <GraduationCap className="w-4 h-4 text-amber-400" />
+                      <span>B.Tech Year of Study:</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {isUpdatingYear && (
+                        <span className="text-[10px] text-amber-400 flex items-center gap-1">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>Saving...</span>
+                        </span>
+                      )}
+                      <span className="text-[11px] font-mono text-emerald-400 font-semibold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                        {btechYear}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {["1st Year", "2nd Year", "3rd Year", "4th Year"].map((yr) => {
+                      const isSelected = btechYear.toLowerCase().startsWith(yr.toLowerCase().slice(0, 3));
+                      return (
+                        <button
+                          key={yr}
+                          type="button"
+                          onClick={() => handleUpdateYear(yr)}
+                          disabled={isUpdatingYear}
+                          className={`py-2 px-1 rounded-xl text-center font-bold transition-all cursor-pointer border ${
+                            isSelected
+                              ? "bg-amber-400 text-black border-amber-300 shadow-sm font-extrabold ring-1 ring-amber-400"
+                              : "bg-[#12121B] text-white/80 border-[#2B2B3E] hover:bg-[#1D1D2C] hover:text-white"
+                          }`}
+                        >
+                          <span className="block text-xs">{yr}</span>
+                          <span className={`block text-[9px] mt-0.5 ${isSelected ? "text-black/80 font-medium" : "text-amber-400"}`}>
+                            {yr === "1st Year" ? "10 Schol." : "2 Schol."}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Stage Isolation Status Banner */}
@@ -287,7 +384,9 @@ export default function ProfileSectionModal({
                 }`}
               >
                 <Briefcase className="w-3.5 h-3.5" />
-                <span>Jobs & Roadmaps (Scaffolded)</span>
+                <span>
+                  {activeStage === "class_10" ? "Govt Jobs (8)" : `Jobs (${getJobsForStage(activeStage).length})`}
+                </span>
               </button>
             </div>
 
@@ -340,7 +439,9 @@ export default function ProfileSectionModal({
                         </div>
 
                         <a
-                          href={`/scholarships/details?id=${s.id}`}
+                          href={s.application_link || s.application_url || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white text-white hover:text-black text-xs font-semibold transition-all flex items-center gap-1 shrink-0 cursor-pointer"
                         >
                           <span>Apply</span>
@@ -353,45 +454,72 @@ export default function ProfileSectionModal({
               </div>
             )}
 
-            {/* Tab 2: Extensible Future Modules (Jobs & Career Roadmaps) */}
+            {/* Tab 2: Job Pathways Showcase */}
             {activeTab === "future_modules" && (
               <div className="space-y-3">
-                <div className="p-4 rounded-2xl bg-[#161622] border border-[#262638] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="w-4 h-4 text-violet-400" />
-                      <span className="text-xs font-bold text-white">
-                        Jobs & Apprenticeships Isolation
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-bold text-violet-300 px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20">
-                      {currentConfig.modules.jobs.plannedPhase}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    <span>
+                      {activeStage === "class_10"
+                        ? "8 Verified Government Jobs for 10th Pass"
+                        : `${currentConfig.shortLabel} Job Pathways`}
                     </span>
-                  </div>
-                  <p className="text-xs text-[#A0A0B5] leading-relaxed">
-                    {currentConfig.modules.jobs.description}
-                  </p>
-                  <div className="text-[11px] text-[#6E6E85] pt-1 border-t border-[#202030] flex items-center gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-[#8E8E9C]" />
-                    <span>Configured in stageIsolation.ts schema for clean zero-leak rollout.</span>
-                  </div>
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      router.push(`/jobs?stage=${activeStage}`);
+                    }}
+                    className="text-[11px] font-bold text-amber-300 hover:text-amber-200 flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Full Job Portal</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#161622] border border-[#262638] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Layers className="w-4 h-4 text-amber-400" />
-                      <span className="text-xs font-bold text-white">
-                        Internships & Fellowships Isolation
-                      </span>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                  {getJobsForStage(activeStage).map((job) => (
+                    <div
+                      key={job.id}
+                      className="p-3.5 rounded-2xl bg-[#181826] hover:bg-[#1E1E30] border border-[#28283C] hover:border-amber-500/40 transition-all space-y-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-xs sm:text-sm font-bold text-white">
+                            {job.title}
+                          </h4>
+                          <span className="text-[10px] font-bold px-2 py-0.2 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                            {job.minEducation}
+                          </span>
+                        </div>
+                        {job.payScale && (
+                          <span className="text-[10px] font-mono text-white/80 bg-white/10 px-2 py-0.5 rounded-md">
+                            {job.payScale}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] text-[#A0A0C0] line-clamp-2">
+                        <strong>Requirements: </strong>{job.keyRequirements}
+                      </p>
+
+                      <div className="flex items-center justify-between pt-1 text-[10px] text-[#8E8E9C] border-t border-[#222234]">
+                        <span>Age: {job.ageLimit}</span>
+                        <a
+                          href={job.officialPortal || "https://ssc.gov.in"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-amber-300 hover:text-white font-semibold flex items-center gap-1"
+                        >
+                          <span>Portal</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     </div>
-                    <span className="text-[10px] font-bold text-amber-300 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                      {currentConfig.modules.internships.plannedPhase}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#A0A0B5] leading-relaxed">
-                    {currentConfig.modules.internships.description}
-                  </p>
+                  ))}
                 </div>
               </div>
             )}
@@ -424,6 +552,13 @@ export default function ProfileSectionModal({
           </div>
         </motion.div>
       </div>
+
+      <CreateAccountModal
+        isOpen={isCreateAccountOpen}
+        onClose={() => setIsCreateAccountOpen(false)}
+        onSuccess={handleAccountCreated}
+        initialStage={activeStage}
+      />
     </AnimatePresence>
   );
 }

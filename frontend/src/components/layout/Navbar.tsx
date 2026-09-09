@@ -75,6 +75,16 @@ export default function Navbar() {
             Profile Section
           </Link>
           <Link
+            href="/jobs"
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+              pathname.startsWith("/jobs")
+                ? "bg-white text-black font-semibold shadow-xs"
+                : "text-[#8E8E9C] hover:text-white"
+            }`}
+          >
+            Job Pathways
+          </Link>
+          <Link
             href="/dashboard"
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
               pathname.startsWith("/dashboard")

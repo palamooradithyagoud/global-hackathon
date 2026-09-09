@@ -92,6 +92,7 @@ def evaluate_scholarship_eligibility(scholarship: Scholarship, student: Student)
     eligible = True
     match_score = 60
     action_item = None
+    acad = student.academic_profile
 
     # 1. Stage Check
     stages = [s.strip().lower() for s in scholarship.eligible_stages.split(",")]
@@ -105,24 +106,73 @@ def evaluate_scholarship_eligibility(scholarship: Scholarship, student: Student)
         match_reasons.append(f"Requires education stage: {scholarship.eligible_stages.replace('_', ' ').title()}")
         action_item = "Applicable for higher or different education stage"
 
-    # 2. Academic Merit / CGPA / Percentage Check
+    # 2. Current Study / Year Check
+    if scholarship.current_study:
+        req_study = scholarship.current_study.strip().lower()
+        if student.education_stage == "b_tech" and acad and acad.year:
+            student_year = acad.year.strip().lower()
+            if "1st" in req_study and ("1st" in student_year or student_year == "1"):
+                match_score += 10
+                match_reasons.append(f"Targeted for {scholarship.current_study}")
+            elif "2nd" in req_study and ("2nd" in student_year or student_year == "2"):
+                match_score += 10
+                match_reasons.append(f"Targeted for {scholarship.current_study}")
+            elif ("3rd" in req_study or "3trd" in req_study) and ("3rd" in student_year or student_year == "3"):
+                match_score += 10
+                match_reasons.append(f"Targeted for {scholarship.current_study}")
+            elif ("4th" in req_study or "4 th" in req_study) and ("4th" in student_year or student_year == "4"):
+                match_score += 10
+                match_reasons.append(f"Targeted for {scholarship.current_study}")
+            elif any(y in req_study for y in ["1st", "2nd", "3rd", "3trd", "4th"]):
+                eligible = False
+                match_score -= 25
+                match_reasons.append(f"Requires {scholarship.current_study} (You are in {acad.year})")
+                action_item = f"Available specifically for {scholarship.current_study}"
+            else:
+                match_reasons.append(f"Open for {scholarship.current_study}")
+        elif student.education_stage == "intermediate":
+            if "1st year" in req_study:
+                student_year = (acad.year or "").strip().lower() if acad else ""
+                if "1st" in student_year or "11" in student_year or not student_year:
+                    match_score += 10
+                    match_reasons.append(f"Open for {scholarship.current_study}")
+                else:
+                    eligible = False
+                    match_score -= 20
+                    match_reasons.append(f"Open for Intermediate 1st Year (You are in {acad.year})")
+                    action_item = "Applicable for Intermediate 1st Year"
+            else:
+                match_reasons.append(f"Open for Intermediate students")
+
+    # 3. Academic Merit / CGPA / Percentage Check
     acad = student.academic_profile
     if scholarship.min_cgpa_or_percentage is not None:
         if student.education_stage == "b_tech":
             student_cgpa = acad.cgpa if acad else None
-            req_cgpa = scholarship.min_cgpa_or_percentage
-            if req_cgpa > 10.0:  # If scholarship specifies percentage, normalize
-                req_cgpa = req_cgpa / 10.0
+            student_perc = acad.percentage if acad else None
+            req_perc = scholarship.min_cgpa_or_percentage
 
-            if student_cgpa is not None:
-                if student_cgpa >= req_cgpa:
+            # Effective student percentage
+            effective_perc = student_perc or ((student_cgpa * 9.5) if student_cgpa else None)
+            req_cgpa = req_perc / 10.0 if req_perc > 10.0 else req_perc
+
+            if student_cgpa is not None or effective_perc is not None:
+                meets_criteria = False
+                if effective_perc is not None and effective_perc >= req_perc:
+                    meets_criteria = True
+                elif student_cgpa is not None and student_cgpa >= req_cgpa:
+                    meets_criteria = True
+
+                if meets_criteria:
                     match_score += 15
-                    match_reasons.append(f"CGPA {student_cgpa:.1f} meets requirement (min {req_cgpa:.1f})")
+                    display_val = f"{effective_perc:.1f}%" if effective_perc else f"CGPA {student_cgpa:.1f}"
+                    match_reasons.append(f"Academic score {display_val} qualifies (min required: {req_perc:.0f}%)")
                 else:
                     eligible = False
                     match_score -= 20
-                    match_reasons.append(f"Current CGPA {student_cgpa:.1f} is below requirement {req_cgpa:.1f}")
-                    action_item = f"Needs CGPA {req_cgpa:.1f}+ to qualify"
+                    display_val = f"{effective_perc:.1f}%" if effective_perc else f"CGPA {student_cgpa:.1f}"
+                    match_reasons.append(f"Current score {display_val} is below minimum requirement {req_perc:.0f}%")
+                    action_item = f"Requires minimum {req_perc:.0f}% / {req_cgpa:.1f} CGPA to qualify"
         else:
             student_perc = acad.percentage if acad else None
             req_perc = scholarship.min_cgpa_or_percentage
@@ -139,7 +189,7 @@ def evaluate_scholarship_eligibility(scholarship: Scholarship, student: Student)
                     match_reasons.append(f"Percentage {student_perc:.1f}% below minimum {req_perc:.1f}%")
                     action_item = f"Requires minimum {req_perc:.0f}% in current examination"
 
-    # 3. Stream or Branch Check
+    # 4. Stream or Branch Check
     if scholarship.eligible_streams_or_branches:
         allowed = [x.strip().lower() for x in scholarship.eligible_streams_or_branches.split(",")]
         student_branch = (acad.branch or acad.stream or "").lower() if acad else ""
@@ -170,7 +220,11 @@ def evaluate_scholarship_eligibility(scholarship: Scholarship, student: Student)
         match_score=match_score,
         is_eligible=eligible,
         match_reasons=match_reasons,
-        action_item=action_item
+        action_item=action_item,
+        application_link=scholarship.application_link,
+        application_url=scholarship.application_link,
+        current_study=scholarship.current_study,
+        amount_inr=scholarship.amount_inr
     )
 
 

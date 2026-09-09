@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import (
-    Column, String, Float, DateTime, ForeignKey, Text, Enum as SQLEnum, Index
+    Column, String, Float, Integer, DateTime, ForeignKey, Text, Enum as SQLEnum, Index
 )
 from sqlalchemy.orm import relationship
 from backend.app.core.database import Base
@@ -170,4 +170,7 @@ class Scholarship(Base):
     min_cgpa_or_percentage = Column(Float, nullable=True)
     eligible_streams_or_branches = Column(String(500), nullable=True)
     tags = Column(String(255), nullable=True)
+    application_link = Column(String(500), nullable=True)
+    current_study = Column(String(100), nullable=True)
+    amount_inr = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=now_utc, nullable=False)

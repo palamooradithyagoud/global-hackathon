@@ -6,12 +6,14 @@ import { ArrowUpRight, Sparkles } from "lucide-react";
 
 interface OverviewCardsProps {
   scholarshipsCount: number;
+  jobsCount?: number;
   selectedCard?: "scholarships" | "job" | "learning" | "explore" | "career";
   onSelectCard: (card: "scholarships" | "job" | "learning" | "explore" | "career") => void;
 }
 
 export default function OverviewCards({
   scholarshipsCount,
+  jobsCount,
   selectedCard,
   onSelectCard,
 }: OverviewCardsProps) {
@@ -99,8 +101,9 @@ export default function OverviewCards({
           <h3 className="font-extrabold text-xl sm:text-2xl text-[#1C1917] tracking-tight leading-none mb-1 group-hover:text-black transition-colors">
             Job Pathways
           </h3>
-          <p className="text-xs font-semibold text-[#451A03]/80">
-            Phase 1.2 Pipeline
+          <p className="text-xs font-semibold text-[#451A03]/85 flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-[#451A03]" />
+            <span>{jobsCount !== undefined ? `${jobsCount} Verified Opportunities` : "8 Government Jobs"}</span>
           </p>
         </div>
       </motion.div>

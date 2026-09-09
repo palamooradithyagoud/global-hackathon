@@ -95,6 +95,24 @@ function ScholarshipsDetailPageContent() {
         return false;
       }
     }
+
+    // Strictly enforce study year matching (e.g. 1st Year student gets ONLY 1st Year scholarships)
+    if (profile?.academic_profile?.year) {
+      const sYear = profile.academic_profile.year.toLowerCase();
+      const reqStudy = (item.current_study || "").toLowerCase();
+      if (reqStudy) {
+        if (sYear.includes("1st") || sYear === "1" || sYear.includes("first")) {
+          if (reqStudy.includes("2nd") || reqStudy.includes("3rd") || reqStudy.includes("4th")) return false;
+        } else if (sYear.includes("2nd") || sYear === "2" || sYear.includes("second")) {
+          if (reqStudy.includes("1st") || reqStudy.includes("3rd") || reqStudy.includes("4th")) return false;
+        } else if (sYear.includes("3rd") || sYear === "3" || sYear.includes("third")) {
+          if (reqStudy.includes("1st") || reqStudy.includes("2nd") || reqStudy.includes("4th")) return false;
+        } else if (sYear.includes("4th") || sYear === "4" || sYear.includes("fourth")) {
+          if (reqStudy.includes("1st") || reqStudy.includes("2nd") || reqStudy.includes("3rd")) return false;
+        }
+      }
+    }
+
     if (filterEligibleOnly && !item.is_eligible) return false;
     if (activeTag === "Merit") return item.tags.some((t) => t.toLowerCase().includes("merit"));
     if (activeTag === "STEM") return item.tags.some((t) => t.toLowerCase().includes("stem") || t.toLowerCase().includes("tech"));
@@ -252,7 +270,7 @@ function ScholarshipsDetailPageContent() {
                 className={`${tintClass} rounded-[26px] p-5 sm:p-6 transition-all shadow-xl relative overflow-hidden`}
               >
                 {/* Header row with time/amount pill & top-right circular arrow button */}
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-white/15 text-white backdrop-blur-xs border border-white/20">
                       {item.benefit_value}
@@ -266,11 +284,27 @@ function ScholarshipsDetailPageContent() {
                     >
                       {item.match_score}% Match · {item.is_eligible ? "Eligible" : "Needs Review"}
                     </span>
+                    {item.current_study && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-black/30 text-white border border-white/20">
+                        {item.current_study}
+                      </span>
+                    )}
+                    {item.min_cgpa_or_percentage && (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-white/90">
+                        Min {item.min_cgpa_or_percentage}%
+                      </span>
+                    )}
                   </div>
 
-                  <div className="btn-arrow-circle shrink-0">
-                    <ArrowUpRight className="w-4 h-4 stroke-[2.5]" />
-                  </div>
+                  <a
+                    href={item.application_link || item.application_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-arrow-circle shrink-0 hover:scale-110 transition-transform cursor-pointer"
+                    title="Open Official Scholarship Portal"
+                  >
+                    <ExternalLink className="w-4 h-4 stroke-[2.5]" />
+                  </a>
                 </div>
 
                 {/* Provider & Title */}
@@ -280,7 +314,15 @@ function ScholarshipsDetailPageContent() {
                 </span>
 
                 <h3 className="text-lg sm:text-xl font-black text-white leading-snug mb-2 tracking-tight">
-                  {item.title}
+                  <a
+                    href={item.application_link || item.application_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:underline flex items-center gap-2 inline-flex"
+                  >
+                    <span>{item.title}</span>
+                    <ExternalLink className="w-4 h-4 opacity-70 shrink-0" />
+                  </a>
                 </h3>
 
                 <p className="text-xs sm:text-sm text-slate-200/90 leading-relaxed mb-4">
@@ -307,17 +349,20 @@ function ScholarshipsDetailPageContent() {
                 </div>
 
                 {/* Footer with deadline & Apply button */}
-                <div className="pt-3.5 border-t border-white/15 flex items-center justify-between text-xs">
+                <div className="pt-3.5 border-t border-white/15 flex items-center justify-between gap-3 text-xs flex-wrap">
                   <div className="flex items-center gap-1.5 font-semibold text-white/90">
                     <Calendar className="w-3.5 h-3.5 text-amber-400" />
                     <span>Deadline: {item.deadline}</span>
                   </div>
 
                   <a
-                    href={`/scholarships/details?id=${item.id}`}
-                    className="px-4 py-2 rounded-full bg-white text-black text-xs font-extrabold hover:bg-neutral-200 transition-all cursor-pointer shadow-lg hover:scale-105"
+                    href={item.application_link || item.application_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-full bg-white text-black text-xs font-extrabold hover:bg-neutral-200 transition-all cursor-pointer shadow-lg hover:scale-105 flex items-center gap-1.5"
                   >
-                    Apply Now →
+                    <span>Apply on Official Portal</span>
+                    <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
                   </a>
                 </div>
               </motion.div>

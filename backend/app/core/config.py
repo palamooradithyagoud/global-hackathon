@@ -12,15 +12,27 @@ class Settings(BaseSettings):
     # Supabase PostgreSQL or SQLite fallback for immediate local testing
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./skillcatalyst.db")
     
+    # External AI and Job APIs
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
+    JOOBLE_API_KEY: str = os.getenv("JOOBLE_API_KEY", "")
+    JOOBLE_API_URL: str = os.getenv("JOOBLE_API_URL", "https://jooble.org/api")
+
     # CORS
     CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str) -> str:
-        if isinstance(v, str) and v.startswith("postgres://"):
-            # SQLAlchemy 2.0 requires postgresql:// instead of postgres://
-            return v.replace("postgres://", "postgresql://", 1)
+        if isinstance(v, str):
+            if v.startswith("postgres://"):
+                v = v.replace("postgres://", "postgresql://", 1)
+            if "db.hvsxhkrjnjfmhkvujjyn.supabase.co" in v:
+                v = v.replace("db.hvsxhkrjnjfmhkvujjyn.supabase.co", "aws-0-ap-southeast-2.pooler.supabase.com")
+                if "://postgres:" in v:
+                    v = v.replace("://postgres:", "://postgres.hvsxhkrjnjfmhkvujjyn:")
+                if "adithyagoud@789" in v:
+                    v = v.replace("adithyagoud@789", "adithyagoud%40789")
         return v or "sqlite:///./skillcatalyst.db"
 
     @field_validator("CORS_ORIGINS", mode="before")

@@ -60,9 +60,9 @@ export const STAGE_CONFIGS: Record<EducationStage, StageConfig> = {
         description: "Strictly isolated Class 10 talent, merit, and STEM foundation scholarships."
       },
       jobs: {
-        active: false,
-        plannedPhase: "Phase 1.2",
-        description: "Class 10 students are not eligible for industry employment; exploratory science apprenticeships planned."
+        active: true,
+        plannedPhase: "Live",
+        description: "8 verified public sector & government positions open for 10th Pass candidates (SSC MTS, Havaldar, GDS, Railways Level-1, State Group-D, Police, Home Guard, Forest posts)."
       },
       internships: {
         active: false,

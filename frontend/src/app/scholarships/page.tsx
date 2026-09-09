@@ -35,26 +35,13 @@ export default function ScholarshipsPreviewPage() {
 
   const [educationStage, setEducationStage] = useState<string | null>(null);
   const [studentId, setStudentId] = useState<string | null>(null);
+  const [studentYear, setStudentYear] = useState<string | null>(null);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("skillcatalyst_session");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.name) setUserName(parsed.name);
-        if (parsed.education_stage) setEducationStage(parsed.education_stage);
-        if (parsed.student_id) setStudentId(parsed.student_id);
-      } catch {
-        // ignore
-      }
-    }
-  }, []);
-
-  const fetchScholarships = async (stage?: string | null) => {
+  const fetchScholarships = async (stage?: string | null, year?: string | null) => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const data = await api.scholarships.getPreview(10, stage || undefined);
+      const data = await api.scholarships.getPreview(50, stage || undefined, year || undefined);
       setScholarships(data);
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to load scholarship previews.");
@@ -64,14 +51,43 @@ export default function ScholarshipsPreviewPage() {
   };
 
   useEffect(() => {
-    fetchScholarships(educationStage);
-  }, [educationStage]);
+    const saved = localStorage.getItem("skillcatalyst_session");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.name) setUserName(parsed.name);
+        if (parsed.education_stage) setEducationStage(parsed.education_stage);
+        
+        const stage = parsed.education_stage || null;
+        const initialYear = parsed.year || parsed.academic_profile?.year || null;
+        if (initialYear) setStudentYear(initialYear);
+
+        // Immediately fetch scholarships without waiting for profile.get
+        fetchScholarships(stage, initialYear);
+
+        if (parsed.student_id) {
+          setStudentId(parsed.student_id);
+          // Background sync to verify if year in profile is updated
+          api.profile.get(parsed.student_id).then((p) => {
+            if (p.academic_profile?.year && p.academic_profile.year !== initialYear) {
+              setStudentYear(p.academic_profile.year);
+              fetchScholarships(stage, p.academic_profile.year);
+            }
+          }).catch(() => {});
+        }
+        return;
+      } catch {
+        // ignore
+      }
+    }
+    fetchScholarships(null);
+  }, []);
 
   const handleSelectCard = (card: "scholarships" | "job" | "learning" | "explore" | "career") => {
     if (card === "scholarships") {
       router.push("/scholarships/details");
     } else if (card === "job") {
-      setModalCategory("Job & Internship Pathways");
+      router.push(`/jobs?stage=${educationStage || "class_10"}`);
     } else if (card === "learning") {
       setModalCategory("Skill & Learning Tracks");
     } else if (card === "explore" || card === "career") {

@@ -116,6 +116,9 @@ export interface Scholarship {
   tags: string[];
   eligibility_status: string;
   application_url?: string;
+  application_link?: string;
+  current_study?: string;
+  amount_inr?: number;
   award_amount?: string;
   criteria?: string;
 }

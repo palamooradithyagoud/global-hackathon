@@ -83,11 +83,12 @@ function OnboardingContent() {
     if (saved) {
       try {
         const session = JSON.parse(saved);
-        if (session.email && session.name && session.name !== "Demo Student") {
+        if (session.email) {
           setFormData((prev) => ({
             ...prev,
-            name: session.name,
+            name: session.name && session.name !== "Demo Student" ? session.name : prev.name,
             email: session.email,
+            education_stage: session.education_stage || prev.education_stage,
           }));
         }
       } catch {
@@ -189,11 +190,13 @@ function OnboardingContent() {
       const sessionObj = currentSession ? JSON.parse(currentSession) : {};
       sessionObj.student_id = response.id;
       sessionObj.name = response.name;
+      sessionObj.email = response.email;
       sessionObj.has_profile = true;
       sessionObj.education_stage = response.education_stage;
       localStorage.setItem("skillcatalyst_session", JSON.stringify(sessionObj));
 
-      setCurrentStep("success");
+      // Redirect directly into the dashboard upon saving
+      router.push(`/dashboard?student_id=${response.id}`);
     } catch (err: any) {
       setSubmissionError(err.message || "Failed to save profile. Please check your inputs.");
     } finally {

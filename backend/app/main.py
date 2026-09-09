@@ -3,12 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from backend.app.core.config import settings
 from backend.app.core.database import engine, Base, SessionLocal
+from backend.app.core.cache import cache
 from backend.app.api.v1.router import api_router
 from backend.app.seeds.seed_data import seed_database
 
-
-# Create tables immediately to ensure testing and runtime readiness
-Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -17,9 +15,11 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed_database(db)
+        # Pre-warm connection pool and in-memory cache for zero cold-start delay
+        cache.warm_up(db)
     finally:
         db.close()
-    
+
     yield
 
     # Shutdown logic if needed
