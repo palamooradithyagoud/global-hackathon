@@ -996,14 +996,6 @@ export default function CareerPathwaysModal({
                 </button>
               </div>
             </div>
-
-            <div className="text-[11px] text-[#6E6E82]">
-              {currentStage === "class_10"
-                ? "Post-10th options active"
-                : currentStage === "intermediate"
-                ? "10th skipped · Post-inter tracks"
-                : "Pre-degree skipped · Post-degree active"}
-            </div>
           </div>
         </div>
 
