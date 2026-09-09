@@ -224,5 +224,95 @@ export const api = {
       return fetchJSON(`/jobs/btech/search?${query.toString()}`);
     },
   },
+
+  assistant: {
+    chat: async (payload: {
+      message: string;
+      student_id?: string | null;
+      stage?: string | null;
+    }): Promise<{
+      reply: string;
+      suggestions: string[];
+      ai_generated: boolean;
+      provider?: string;
+      student_context_loaded: boolean;
+      student_name?: string;
+      education_stage: string;
+      history_length: number;
+      memory?: {
+        study_goals?: string | null;
+        preferred_language?: string | null;
+        strong_subjects?: string | null;
+        weak_subjects?: string | null;
+        career_interests?: string | null;
+        study_schedule?: string | null;
+      };
+    }> => {
+      return fetchJSON("/assistant/chat", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+    },
+
+    getHistory: async (studentId: string): Promise<{
+      student_id: string;
+      count: number;
+      messages: Array<{
+        id: string;
+        role: "user" | "assistant";
+        content: string;
+        suggestions: string[];
+        created_at?: string;
+      }>;
+    }> => {
+      return fetchJSON(`/assistant/history/${encodeURIComponent(studentId)}`);
+    },
+
+    clearHistory: async (studentId: string): Promise<{ student_id: string; cleared: boolean }> => {
+      return fetchJSON(`/assistant/history/${encodeURIComponent(studentId)}`, {
+        method: "DELETE",
+      });
+    },
+
+    getMemory: async (studentId: string): Promise<{
+      student_id: string;
+      memory: {
+        study_goals?: string | null;
+        preferred_language?: string | null;
+        strong_subjects?: string | null;
+        weak_subjects?: string | null;
+        career_interests?: string | null;
+        study_schedule?: string | null;
+        summary?: string | null;
+        last_interaction?: string | null;
+      };
+    }> => {
+      return fetchJSON(`/assistant/memory/${encodeURIComponent(studentId)}`);
+    },
+
+    updateMemory: async (
+      studentId: string,
+      updates: {
+        study_goals?: string;
+        preferred_language?: string;
+        strong_subjects?: string;
+        weak_subjects?: string;
+        career_interests?: string;
+        study_schedule?: string;
+      }
+    ): Promise<any> => {
+      return fetchJSON(`/assistant/memory/${encodeURIComponent(studentId)}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+    },
+
+    clearMemory: async (studentId: string): Promise<{ student_id: string; cleared: boolean }> => {
+      return fetchJSON(`/assistant/memory/${encodeURIComponent(studentId)}`, {
+        method: "DELETE",
+      });
+    },
+  },
 };
 

@@ -152,13 +152,9 @@ function DashboardContent() {
           title="Open Profile Section"
         >
           {/* Avatar circle matching reference */}
-          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 p-[2px] shadow-md group-hover:scale-105 transition-transform">
-            <div className="w-full h-full rounded-full bg-[#181824] flex items-center justify-center text-white font-bold text-sm overflow-hidden">
-              {profile?.name ? (
-                profile.name.charAt(0).toUpperCase()
-              ) : (
-                <span className="text-amber-300">AW</span>
-              )}
+          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#8B5CF6] via-[#6366F1] to-[#22D3EE] p-[2px] shadow-md group-hover:scale-105 transition-transform">
+            <div className="w-full h-full rounded-full bg-[#181824] flex items-center justify-center text-white font-bold text-lg overflow-hidden">
+              {studentName ? studentName.charAt(0).toUpperCase() : "A"}
             </div>
           </div>
           <div>

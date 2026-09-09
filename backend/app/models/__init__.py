@@ -11,6 +11,7 @@ from backend.app.models.profile import (
     Scholarship
 )
 from backend.app.models.job import Job
+from backend.app.models.assistant import AssistantMessage, AssistantMemory
 
 __all__ = [
     "Student",
@@ -23,6 +24,8 @@ __all__ = [
     "StudentPreference",
     "StudentFinancialContext",
     "Scholarship",
-    "Job"
+    "Job",
+    "AssistantMessage",
+    "AssistantMemory"
 ]
 

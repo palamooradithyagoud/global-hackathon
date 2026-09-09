@@ -204,7 +204,7 @@ function ProfilePageContent() {
             <div className="flex items-start sm:items-center gap-4">
               <div className={`w-18 h-18 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr ${stageConfig.accentColor} p-[3px] shadow-xl shrink-0`}>
                 <div className="w-full h-full rounded-[22px] bg-[#161622] flex items-center justify-center text-white font-extrabold text-2xl sm:text-3xl">
-                  {profile.name.charAt(0).toUpperCase()}
+                  {profile.name ? profile.name.charAt(0).toUpperCase() : "A"}
                 </div>
               </div>
 

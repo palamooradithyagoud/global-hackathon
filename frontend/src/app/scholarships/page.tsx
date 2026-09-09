@@ -106,9 +106,9 @@ export default function ScholarshipsPreviewPage() {
       {/* 1. TOP BAR: Avatar + Welcome back */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 p-[2px] shadow-md">
-            <div className="w-full h-full rounded-full bg-[#181824] flex items-center justify-center text-white font-bold text-sm overflow-hidden">
-              {userName.charAt(0).toUpperCase()}
+          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#8B5CF6] via-[#6366F1] to-[#22D3EE] p-[2px] shadow-md">
+            <div className="w-full h-full rounded-full bg-[#181824] flex items-center justify-center text-white font-bold text-lg overflow-hidden">
+              {userName ? userName.charAt(0).toUpperCase() : "A"}
             </div>
           </div>
           <div>
