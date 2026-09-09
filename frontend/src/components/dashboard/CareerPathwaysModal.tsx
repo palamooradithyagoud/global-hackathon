@@ -948,9 +948,9 @@ export default function CareerPathwaysModal({
                 </div>
                 <p className="text-xs text-[#8E8E9C] mt-0.5">
                   {currentStage === "class_10"
-                    ? "Post-10th Pathways · Intermediate / Diploma & Future Degree Tracks"
+                    ? "Post-10th Pathways · Intermediate / Diploma & State Entrance Exams"
                     : currentStage === "intermediate"
-                    ? "Degree Pathways · 14 Career Subgroups after Intermediate / Diploma"
+                    ? "Degree Pathways · Career Trajectories after Intermediate / Diploma"
                     : "Post-Degree Specializations · Higher Studies, Placements, Civil & Research"}
                 </p>
               </div>
@@ -1058,7 +1058,7 @@ export default function CareerPathwaysModal({
                   </button>
                 ) : (
                   <span className="text-xs text-pink-400 font-medium">
-                    3 Next-Stage Pathways
+                    2 Pathways
                   </span>
                 )}
               </div>
@@ -1108,48 +1108,7 @@ export default function CareerPathwaysModal({
                   </motion.div>
                 )}
 
-                {/* 2. Degree options Card (Only shown when entrance exams not expanded) */}
-                {!is10thExamsExpanded && (
-                  <motion.div
-                    whileHover={{ scale: 1.01, borderColor: "rgba(96, 165, 250, 0.5)" }}
-                    whileTap={{ scale: 0.99 }}
-                    onClick={() => {
-                      setTenthView("degree");
-                      setActiveDegreeOption(null);
-                    }}
-                    className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#181824] to-[#14141E] border border-[#2B2B3C] cursor-pointer group transition-all duration-200 shadow-md flex items-center justify-between gap-4"
-                  >
-                    <div className="flex items-start gap-3.5">
-                      <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0 group-hover:scale-105 transition-transform">
-                        <GraduationCap className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-blue-300 transition-colors">
-                            Degree Options
-                          </h3>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/15 border border-blue-500/30 text-blue-300">
-                            Future Milestone
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#8E8E9C] mt-1 leading-relaxed">
-                          Preview higher undergraduate degrees, competitive entrances, professional outcomes, and long-term milestones after +2.
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-blue-300 border border-blue-500/20">B.Tech / B.E.</span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-emerald-300 border border-emerald-500/20">Medicine / MBBS</span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-amber-300 border border-amber-500/20">B.Com / CA</span>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#101018] text-purple-300 border border-purple-500/20">BA LLB</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-[#1F1F2E] group-hover:bg-blue-500 text-white flex items-center justify-center shrink-0 transition-colors">
-                      <ArrowUpRight className="w-4 h-4" />
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* 3. ENTRANCE EXAMS SECTION: AFTER 10TH (Collapsible / Expandible) */}
+                {/* 2. ENTRANCE EXAMS SECTION: AFTER 10TH (Collapsible / Expandible) */}
                 {!is10thExamsExpanded ? (
                   <motion.div
                     whileHover={{ scale: 1.01, borderColor: "rgba(244, 114, 182, 0.5)" }}
@@ -2191,7 +2150,7 @@ export default function CareerPathwaysModal({
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div>
                       <h3 className="font-bold text-white text-base sm:text-lg flex items-center gap-2">
-                        <span>14 Career Subgroups & Degree Pathways</span>
+                        <span>Degree Pathways</span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">
                           14 Fields
                         </span>
