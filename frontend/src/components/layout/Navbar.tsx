@@ -65,6 +65,16 @@ export default function Navbar() {
             Build Profile
           </Link>
           <Link
+            href="/profile"
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+              pathname.startsWith("/profile")
+                ? "bg-white text-black font-semibold shadow-xs"
+                : "text-[#8E8E9C] hover:text-white"
+            }`}
+          >
+            Profile Section
+          </Link>
+          <Link
             href="/dashboard"
             className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
               pathname.startsWith("/dashboard")
@@ -80,12 +90,16 @@ export default function Navbar() {
         <div className="flex items-center gap-3">
           {userName ? (
             <div className="flex items-center gap-2.5">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181824] border border-[#282838] text-xs text-white">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#181824] hover:bg-[#222232] border border-[#282838] hover:border-[#38384C] text-xs text-white transition-all cursor-pointer"
+                title="View Profile Section"
+              >
                 <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 flex items-center justify-center text-black font-bold text-[11px]">
                   {userName.charAt(0).toUpperCase()}
                 </div>
                 <span className="font-medium">{userName}</span>
-              </div>
+              </Link>
               <button
                 onClick={handleLogout}
                 title="Log out"

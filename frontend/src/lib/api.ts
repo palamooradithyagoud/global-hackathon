@@ -58,8 +58,11 @@ export const api = {
   },
 
   scholarships: {
-    getPreview: async (limit: number = 5): Promise<Scholarship[]> => {
-      return fetchJSON<Scholarship[]>(`/scholarships/preview?limit=${limit}`);
+    getPreview: async (limit: number = 6, stage?: string): Promise<Scholarship[]> => {
+      const query = stage
+        ? `/scholarships/preview?limit=${limit}&stage=${encodeURIComponent(stage)}`
+        : `/scholarships/preview?limit=${limit}`;
+      return fetchJSON<Scholarship[]>(query);
     },
 
     getPersonalized: async (studentId: string): Promise<PersonalizedScholarship[]> => {
@@ -78,6 +81,14 @@ export const api = {
 
     get: async (studentId: string): Promise<StudentProfile> => {
       return fetchJSON<StudentProfile>(`/profile/${studentId}`);
+    },
+
+    update: async (studentId: string, payload: any): Promise<StudentProfile> => {
+      return fetchJSON<StudentProfile>(`/profile/${studentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
     },
   },
 

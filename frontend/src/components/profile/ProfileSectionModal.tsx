@@ -1,0 +1,429 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { StudentProfile, EducationStage, Scholarship, PersonalizedScholarship } from "@/types";
+import { api } from "@/lib/api";
+import { STAGE_CONFIGS, isOpportunityStrictlyEligible } from "@/lib/stageIsolation";
+import {
+  X,
+  GraduationCap,
+  Award,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  Building,
+  BookOpen,
+  Info,
+  Loader2,
+  Briefcase,
+  Layers,
+  Calendar,
+  ExternalLink,
+  ChevronRight,
+  Filter
+} from "lucide-react";
+
+interface ProfileSectionModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  profile: StudentProfile | null;
+  onProfileUpdated?: (updatedProfile: StudentProfile) => void;
+}
+
+export default function ProfileSectionModal({
+  isOpen,
+  onClose,
+  profile,
+  onProfileUpdated,
+}: ProfileSectionModalProps) {
+  const router = useRouter();
+  const [isSwitching, setIsSwitching] = useState(false);
+  const [activeStage, setActiveStage] = useState<EducationStage>(
+    profile?.education_stage || "b_tech"
+  );
+  const [stageScholarships, setStageScholarships] = useState<Scholarship[]>([]);
+  const [isLoadingScholarships, setIsLoadingScholarships] = useState(false);
+  const [activeTab, setActiveTab] = useState<"scholarships" | "future_modules">("scholarships");
+
+  // Keep activeStage in sync when profile loads
+  useEffect(() => {
+    if (profile?.education_stage) {
+      setActiveStage(profile.education_stage);
+    }
+  }, [profile?.education_stage]);
+
+  // Fetch strictly isolated scholarships whenever activeStage changes
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let isMounted = true;
+    const fetchStageScholarships = async () => {
+      setIsLoadingScholarships(true);
+      try {
+        // Fetch preview filtered specifically by stage from backend
+        const preview = await api.scholarships.getPreview(10, activeStage);
+        if (isMounted) {
+          // Double-enforce strict isolation client-side
+          const strictlyIsolated = preview.filter((s) =>
+            isOpportunityStrictlyEligible(s.eligible_stages, activeStage)
+          );
+          setStageScholarships(strictlyIsolated);
+        }
+      } catch (err) {
+        console.error("Failed to load stage scholarships:", err);
+      } finally {
+        if (isMounted) {
+          setIsLoadingScholarships(false);
+        }
+      }
+    };
+
+    fetchStageScholarships();
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, activeStage]);
+
+  if (!isOpen) return null;
+
+  const currentConfig = STAGE_CONFIGS[activeStage] || STAGE_CONFIGS.b_tech;
+
+  const handleSwitchStage = async (newStage: EducationStage) => {
+    if (newStage === activeStage && isSwitching) return;
+    setIsSwitching(true);
+    setActiveStage(newStage);
+
+    try {
+      // 1. Authenticate demo student profile for target stage
+      const session = await api.auth.demoLogin(newStage);
+      localStorage.setItem("skillcatalyst_session", JSON.stringify(session));
+
+      if (session.student_id) {
+        const fullProfile = await api.profile.get(session.student_id);
+        if (onProfileUpdated) {
+          onProfileUpdated(fullProfile);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to switch stage:", err);
+    } finally {
+      setIsSwitching(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 15 }}
+          className="bg-[#13131B] border border-[#28283C] rounded-3xl p-5 sm:p-7 max-w-2xl w-full text-left space-y-5 shadow-2xl relative overflow-hidden my-auto max-h-[92vh] flex flex-col"
+        >
+          {/* Subtle Ambient Glow */}
+          <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-violet-600/15 blur-3xl pointer-events-none" />
+
+          {/* Header */}
+          <div className="flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${currentConfig.accentColor} p-[2px] shadow-lg`}>
+                <div className="w-full h-full rounded-[14px] bg-[#181824] flex items-center justify-center text-white font-bold text-base">
+                  {profile?.name ? profile.name.charAt(0).toUpperCase() : "S"}
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                    {profile?.name || "Student Profile"}
+                  </h2>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${currentConfig.badgeBg}`}>
+                    <ShieldCheck className="w-3 h-3" />
+                    <span>{currentConfig.gradeBadge}</span>
+                  </span>
+                </div>
+                <p className="text-xs text-[#8E8E9C]">
+                  {profile?.email || "student@skillcatalyst.dev"} • Class Profile Section
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="p-2 text-[#8E8E9C] hover:text-white rounded-full bg-[#1C1C28] hover:bg-[#262638] transition-colors cursor-pointer"
+              title="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Scrollable Body */}
+          <div className="space-y-5 overflow-y-auto pr-1 flex-1 custom-scrollbar">
+            {/* Interactive Class / Education Stage Switcher */}
+            <div className="space-y-2.5 bg-[#171723] p-4 rounded-2xl border border-[#28283C]">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold text-white block">
+                    Educational Stage & Class Selection
+                  </span>
+                  <span className="text-[11px] text-[#8E8E9C]">
+                    Select student class to isolate matching scholarships and opportunities
+                  </span>
+                </div>
+                {isSwitching && (
+                  <span className="text-[11px] text-violet-400 flex items-center gap-1">
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Syncing...
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-3 gap-2.5 pt-1">
+                {/* Class 10 Option */}
+                <button
+                  type="button"
+                  id="profile-stage-class-10"
+                  onClick={() => handleSwitchStage("class_10")}
+                  disabled={isSwitching}
+                  className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                    activeStage === "class_10"
+                      ? "bg-emerald-500/15 border-emerald-500/70 text-white shadow-[0_0_20px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/50"
+                      : "bg-[#14141E] border-[#252535] text-[#8E8E9C] hover:text-white hover:border-[#38384C]"
+                  }`}
+                >
+                  <span className="block text-xs sm:text-sm font-bold">Class 10th</span>
+                  <span className="block text-[10px] mt-0.5 text-emerald-400 font-medium">
+                    5 Scholarships
+                  </span>
+                </button>
+
+                {/* Intermediate Option */}
+                <button
+                  type="button"
+                  id="profile-stage-intermediate"
+                  onClick={() => handleSwitchStage("intermediate")}
+                  disabled={isSwitching}
+                  className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                    activeStage === "intermediate"
+                      ? "bg-purple-500/15 border-purple-500/70 text-white shadow-[0_0_20px_rgba(168,85,247,0.15)] ring-1 ring-purple-500/50"
+                      : "bg-[#14141E] border-[#252535] text-[#8E8E9C] hover:text-white hover:border-[#38384C]"
+                  }`}
+                >
+                  <span className="block text-xs sm:text-sm font-bold">11th & 12th</span>
+                  <span className="block text-[10px] mt-0.5 text-purple-400 font-medium">
+                    5 Scholarships
+                  </span>
+                </button>
+
+                {/* B.Tech Option */}
+                <button
+                  type="button"
+                  id="profile-stage-btech"
+                  onClick={() => handleSwitchStage("b_tech")}
+                  disabled={isSwitching}
+                  className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
+                    activeStage === "b_tech"
+                      ? "bg-amber-500/15 border-amber-500/70 text-white shadow-[0_0_20px_rgba(245,158,11,0.15)] ring-1 ring-amber-500/50"
+                      : "bg-[#14141E] border-[#252535] text-[#8E8E9C] hover:text-white hover:border-[#38384C]"
+                  }`}
+                >
+                  <span className="block text-xs sm:text-sm font-bold">B.Tech</span>
+                  <span className="block text-[10px] mt-0.5 text-amber-400 font-medium">
+                    6 Scholarships
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Stage Isolation Status Banner */}
+            <div className="p-3.5 rounded-2xl bg-[#181826] border border-[#2C2C40] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <div className={`p-2 rounded-xl border ${currentConfig.badgeBg}`}>
+                  <Filter className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-white">
+                      Strict Stage Isolation: {currentConfig.label}
+                    </span>
+                    <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      Zero Leaks
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#8E8E9C] mt-0.5">
+                    Showing ONLY scholarships eligible for {currentConfig.shortLabel}. Cross-stage opportunities are suppressed.
+                  </p>
+                </div>
+              </div>
+
+              <span className="text-xs font-mono font-bold text-white px-2.5 py-1 rounded-lg bg-[#202030] border border-[#303045] whitespace-nowrap">
+                {stageScholarships.length} Available
+              </span>
+            </div>
+
+            {/* Navigation Tabs between Scholarships & Future Modules */}
+            <div className="flex items-center gap-2 border-b border-[#252538] pb-1">
+              <button
+                type="button"
+                onClick={() => setActiveTab("scholarships")}
+                className={`pb-2 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border-b-2 ${
+                  activeTab === "scholarships"
+                    ? "text-white border-white"
+                    : "text-[#8E8E9C] border-transparent hover:text-white"
+                }`}
+              >
+                <Award className="w-3.5 h-3.5" />
+                <span>Class Scholarships ({stageScholarships.length})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("future_modules")}
+                className={`pb-2 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer border-b-2 ${
+                  activeTab === "future_modules"
+                    ? "text-white border-white"
+                    : "text-[#8E8E9C] border-transparent hover:text-white"
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5" />
+                <span>Jobs & Roadmaps (Scaffolded)</span>
+              </button>
+            </div>
+
+            {/* Tab 1: Live Scholarships Feed for Selected Class */}
+            {activeTab === "scholarships" && (
+              <div className="space-y-2.5">
+                {isLoadingScholarships ? (
+                  <div className="py-12 flex flex-col items-center justify-center gap-2 text-xs text-[#8E8E9C]">
+                    <Loader2 className="w-6 h-6 animate-spin text-white" />
+                    <span>Loading verified scholarships for {currentConfig.shortLabel}...</span>
+                  </div>
+                ) : stageScholarships.length === 0 ? (
+                  <div className="py-8 text-center text-xs text-[#8E8E9C] bg-[#161622] rounded-2xl border border-[#242434] p-4">
+                    No scholarships currently listed for this stage.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1 custom-scrollbar">
+                    {stageScholarships.map((s) => (
+                      <div
+                        key={s.id}
+                        className="p-3.5 rounded-2xl bg-[#181826] hover:bg-[#1E1E30] border border-[#28283C] hover:border-[#383852] transition-all flex items-center justify-between gap-3 group"
+                      >
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-xs sm:text-sm font-semibold text-white truncate">
+                              {s.title}
+                            </h4>
+                            <span className={`text-[10px] font-semibold px-2 py-0.2 rounded-full border ${currentConfig.badgeBg}`}>
+                              {currentConfig.gradeBadge}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-3 text-[11px] text-[#8E8E9C]">
+                            <span className="flex items-center gap-1">
+                              <Building className="w-3 h-3" />
+                              <span className="truncate max-w-[130px] sm:max-w-none">{s.provider}</span>
+                            </span>
+                            <span>•</span>
+                            <span className="text-emerald-400 font-semibold">{s.benefit_value || s.award_amount || "Merit Grant"}</span>
+                            {s.deadline && (
+                              <>
+                                <span>•</span>
+                                <span className="flex items-center gap-1 text-[#8E8E9C]">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>{s.deadline}</span>
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <a
+                          href={`/scholarships/details?id=${s.id}`}
+                          className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white text-white hover:text-black text-xs font-semibold transition-all flex items-center gap-1 shrink-0 cursor-pointer"
+                        >
+                          <span>Apply</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab 2: Extensible Future Modules (Jobs & Career Roadmaps) */}
+            {activeTab === "future_modules" && (
+              <div className="space-y-3">
+                <div className="p-4 rounded-2xl bg-[#161622] border border-[#262638] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-4 h-4 text-violet-400" />
+                      <span className="text-xs font-bold text-white">
+                        Jobs & Apprenticeships Isolation
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-violet-300 px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20">
+                      {currentConfig.modules.jobs.plannedPhase}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#A0A0B5] leading-relaxed">
+                    {currentConfig.modules.jobs.description}
+                  </p>
+                  <div className="text-[11px] text-[#6E6E85] pt-1 border-t border-[#202030] flex items-center gap-1.5">
+                    <Info className="w-3.5 h-3.5 text-[#8E8E9C]" />
+                    <span>Configured in stageIsolation.ts schema for clean zero-leak rollout.</span>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#161622] border border-[#262638] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-amber-400" />
+                      <span className="text-xs font-bold text-white">
+                        Internships & Fellowships Isolation
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-amber-300 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                      {currentConfig.modules.internships.plannedPhase}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#A0A0B5] leading-relaxed">
+                    {currentConfig.modules.internships.description}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="pt-3 border-t border-[#222232] flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                router.push(
+                  profile?.id
+                    ? `/dashboard/scholarships?student_id=${profile.id}`
+                    : `/scholarships`
+                );
+              }}
+              className="flex-1 py-3 px-4 rounded-full bg-white text-black text-xs font-bold hover:bg-neutral-200 transition-colors shadow-lg flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>Explore All {currentConfig.shortLabel} Opportunities</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-5 py-3 rounded-full text-xs text-[#8E8E9C] hover:text-white hover:bg-[#1E1E2C] transition-colors cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+}

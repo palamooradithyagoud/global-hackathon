@@ -115,6 +115,9 @@ export interface Scholarship {
   eligible_streams_or_branches?: string[] | null;
   tags: string[];
   eligibility_status: string;
+  application_url?: string;
+  award_amount?: string;
+  criteria?: string;
 }
 
 export interface PersonalizedScholarship extends Scholarship {

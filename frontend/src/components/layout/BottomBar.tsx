@@ -33,13 +33,14 @@ export default function BottomBar() {
   if (pathname === "/login") return null;
 
   const isOnboarding = pathname.startsWith("/onboarding");
+  const isProfile = pathname.startsWith("/profile");
   const isDashboardOverview = pathname === "/dashboard";
   const isScholarshipsOverview = pathname === "/scholarships";
   const isLanding = pathname === "/";
 
-  // Home is active on all dashboard/scholarship/landing pages, Hub is active on onboarding
-  const isHomeActive = !isOnboarding;
-  const isHubActive = isOnboarding;
+  // Home is active on dashboard/scholarship/landing pages, Hub is active on profile & onboarding
+  const isHubActive = isProfile || isOnboarding;
+  const isHomeActive = !isHubActive;
 
   const handleGoHome = () => {
     // If already on overview, smoothly scroll up
@@ -57,11 +58,15 @@ export default function BottomBar() {
   };
 
   const handleGoHub = () => {
-    if (isOnboarding) {
+    if (isProfile) {
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    router.push("/onboarding");
+    if (studentId) {
+      router.push(`/profile?student_id=${studentId}`);
+    } else {
+      router.push("/profile");
+    }
   };
 
   return (

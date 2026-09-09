@@ -199,6 +199,7 @@ class StudentProfileUpdate(BaseModel):
     name: Optional[str] = None
     location: Optional[str] = None
     target_role: Optional[str] = None
+    education_stage: Optional[EducationStageType] = None
     academic_profile: Optional[AcademicProfileCreate] = None
     preferences: Optional[PreferenceCreate] = None
     financial_context: Optional[FinancialContextCreate] = None

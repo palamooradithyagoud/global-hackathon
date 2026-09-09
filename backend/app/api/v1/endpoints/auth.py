@@ -13,12 +13,22 @@ def demo_login(payload: DemoAuthRequest = DemoAuthRequest(), db: Session = Depen
     Hackathon optimized demo entry point.
     Returns a stable demo session and student identity.
     """
-    demo_email = "demo.student@skillcatalyst.dev"
-    student = db.query(Student).filter(Student.email == demo_email).first()
-    
+    stage = (payload.education_stage or "b_tech").strip().lower()
+    email_map = {
+        "class_10": "demo.class10@skillcatalyst.dev",
+        "intermediate": "demo.intermediate@skillcatalyst.dev",
+        "b_tech": "demo.student@skillcatalyst.dev",
+    }
+    target_email = email_map.get(stage, "demo.student@skillcatalyst.dev")
+    student = db.query(Student).filter(Student.email == target_email).first()
+
+    # Fallback to any student with matching stage
+    if not student:
+        student = db.query(Student).filter(Student.education_stage == stage).first()
+
     if student:
         return AuthResponse(
-            token="demo-session-token-v1-verified",
+            token=f"demo-session-token-{student.education_stage}-verified",
             student_id=student.id,
             email=student.email,
             name=student.name,

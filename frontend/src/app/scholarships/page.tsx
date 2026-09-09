@@ -26,11 +26,13 @@ export default function ScholarshipsPreviewPage() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [activePill, setActivePill] = useState<string>("All");
   const [userName, setUserName] = useState<string>("Adam William");
 
   // Modal state for Job, Learning, Explore placeholders
   const [modalCategory, setModalCategory] = useState<string | null>(null);
+
+  const [educationStage, setEducationStage] = useState<string | null>(null);
+  const [studentId, setStudentId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("skillcatalyst_session");
@@ -38,17 +40,19 @@ export default function ScholarshipsPreviewPage() {
       try {
         const parsed = JSON.parse(saved);
         if (parsed.name) setUserName(parsed.name);
+        if (parsed.education_stage) setEducationStage(parsed.education_stage);
+        if (parsed.student_id) setStudentId(parsed.student_id);
       } catch {
         // ignore
       }
     }
   }, []);
 
-  const fetchScholarships = async () => {
+  const fetchScholarships = async (stage?: string | null) => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const data = await api.scholarships.getPreview(6);
+      const data = await api.scholarships.getPreview(10, stage || undefined);
       setScholarships(data);
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to load scholarship previews.");
@@ -58,8 +62,8 @@ export default function ScholarshipsPreviewPage() {
   };
 
   useEffect(() => {
-    fetchScholarships();
-  }, []);
+    fetchScholarships(educationStage);
+  }, [educationStage]);
 
   const handleSelectCard = (card: "scholarships" | "job" | "learning" | "explore") => {
     if (card === "scholarships") {
@@ -108,26 +112,7 @@ export default function ScholarshipsPreviewPage() {
         </h1>
       </div>
 
-      {/* 3. PILL FILTER SWITCHER MATCHING REFERENCE: All | Programming | Design */}
-      <div className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-1">
-        {[
-          { id: "All", label: "All" },
-          { id: "Programming", label: "Programming" },
-          { id: "Design", label: "Design" },
-        ].map((pill) => (
-          <button
-            key={pill.id}
-            onClick={() => setActivePill(pill.id)}
-            className={`pill-filter cursor-pointer ${
-              activePill === pill.id ? "pill-filter-active" : "pill-filter-inactive"
-            }`}
-          >
-            {pill.label}
-          </button>
-        ))}
-      </div>
-
-      {/* 4. THE 4 REFERENCE CARDS IN EXACT COLORS: Clicking Scholarships navigates to /scholarships/details! */}
+      {/* 3. THE 4 REFERENCE CARDS IN EXACT COLORS: Clicking Scholarships navigates to /scholarships/details! */}
       <OverviewCards
         scholarshipsCount={scholarships.length}
         onSelectCard={handleSelectCard}

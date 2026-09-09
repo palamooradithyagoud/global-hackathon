@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api";
 import { StudentProfile, PersonalizedScholarship } from "@/types";
+import ProfileSectionModal from "@/components/profile/ProfileSectionModal";
 import {
   ArrowLeft,
   Share2,
@@ -12,12 +13,15 @@ import {
   Calendar,
   Building,
   Sparkles,
+  ExternalLink,
   CheckCircle2,
+  XCircle,
+  Clock,
+  Search,
   Filter,
-  ArrowUpRight,
   Loader2,
-  RefreshCw,
-  AlertCircle
+  AlertCircle,
+  ArrowUpRight
 } from "lucide-react";
 
 function ScholarshipsDetailPageContent() {
@@ -32,6 +36,7 @@ function ScholarshipsDetailPageContent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [filterEligibleOnly, setFilterEligibleOnly] = useState(false);
   const [activeTag, setActiveTag] = useState<string>("All");
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
     if (!studentIdParam) {
@@ -83,6 +88,13 @@ function ScholarshipsDetailPageContent() {
   }, [studentId]);
 
   const filteredOpportunities = opportunities.filter((item) => {
+    // Strictly enforce education stage matching (Class 10 -> Class 10 only, Intermediate -> Intermediate only, B.Tech -> B.Tech only)
+    if (profile?.education_stage) {
+      const stage = profile.education_stage.toLowerCase();
+      if (!item.eligible_stages.map((s) => s.toLowerCase()).includes(stage)) {
+        return false;
+      }
+    }
     if (filterEligibleOnly && !item.is_eligible) return false;
     if (activeTag === "Merit") return item.tags.some((t) => t.toLowerCase().includes("merit"));
     if (activeTag === "STEM") return item.tags.some((t) => t.toLowerCase().includes("stem") || t.toLowerCase().includes("tech"));
@@ -115,9 +127,21 @@ function ScholarshipsDetailPageContent() {
           <ArrowLeft className="w-5 h-5" />
         </button>
 
-        <span className="text-xs font-semibold text-violet-300 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20">
-          Personalized Opportunities
-        </span>
+        <button
+          type="button"
+          onClick={() => setIsProfileModalOpen(true)}
+          className="text-xs font-bold text-violet-300 px-3.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 hover:border-violet-500/60 transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm group"
+          title="Click to view or switch your education class"
+        >
+          <span>
+            {profile?.education_stage === "class_10"
+              ? "Class 10 Exclusive"
+              : profile?.education_stage === "intermediate"
+              ? "Intermediate (11th/12th) Exclusive"
+              : "B.Tech Engineering Exclusive"}
+          </span>
+          <span className="text-[10px] text-violet-400 group-hover:scale-110 transition-transform">⚙</span>
+        </button>
 
         <button
           type="button"
@@ -138,7 +162,19 @@ function ScholarshipsDetailPageContent() {
           <span className="font-normal text-[#E2E2EC]">scholarships</span>
         </h1>
         <p className="text-xs text-[#8E8E9C] mt-2">
-          Matched to your verified profile ({profile?.education_stage.toUpperCase()} · CGPA {profile?.academic_profile?.cgpa || "Verified"})
+          Opportunities matched specifically for{" "}
+          <strong className="text-white font-semibold">
+            {profile?.education_stage === "class_10"
+              ? "Class 10 students"
+              : profile?.education_stage === "intermediate"
+              ? "Intermediate (11th & 12th) students"
+              : "B.Tech undergraduates"}
+          </strong>
+          {profile?.academic_profile && (
+            <span className="block mt-1 text-[11px] text-[#7E7E8E]">
+              Stage: {profile.education_stage.toUpperCase()} · {profile.academic_profile.cgpa ? `CGPA ${profile.academic_profile.cgpa}` : profile.academic_profile.percentage ? `${profile.academic_profile.percentage}%` : "Verified Academic Record"}
+            </span>
+          )}
         </p>
       </div>
 
@@ -238,59 +274,69 @@ function ScholarshipsDetailPageContent() {
                 </div>
 
                 {/* Provider & Title */}
-                <span className="text-xs text-[#1E293B] font-medium flex items-center gap-1 mb-1">
-                  <Building className="w-3.5 h-3.5" />
+                <span className="text-xs text-white/80 font-semibold flex items-center gap-1.5 mb-1.5">
+                  <Building className="w-3.5 h-3.5 text-violet-400" />
                   {item.provider}
                 </span>
 
-                <h3 className="text-lg font-extrabold text-[#0F172A] leading-snug mb-2">
+                <h3 className="text-lg sm:text-xl font-black text-white leading-snug mb-2 tracking-tight">
                   {item.title}
                 </h3>
 
-                <p className="text-xs text-[#1E293B]/85 leading-relaxed mb-4">
+                <p className="text-xs sm:text-sm text-slate-200/90 leading-relaxed mb-4">
                   {item.description}
                 </p>
 
                 {/* Criteria breakdown */}
-                <div className="p-3 bg-black/10 backdrop-blur-xs rounded-2xl mb-3 space-y-1 text-xs">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#0F172A]/70 block mb-1">
+                <div className="p-3.5 bg-black/40 backdrop-blur-md rounded-2xl mb-3.5 space-y-1.5 text-xs border border-white/10">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-white/70 block mb-1">
                     Verified Match Criteria:
                   </span>
                   {item.match_reasons.map((reason, rIdx) => (
-                    <div key={rIdx} className="flex items-center gap-1.5 text-[#0F172A] text-[11px]">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-800 shrink-0" />
+                    <div key={rIdx} className="flex items-center gap-2 text-white/95 text-xs">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                       <span>{reason}</span>
                     </div>
                   ))}
                   {item.action_item && (
-                    <div className="text-amber-950 font-semibold text-[11px] pt-1">
-                      Action requirement: {item.action_item}
+                    <div className="text-amber-300 font-semibold text-xs pt-1 flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <span>Action requirement: {item.action_item}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Footer with deadline & Apply button */}
-                <div className="pt-3 border-t border-black/10 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 font-medium text-[#0F172A]">
-                    <Calendar className="w-3.5 h-3.5 text-[#1E293B]" />
+                <div className="pt-3.5 border-t border-white/15 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 font-semibold text-white/90">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
                     <span>Deadline: {item.deadline}</span>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() =>
-                      alert(`Application filing for ${item.title} opens in next phase release.`)
-                    }
-                    className="px-4 py-1.5 rounded-full bg-[#0F172A] text-white text-xs font-bold hover:bg-black transition-colors cursor-pointer shadow-sm"
+                  <a
+                    href={`/scholarships/details?id=${item.id}`}
+                    className="px-4 py-2 rounded-full bg-white text-black text-xs font-extrabold hover:bg-neutral-200 transition-all cursor-pointer shadow-lg hover:scale-105"
                   >
                     Apply Now →
-                  </button>
+                  </a>
                 </div>
               </motion.div>
             );
           })}
         </div>
       )}
+
+      {/* Profile Section Modal */}
+      <ProfileSectionModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        profile={profile}
+        onProfileUpdated={(updated) => {
+          setProfile(updated);
+          setStudentId(updated.id);
+          loadData(updated.id);
+        }}
+      />
     </motion.div>
   );
 }

@@ -180,8 +180,14 @@ def compute_student_intelligence_summary(student: Student, all_scholarships: Lis
     """
     completeness, priorities = calculate_profile_completeness(student)
     
+    student_stage = student.education_stage.strip().lower()
+    stage_scholarships = [
+        s for s in all_scholarships
+        if student_stage in [st.strip().lower() for st in s.eligible_stages.split(",")]
+    ]
+
     eligible_count = 0
-    for s in all_scholarships:
+    for s in stage_scholarships:
         res = evaluate_scholarship_eligibility(s, student)
         if res.is_eligible:
             eligible_count += 1

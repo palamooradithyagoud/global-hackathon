@@ -46,24 +46,46 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async () => {
+  const [activeDemoStage, setActiveDemoStage] = useState<"class_10" | "intermediate" | "b_tech">("class_10");
+
+  const handleDemoLogin = async (stage: "class_10" | "intermediate" | "b_tech") => {
     setErrorMessage(null);
     setIsDemoLoading(true);
+    setActiveDemoStage(stage);
     try {
-      const session = await api.auth.demoLogin("b_tech");
+      const session = await api.auth.demoLogin(stage);
       localStorage.setItem("skillcatalyst_session", JSON.stringify(session));
-      router.push("/scholarships");
+      if (session.student_id) {
+        router.push(`/dashboard?student_id=${session.student_id}`);
+      } else {
+        router.push("/scholarships");
+      }
     } catch (err: any) {
+      const fallbackEmail = stage === "class_10"
+        ? "demo.class10@skillcatalyst.dev"
+        : stage === "intermediate"
+        ? "demo.intermediate@skillcatalyst.dev"
+        : "demo.student@skillcatalyst.dev";
+      const fallbackName = stage === "class_10"
+        ? "Rohan Verma"
+        : stage === "intermediate"
+        ? "Priya Nair"
+        : "Arjun Sharma";
+      const fallbackId = stage === "class_10"
+        ? "demo-class10-student"
+        : stage === "intermediate"
+        ? "demo-intermediate-student"
+        : "demo-btech-student";
       const fallbackSession = {
-        token: "demo-fallback-token",
-        student_id: null,
-        email: "demo.student@skillcatalyst.dev",
-        name: "Demo Student",
-        has_profile: false,
-        education_stage: "b_tech",
+        token: `demo-fallback-token-${stage}`,
+        student_id: fallbackId,
+        email: fallbackEmail,
+        name: fallbackName,
+        has_profile: true,
+        education_stage: stage,
       };
       localStorage.setItem("skillcatalyst_session", JSON.stringify(fallbackSession));
-      router.push("/scholarships");
+      router.push(`/dashboard?student_id=${fallbackId}`);
     } finally {
       setIsDemoLoading(false);
     }
@@ -114,7 +136,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. arjun.sharma@example.edu"
+                placeholder="e.g. rohan.verma@example.edu"
                 className="w-full px-3.5 py-2.5 text-sm dark-input placeholder-[#5E5E6E] focus:outline-none"
               />
             </div>
@@ -160,33 +182,102 @@ export default function LoginPage() {
             <div className="w-full border-t border-[#262634]" />
           </div>
           <div className="relative flex justify-center text-[11px] uppercase tracking-wider">
-            <span className="bg-[#14141C] px-3 text-[#7E7E8E]">Instant Judge Access</span>
+            <span className="bg-[#14141C] px-3 text-[#7E7E8E]">Instant Judge Access by Class</span>
           </div>
         </div>
 
-        {/* Demo Login Button with Gradient Border & Arrow */}
-        <button
-          type="button"
-          onClick={handleDemoLogin}
-          disabled={isLoading || isDemoLoading}
-          className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-violet-600/10 via-pink-600/10 to-amber-600/10 border border-violet-500/30 hover:border-violet-500/60 text-white text-sm font-semibold flex items-center justify-between transition-all cursor-pointer group"
-        >
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 to-amber-400 flex items-center justify-center text-white">
-              <Sparkles className="w-4 h-4" />
+        {/* 3 Stage Demo Profiles */}
+        <div className="space-y-2.5">
+          {/* Class 10 */}
+          <button
+            type="button"
+            onClick={() => handleDemoLogin("class_10")}
+            disabled={isLoading || isDemoLoading}
+            className="w-full p-3 rounded-2xl bg-[#181824] hover:bg-[#1E1E2C] border border-[#2B2B3C] hover:border-amber-500/50 text-white text-sm flex items-center justify-between transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5 text-left">
+              <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold text-xs">
+                10th
+              </div>
+              <div>
+                <span className="block text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                  Class 10 Student Profile
+                </span>
+                <span className="block text-[10px] text-[#8E8E9C]">
+                  Rohan Verma · 10th CBSE (91.4%) · 5 Class 10 Scholarships
+                </span>
+              </div>
             </div>
-            <div className="text-left">
-              <span className="block text-xs font-bold text-white">Continue as Demo Student</span>
-              <span className="block text-[10px] text-[#8E8E9C]">Arjun Sharma · B.Tech Engineering</span>
+            <div className="w-7 h-7 rounded-full bg-[#262638] group-hover:bg-amber-400 group-hover:text-black flex items-center justify-center text-xs transition-colors">
+              {isDemoLoading && activeDemoStage === "class_10" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              )}
             </div>
-          </div>
-          <div className="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center font-bold text-xs group-hover:scale-105 transition-transform">
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </div>
-        </button>
+          </button>
+
+          {/* Intermediate (11th & 12th) */}
+          <button
+            type="button"
+            onClick={() => handleDemoLogin("intermediate")}
+            disabled={isLoading || isDemoLoading}
+            className="w-full p-3 rounded-2xl bg-[#181824] hover:bg-[#1E1E2C] border border-[#2B2B3C] hover:border-emerald-500/50 text-white text-sm flex items-center justify-between transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5 text-left">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xs">
+                +2
+              </div>
+              <div>
+                <span className="block text-xs font-bold text-white group-hover:text-emerald-300 transition-colors">
+                  Intermediate (11th/12th) Profile
+                </span>
+                <span className="block text-[10px] text-[#8E8E9C]">
+                  Priya Nair · MPC Stream (89.2%) · 5 Inter Scholarships
+                </span>
+              </div>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-[#262638] group-hover:bg-emerald-400 group-hover:text-black flex items-center justify-center text-xs transition-colors">
+              {isDemoLoading && activeDemoStage === "intermediate" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              )}
+            </div>
+          </button>
+
+          {/* B.Tech */}
+          <button
+            type="button"
+            onClick={() => handleDemoLogin("b_tech")}
+            disabled={isLoading || isDemoLoading}
+            className="w-full p-3 rounded-2xl bg-[#181824] hover:bg-[#1E1E2C] border border-[#2B2B3C] hover:border-violet-500/50 text-white text-sm flex items-center justify-between transition-all cursor-pointer group"
+          >
+            <div className="flex items-center gap-2.5 text-left">
+              <div className="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-500/40 flex items-center justify-center text-violet-400 font-bold text-xs">
+                B.T
+              </div>
+              <div>
+                <span className="block text-xs font-bold text-white group-hover:text-violet-300 transition-colors">
+                  B.Tech Engineering Profile
+                </span>
+                <span className="block text-[10px] text-[#8E8E9C]">
+                  Arjun Sharma · CSE 3rd Year (8.75 CGPA) · 6 B.Tech Scholarships
+                </span>
+              </div>
+            </div>
+            <div className="w-7 h-7 rounded-full bg-[#262638] group-hover:bg-violet-400 group-hover:text-black flex items-center justify-center text-xs transition-colors">
+              {isDemoLoading && activeDemoStage === "b_tech" ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              )}
+            </div>
+          </button>
+        </div>
 
         <p className="text-[11px] text-[#717180] text-center mt-4 leading-relaxed">
-          Instantly creates a demo session and guides you through the scholarship preview and adaptive onboarding journey.
+          Selecting any stage logs in as that student with strict scholarship isolation.
         </p>
       </motion.div>
     </div>

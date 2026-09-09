@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/lib/api";
 import { StudentProfile, PersonalizedScholarship } from "@/types";
 import OverviewCards from "@/components/dashboard/OverviewCards";
+import ProfileSectionModal from "@/components/profile/ProfileSectionModal";
 import {
   Loader2,
   AlertCircle,
@@ -15,7 +16,8 @@ import {
   BookOpen,
   Compass,
   X,
-  ArrowRight
+  ArrowRight,
+  ShieldCheck
 } from "lucide-react";
 
 function DashboardContent() {
@@ -28,9 +30,7 @@ function DashboardContent() {
   const [opportunities, setOpportunities] = useState<PersonalizedScholarship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // Active pill filter
-  const [activePill, setActivePill] = useState<string>("All");
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Modal state for Job, Learning, Explore placeholders
   const [modalCategory, setModalCategory] = useState<string | null>(null);
@@ -140,11 +140,16 @@ function DashboardContent() {
       transition={{ duration: 0.3 }}
       className="max-w-xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6 pb-28"
     >
-      {/* 1. TOP BAR MATCHING REFERENCE: Avatar + Welcome back + Search button */}
+      {/* 1. TOP BAR MATCHING REFERENCE: Avatar + Welcome back + Active Stage Pill */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setIsProfileModalOpen(true)}
+          className="flex items-center gap-3 text-left group cursor-pointer hover:opacity-90 transition-opacity"
+          title="Open Profile Section"
+        >
           {/* Avatar circle matching reference */}
-          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 p-[2px] shadow-md">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 p-[2px] shadow-md group-hover:scale-105 transition-transform">
             <div className="w-full h-full rounded-full bg-[#181824] flex items-center justify-center text-white font-bold text-sm overflow-hidden">
               {profile?.name ? (
                 profile.name.charAt(0).toUpperCase()
@@ -157,11 +162,31 @@ function DashboardContent() {
             <span className="text-xs text-[#8E8E9C] font-normal block leading-tight">
               Welcome back
             </span>
-            <span className="font-bold text-base text-white block tracking-tight">
+            <span className="font-bold text-base text-white block tracking-tight group-hover:text-amber-300 transition-colors">
               {studentName}
             </span>
           </div>
-        </div>
+        </button>
+
+        {/* Clickable Education Stage Pill */}
+        <button
+          type="button"
+          onClick={() => setIsProfileModalOpen(true)}
+          className="px-3.5 py-1.5 rounded-full bg-[#14141C] border border-[#2B2B3C] hover:border-amber-400/50 text-xs font-semibold text-white flex items-center gap-2 transition-all cursor-pointer shadow-sm group"
+          title="Click to view/switch education stage"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs">
+            {profile?.education_stage === "class_10"
+              ? "Class 10th"
+              : profile?.education_stage === "intermediate"
+              ? "Intermediate (+2)"
+              : "B.Tech"}
+          </span>
+          <span className="text-[10px] text-violet-300 font-mono group-hover:underline">
+            Profile ⚙
+          </span>
+        </button>
       </div>
 
       {/* 2. BIG HEADING MATCHING REFERENCE: "Let's explore new fields" */}
@@ -172,25 +197,7 @@ function DashboardContent() {
         </h1>
       </div>
 
-      {/* 3. PILL FILTER SWITCHER MATCHING REFERENCE: All | Programming | Design */}
-      <div className="flex items-center gap-2.5 overflow-x-auto pb-1 pt-1">
-        {[
-          { id: "All", label: "All" },
-          { id: "Programming", label: "Programming" },
-          { id: "Design", label: "Design" },
-        ].map((pill) => (
-          <button
-            key={pill.id}
-            onClick={() => setActivePill(pill.id)}
-            className={`pill-filter cursor-pointer ${activePill === pill.id ? "pill-filter-active" : "pill-filter-inactive"
-              }`}
-          >
-            {pill.label}
-          </button>
-        ))}
-      </div>
-
-      {/* 4. THE 4 REFERENCE CARDS IN EXACT COLORS: Clicking Scholarships opens the dedicated new page! */}
+      {/* 3. THE 4 REFERENCE CARDS IN EXACT COLORS: Clicking Scholarships opens the dedicated new page! */}
       <OverviewCards
         scholarshipsCount={opportunities.length}
         onSelectCard={handleSelectCard}
@@ -262,6 +269,18 @@ function DashboardContent() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Profile Section Modal with stage switcher */}
+      <ProfileSectionModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        profile={profile}
+        onProfileUpdated={(updated) => {
+          setProfile(updated);
+          setStudentId(updated.id);
+          loadData(updated.id);
+        }}
+      />
     </motion.div>
   );
 }

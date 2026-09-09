@@ -23,12 +23,13 @@ function ScholarshipsPreviewDetailPageContent() {
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [educationStage, setEducationStage] = useState<string | null>(null);
 
-  const fetchScholarships = async () => {
+  const fetchScholarships = async (stage?: string | null) => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const data = await api.scholarships.getPreview(6);
+      const data = await api.scholarships.getPreview(10, stage || undefined);
       setScholarships(data);
     } catch (err: any) {
       setErrorMessage(err.message || "Failed to load scholarship previews.");
@@ -38,7 +39,18 @@ function ScholarshipsPreviewDetailPageContent() {
   };
 
   useEffect(() => {
-    fetchScholarships();
+    const saved = localStorage.getItem("skillcatalyst_session");
+    let activeStage: string | null = null;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.education_stage) activeStage = parsed.education_stage;
+      } catch {
+        // ignore
+      }
+    }
+    setEducationStage(activeStage);
+    fetchScholarships(activeStage);
   }, []);
 
   const cardTintClasses = [
@@ -68,12 +80,18 @@ function ScholarshipsPreviewDetailPageContent() {
         </button>
 
         <span className="text-xs font-semibold text-violet-300 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20">
-          Scholarship Opportunities
+          {educationStage === "class_10"
+            ? "Class 10 Exclusive"
+            : educationStage === "intermediate"
+            ? "Intermediate (11th/12th) Exclusive"
+            : educationStage === "b_tech"
+            ? "B.Tech Undergrad Exclusive"
+            : "Scholarship Opportunities"}
         </span>
 
         <button
           type="button"
-          onClick={fetchScholarships}
+          onClick={() => fetchScholarships(educationStage)}
           className="w-11 h-11 rounded-full bg-[#181822] border border-[#262634] text-[#8E8E9C] hover:text-white flex items-center justify-center transition-transform hover:scale-105 cursor-pointer shadow-md"
           title="Refresh"
         >
@@ -88,7 +106,20 @@ function ScholarshipsPreviewDetailPageContent() {
           <span className="font-normal text-[#E2E2EC]">scholarships</span>
         </h1>
         <p className="text-xs text-[#8E8E9C] mt-2">
-          Verified national and global opportunities currently open for application.
+          {educationStage ? (
+            <span>
+              Showing verified opportunities strictly curated for{" "}
+              <strong className="text-white">
+                {educationStage === "class_10"
+                  ? "Class 10 students"
+                  : educationStage === "intermediate"
+                  ? "Intermediate (11th & 12th) students"
+                  : "B.Tech undergraduates"}
+              </strong>
+            </span>
+          ) : (
+            "Verified national and global opportunities currently open for application."
+          )}
         </p>
       </div>
 
@@ -123,7 +154,7 @@ function ScholarshipsPreviewDetailPageContent() {
         <div className="p-5 bg-red-950/30 border border-red-800/40 rounded-3xl text-center">
           <p className="text-xs text-red-300 mb-2">{errorMessage}</p>
           <button
-            onClick={fetchScholarships}
+            onClick={() => fetchScholarships(educationStage)}
             className="px-4 py-1.5 bg-white text-black text-xs font-semibold rounded-full"
           >
             Retry
@@ -161,26 +192,26 @@ function ScholarshipsPreviewDetailPageContent() {
                   </div>
                 </div>
 
-                <span className="text-xs text-[#1E293B] font-medium flex items-center gap-1 mb-1">
-                  <Building className="w-3.5 h-3.5" />
+                <span className="text-xs text-white/80 font-semibold flex items-center gap-1.5 mb-1.5">
+                  <Building className="w-3.5 h-3.5 text-violet-400" />
                   {item.provider}
                 </span>
 
-                <h3 className="text-lg font-extrabold text-[#0F172A] leading-snug mb-2 group-hover:text-black transition-colors">
+                <h3 className="text-lg sm:text-xl font-black text-white leading-snug mb-2 tracking-tight group-hover:text-violet-200 transition-colors">
                   {item.title}
                 </h3>
 
-                <p className="text-xs text-[#1E293B]/85 leading-relaxed mb-4">
+                <p className="text-xs sm:text-sm text-slate-200/90 leading-relaxed mb-4">
                   {item.description}
                 </p>
 
-                <div className="pt-3 border-t border-black/10 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 font-medium text-[#0F172A]">
-                    <Calendar className="w-3.5 h-3.5 text-[#1E293B]" />
+                <div className="pt-3.5 border-t border-white/15 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 font-semibold text-white/90">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
                     <span>Deadline: {item.deadline}</span>
                   </div>
 
-                  <span className="font-bold text-[#0F172A] text-xs flex items-center gap-1">
+                  <span className="font-extrabold text-white text-xs flex items-center gap-1 group-hover:text-emerald-400 transition-colors">
                     <span>Check with profile</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </span>

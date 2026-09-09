@@ -5,24 +5,143 @@ from backend.app.models.profile import (
 )
 
 SEED_SCHOLARSHIPS = [
+    # ==========================================
+    # 1. CLASS 10 EXCLUSIVE SCHOLARSHIPS
+    # ==========================================
     {
-        "id": "reliance-foundation-ug-2025",
-        "title": "Reliance Foundation Undergraduate Scholarship",
-        "provider": "Reliance Foundation",
-        "description": "Prestigious national scholarship supporting meritorious undergraduate students in India across STEM, Humanities, and Commerce with mentorship and leadership development.",
-        "benefit_value": "₹2,00,000 grant over degree",
-        "deadline": "October 15, 2025",
-        "eligible_stages": "b_tech,intermediate",
-        "min_cgpa_or_percentage": 7.5,
-        "eligible_streams_or_branches": "Computer Science,Electronics,Mechanical,Civil,Chemical,Information Technology,Data Science",
-        "tags": "Merit-cum-Means,Undergraduate,STEM"
+        "id": "ntse-national-talent-2025",
+        "title": "National Talent Search Examination (NTSE) Scholarship",
+        "provider": "NCERT (Govt. of India)",
+        "description": "Premier national talent search honoring top Class 10 students across India with continuous monthly stipends from secondary through higher education.",
+        "benefit_value": "₹1,250 - ₹2,000 / month continuous stipend",
+        "deadline": "November 20, 2025",
+        "eligible_stages": "class_10",
+        "min_cgpa_or_percentage": 70.0,
+        "eligible_streams_or_branches": None,
+        "tags": "National Honor,Class 10,Merit"
     },
+    {
+        "id": "cbse-single-girl-child-10",
+        "title": "CBSE Single Girl Child Merit Scholarship",
+        "provider": "Central Board of Secondary Education",
+        "description": "Exclusive central scholarship for girl students who passed Class 10 with distinction to support their continuation into 11th and 12th grades.",
+        "benefit_value": "₹500 / month tuition allowance (2 Years)",
+        "deadline": "December 15, 2025",
+        "eligible_stages": "class_10",
+        "min_cgpa_or_percentage": 60.0,
+        "eligible_streams_or_branches": None,
+        "tags": "CBSE,Girls Education,Class 10"
+    },
+    {
+        "id": "tata-building-india-10",
+        "title": "Tata Building India Secondary School Award",
+        "provider": "Tata Community Initiatives Trust",
+        "description": "Merit award encouraging nation-building leadership, essay writing, and academic diligence among secondary school students.",
+        "benefit_value": "₹25,000 cash award + Citation",
+        "deadline": "November 10, 2025",
+        "eligible_stages": "class_10",
+        "min_cgpa_or_percentage": 65.0,
+        "eligible_streams_or_branches": None,
+        "tags": "Tata Trust,Class 10,Merit"
+    },
+    {
+        "id": "vimarsh-young-science-10",
+        "title": "Vimarsh Young Science Scholars Grant",
+        "provider": "Department of Science & Technology",
+        "description": "Identifying early mathematical and scientific aptitude in Class 10 students with sponsored research kits and secondary coaching.",
+        "benefit_value": "₹18,000 annual science stipend",
+        "deadline": "October 28, 2025",
+        "eligible_stages": "class_10",
+        "min_cgpa_or_percentage": 75.0,
+        "eligible_streams_or_branches": None,
+        "tags": "Science Talent,Class 10,STEM"
+    },
+    {
+        "id": "aditya-birla-class10-scholar",
+        "title": "Aditya Birla Secondary School Scholarship",
+        "provider": "Aditya Birla Capital Foundation",
+        "description": "Need-cum-merit education support providing textbook stipends and exam fee reimbursements for promising Class 10 achievers.",
+        "benefit_value": "₹15,000 annual school grant",
+        "deadline": "January 15, 2026",
+        "eligible_stages": "class_10",
+        "min_cgpa_or_percentage": 65.0,
+        "eligible_streams_or_branches": None,
+        "tags": "Need-Based,Class 10,School Fees"
+    },
+
+    # ==========================================
+    # 2. INTERMEDIATE (11th & 12th) EXCLUSIVE SCHOLARSHIPS
+    # ==========================================
+    {
+        "id": "inspire-she-scholarship-inter",
+        "title": "INSPIRE Scholarship for Higher Education (SHE)",
+        "provider": "Department of Science & Technology (Govt. of India)",
+        "description": "Flagship government scholarship attracting young talent to natural and basic sciences during 11th/12th intermediate studies.",
+        "benefit_value": "₹80,000 / year (₹60,000 cash + ₹20,000 mentor grant)",
+        "deadline": "December 31, 2025",
+        "eligible_stages": "intermediate",
+        "min_cgpa_or_percentage": 80.0,
+        "eligible_streams_or_branches": "MPC,BiPC,Science",
+        "tags": "DST Inspire,Intermediate,STEM Research"
+    },
+    {
+        "id": "dr-abdul-kalam-stem-inter",
+        "title": "Dr. APJ Abdul Kalam Junior STEM Fellowship",
+        "provider": "Foundation for Innovation & Science",
+        "description": "Encouraging engineering and medical entrance aspirants in 11th and 12th with coaching sponsorships and lab access.",
+        "benefit_value": "₹45,000 research grant + Mentor access",
+        "deadline": "January 15, 2026",
+        "eligible_stages": "intermediate",
+        "min_cgpa_or_percentage": 75.0,
+        "eligible_streams_or_branches": "MPC,BiPC",
+        "tags": "STEM,Intermediate,JEE/NEET Prep"
+    },
+    {
+        "id": "hdfc-badhte-kadam-inter",
+        "title": "HDFC Bank Parivartan's ECS Intermediate Scholarship",
+        "provider": "HDFC Bank CSR Foundation",
+        "description": "Financial empowerment support for students pursuing Class 11 and 12 from low-income families across all educational streams.",
+        "benefit_value": "₹35,000 annual education grant",
+        "deadline": "November 30, 2025",
+        "eligible_stages": "intermediate",
+        "min_cgpa_or_percentage": 55.0,
+        "eligible_streams_or_branches": "MPC,BiPC,MEC,CEC,Science,Commerce,Arts",
+        "tags": "Need-Based,Intermediate,School Fees"
+    },
+    {
+        "id": "sbi-asha-intermediate",
+        "title": "SBI Asha Foundation Higher Secondary Scholarship",
+        "provider": "SBI Foundation",
+        "description": "Annual merit fellowship for high-achieving 11th and 12th grade scholars across recognized state and central junior colleges.",
+        "benefit_value": "₹25,000 direct tuition transfer",
+        "deadline": "October 31, 2025",
+        "eligible_stages": "intermediate",
+        "min_cgpa_or_percentage": 75.0,
+        "eligible_streams_or_branches": "MPC,BiPC,MEC,Commerce,Science",
+        "tags": "Banking CSR,Intermediate,Merit"
+    },
+    {
+        "id": "aicte-pragati-intermediate",
+        "title": "AICTE Pragati Junior Scholarship for Technical +2",
+        "provider": "Ministry of Education (Govt. of India)",
+        "description": "Government scholarship scheme assisting girl students pursuing +2 vocational technical streams and polytechnic diplomas.",
+        "benefit_value": "₹50,000 / year tuition assistance",
+        "deadline": "December 20, 2025",
+        "eligible_stages": "intermediate",
+        "min_cgpa_or_percentage": 60.0,
+        "eligible_streams_or_branches": "MPC,Vocational Technical,Computer Science",
+        "tags": "Government,Girls Education,Intermediate"
+    },
+
+    # ==========================================
+    # 3. B.TECH EXCLUSIVE SCHOLARSHIPS
+    # ==========================================
     {
         "id": "google-generation-apac-2025",
         "title": "Generation Google Scholarship (APAC)",
         "provider": "Google India & APAC",
-        "description": "Awarded to aspiring computer science students who demonstrate passion for technology, academic excellence, and leadership in fostering diversity and inclusion.",
-        "benefit_value": "$2,500 USD grant + Community",
+        "description": "Awarded to aspiring computer science undergraduate students demonstrating leadership, diversity commitment, and technical excellence.",
+        "benefit_value": "$2,500 USD grant + Global Tech Community",
         "deadline": "November 30, 2025",
         "eligible_stages": "b_tech",
         "min_cgpa_or_percentage": 8.0,
@@ -30,71 +149,71 @@ SEED_SCHOLARSHIPS = [
         "tags": "Women in Tech,Computer Science,Global"
     },
     {
+        "id": "reliance-foundation-ug-2025",
+        "title": "Reliance Foundation Undergraduate STEM Scholarship",
+        "provider": "Reliance Foundation",
+        "description": "Prestigious national grant supporting meritorious undergraduate engineering and tech students with comprehensive leadership development.",
+        "benefit_value": "₹2,00,000 grant over degree",
+        "deadline": "October 15, 2025",
+        "eligible_stages": "b_tech",
+        "min_cgpa_or_percentage": 7.5,
+        "eligible_streams_or_branches": "Computer Science,Electronics,Mechanical,Civil,Chemical,Information Technology,Data Science",
+        "tags": "Merit-cum-Means,Undergraduate,STEM"
+    },
+    {
+        "id": "amazon-future-engineer-btech",
+        "title": "Amazon Future Engineer Scholarship & Mentorship",
+        "provider": "Amazon India",
+        "description": "Transformative opportunity providing annual college tuition support, an Amazon laptop, and direct mentorship from Amazon software developers.",
+        "benefit_value": "₹50,000 / year + Laptop + Mentorship",
+        "deadline": "December 15, 2025",
+        "eligible_stages": "b_tech",
+        "min_cgpa_or_percentage": 7.0,
+        "eligible_streams_or_branches": "Computer Science,IT,ECE,Data Science,AI",
+        "tags": "Corporate Tech,B.Tech,Mentorship"
+    },
+    {
+        "id": "adobe-india-women-tech",
+        "title": "Adobe India Women-in-Technology Scholarship",
+        "provider": "Adobe Systems",
+        "description": "Recognizing outstanding women engineering students in computing and engineering with substantial tuition grants and summer internship interview.",
+        "benefit_value": "₹1,00,000 tuition grant + Adobe Internship",
+        "deadline": "November 15, 2025",
+        "eligible_stages": "b_tech",
+        "min_cgpa_or_percentage": 8.0,
+        "eligible_streams_or_branches": "Computer Science,Information Technology,Software Engineering",
+        "tags": "Diversity in Tech,B.Tech,Internship"
+    },
+    {
         "id": "aicte-pragati-girls-2025",
-        "title": "AICTE Pragati Scholarship for Girls",
+        "title": "AICTE Pragati Engineering Degree Scholarship",
         "provider": "Ministry of Education (Govt. of India)",
-        "description": "Government scholarship scheme aimed at providing assistance for advancement of girl students pursuing technical degree or diploma education in recognized institutions.",
-        "benefit_value": "₹50,000 per year towards tuition",
+        "description": "Government scheme providing continuous financial assistance for girl students admitted to first year of B.Tech degree programs in AICTE institutions.",
+        "benefit_value": "₹50,000 per year towards degree tuition",
         "deadline": "December 31, 2025",
-        "eligible_stages": "b_tech,intermediate",
+        "eligible_stages": "b_tech",
         "min_cgpa_or_percentage": 6.5,
         "eligible_streams_or_branches": "All Technical Streams,Engineering,Technology",
-        "tags": "Government,Girls Education,Technical"
+        "tags": "Government,Engineering,Degree"
     },
     {
-        "id": "tata-capital-pankh-2025",
-        "title": "Tata Capital Pankh Scholarship Programme",
-        "provider": "Tata Capital CSR Foundation",
-        "description": "Financial empowerment initiative providing tuition fees reimbursement and academic support for school and college students from economically vulnerable families.",
-        "benefit_value": "Up to 80% tuition fee support",
-        "deadline": "November 10, 2025",
-        "eligible_stages": "class_10,intermediate,b_tech",
-        "min_cgpa_or_percentage": 60.0,
-        "eligible_streams_or_branches": None,
-        "tags": "Need-Based,Class 10-12,Tuition Support"
-    },
-    {
-        "id": "aditya-birla-capital-2025",
-        "title": "Aditya Birla Capital COVID Support & Merit Grant",
-        "provider": "Aditya Birla Capital Foundation",
-        "description": "Comprehensive scholarship covering educational expenses and coaching stipends for promising secondary and senior secondary students.",
-        "benefit_value": "₹18,000 - ₹30,000 annual grant",
-        "deadline": "October 28, 2025",
-        "eligible_stages": "class_10,intermediate",
-        "min_cgpa_or_percentage": 65.0,
-        "eligible_streams_or_branches": "MPC,BiPC,MEC,Science,Commerce",
-        "tags": "Secondary,Higher Secondary,Coaching Grant"
-    },
-    {
-        "id": "ntse-national-talent-2025",
-        "title": "National Talent Search Scholarship (NTSE)",
-        "provider": "NCERT (Govt. of India)",
-        "description": "Premier national talent search program recognizing intellectual aptitude in Class 10 students with continuous monthly stipends through Ph.D. level.",
-        "benefit_value": "₹1,250/month (Higher Sec) to ₹2,000/month (UG/PG)",
-        "deadline": "November 20, 2025",
-        "eligible_stages": "class_10",
-        "min_cgpa_or_percentage": 70.0,
-        "eligible_streams_or_branches": None,
-        "tags": "National Honor,Class 10,Stipend"
-    },
-    {
-        "id": "dr-abdul-kalam-stem-2025",
-        "title": "Dr. APJ Abdul Kalam STEM Talent Award",
-        "provider": "Foundation for Innovation & Science",
-        "description": "Encouraging early research instincts and engineering enthusiasm among young students with sponsored lab equipment and project stipends.",
-        "benefit_value": "₹45,000 research grant + Mentor access",
-        "deadline": "January 15, 2026",
-        "eligible_stages": "intermediate,b_tech",
-        "min_cgpa_or_percentage": 7.8,
-        "eligible_streams_or_branches": "MPC,Computer Science,Electronics,Physics",
-        "tags": "STEM Research,Innovation,Mentorship"
+        "id": "qualcomm-wetech-btech",
+        "title": "Qualcomm WeTech Global STEM Scholarship",
+        "provider": "Qualcomm & IIE",
+        "description": "Fostering next-generation semiconductor and computing leaders with university scholarships and 6 months of 1-on-1 Qualcomm engineering mentorship.",
+        "benefit_value": "$1,500 USD + Qualcomm Mentor",
+        "deadline": "January 20, 2026",
+        "eligible_stages": "b_tech",
+        "min_cgpa_or_percentage": 7.5,
+        "eligible_streams_or_branches": "ECE,EEE,CSE,VLSI,Embedded Systems",
+        "tags": "Semiconductors,Hardware/Software,B.Tech"
     }
 ]
 
 
 def seed_database(db: Session):
     """Populates initial scholarships and demo profile data if not present."""
-    # Seed scholarships
+    # Seed or update scholarships to ensure stage eligibility is accurate
     for item in SEED_SCHOLARSHIPS:
         existing = db.query(Scholarship).filter(Scholarship.id == item["id"]).first()
         if not existing:
@@ -111,25 +230,41 @@ def seed_database(db: Session):
                 tags=item["tags"]
             )
             db.add(scholarship)
+        else:
+            # Update fields in case they changed in seed definitions
+            existing.title = item["title"]
+            existing.provider = item["provider"]
+            existing.description = item["description"]
+            existing.benefit_value = item["benefit_value"]
+            existing.deadline = item["deadline"]
+            existing.eligible_stages = item["eligible_stages"]
+            existing.min_cgpa_or_percentage = item["min_cgpa_or_percentage"]
+            existing.eligible_streams_or_branches = item["eligible_streams_or_branches"]
+            existing.tags = item["tags"]
 
-    # Seed a standard demo student profile (Arjun Sharma - B.Tech CSE)
-    demo_email = "demo.student@skillcatalyst.dev"
-    demo_student = db.query(Student).filter(Student.email == demo_email).first()
-    if not demo_student:
-        demo_student = Student(
+    # Prune obsolete legacy scholarships not in current stage-exclusive catalogue
+    valid_ids = [item["id"] for item in SEED_SCHOLARSHIPS]
+    db.query(Scholarship).filter(Scholarship.id.notin_(valid_ids)).delete(synchronize_session=False)
+    db.flush()
+
+    # 1. B.TECH DEMO STUDENT: Arjun Sharma
+    btech_email = "demo.student@skillcatalyst.dev"
+    btech_student = db.query(Student).filter(Student.email == btech_email).first()
+    if not btech_student:
+        btech_student = Student(
             id="demo-student-uuid-001",
             name="Arjun Sharma",
-            email=demo_email,
+            email=btech_email,
             date_of_birth="2003-08-14",
             location="Hyderabad, Telangana",
             education_stage="b_tech",
             target_role="Software Engineer"
         )
-        db.add(demo_student)
+        db.add(btech_student)
         db.flush()
 
-        academic = AcademicProfile(
-            student_id=demo_student.id,
+        db.add(AcademicProfile(
+            student_id=btech_student.id,
             school_or_college="Hyderabad Institute of Technology & Management",
             board=None,
             university="JNTU Hyderabad",
@@ -139,67 +274,99 @@ def seed_database(db: Session):
             cgpa=8.42,
             stream=None,
             future_direction=None
-        )
-        db.add(academic)
-
-        skills = [
-            ("Python", "Advanced"),
-            ("React", "Intermediate"),
-            ("SQL", "Intermediate"),
-            ("FastAPI", "Intermediate"),
-            ("Git & GitHub", "Advanced"),
-            ("Data Structures", "Intermediate")
-        ]
-        for name, prof in skills:
-            db.add(StudentSkill(student_id=demo_student.id, skill_name=name, proficiency=prof))
-
-        projects = [
-            StudentProject(
-                student_id=demo_student.id,
-                name="SkillCatalyst Opportunity Navigator",
-                description="AI-guided pathway navigator mapping verified student credentials to curated institutional scholarships.",
-                technologies="Python, Next.js, PostgreSQL, Tailwind CSS",
-                github_url="https://github.com/arjunsharma/skillcatalyst"
-            ),
-            StudentProject(
-                student_id=demo_student.id,
-                name="Automated Lab Telemetry Collector",
-                description="IoT-integrated telemetry parser for automated sensor data acquisition and anomaly alerting.",
-                technologies="Python, SQLite, MQTT, React",
-                github_url="https://github.com/arjunsharma/lab-telemetry"
-            )
-        ]
-        for p in projects:
-            db.add(p)
-
-        db.add(StudentCertification(
-            student_id=demo_student.id,
-            name="AWS Certified Cloud Practitioner",
-            issuer="Amazon Web Services",
-            date="2024",
-            credential_url="https://aws.amazon.com/verification"
         ))
 
-        db.add(StudentExperience(
-            student_id=demo_student.id,
-            type="internship",
-            organization="Cognizant Digital Works",
-            role="Software Engineering Intern",
-            description="Contributed to RESTful microservices for internal talent allocation dashboard.",
-            start_date="May 2024",
-            end_date="July 2024"
+        for name, prof in [("Python", "Advanced"), ("React", "Intermediate"), ("SQL", "Intermediate"), ("FastAPI", "Intermediate"), ("Git & GitHub", "Advanced")]:
+            db.add(StudentSkill(student_id=btech_student.id, skill_name=name, proficiency=prof))
+
+        db.add(StudentProject(
+            student_id=btech_student.id,
+            name="Ascend Intelligence Navigator",
+            description="AI-guided pathway navigator mapping student profiles to curated scholarships.",
+            technologies="Python, Next.js, SQLite, Tailwind CSS",
+            github_url="https://github.com/arjunsharma/ascend"
         ))
 
         db.add(StudentPreference(
-            student_id=demo_student.id,
+            student_id=btech_student.id,
             preferred_location="Hyderabad / Bangalore",
             available_learning_time="2–4 hours/day"
         ))
 
-        db.add(StudentFinancialContext(
-            student_id=demo_student.id,
-            education_budget="₹1,50,000 - ₹2,50,000 / year",
-            certification_budget="₹15,000"
+    # 2. CLASS 10 DEMO STUDENT: Rohan Verma
+    class10_email = "demo.class10@skillcatalyst.dev"
+    class10_student = db.query(Student).filter(Student.email == class10_email).first()
+    if not class10_student:
+        class10_student = Student(
+            id="demo-student-uuid-002",
+            name="Rohan Verma",
+            email=class10_email,
+            date_of_birth="2009-04-10",
+            location="Hyderabad, Telangana",
+            education_stage="class_10",
+            target_role="Science Scholar"
+        )
+        db.add(class10_student)
+        db.flush()
+
+        db.add(AcademicProfile(
+            student_id=class10_student.id,
+            school_or_college="Delhi Public School, Hyderabad",
+            board="CBSE",
+            university=None,
+            branch=None,
+            year="Class 10",
+            percentage=88.5,
+            cgpa=None,
+            stream=None,
+            future_direction="Engineering / STEM"
+        ))
+
+        for interest in ["Computer Science", "Physics", "Mathematics"]:
+            db.add(StudentInterest(student_id=class10_student.id, interest=interest))
+
+        db.add(StudentPreference(
+            student_id=class10_student.id,
+            preferred_location="Hyderabad",
+            available_learning_time="1–2 hours/day"
+        ))
+
+    # 3. INTERMEDIATE DEMO STUDENT: Priya Nair
+    inter_email = "demo.intermediate@skillcatalyst.dev"
+    inter_student = db.query(Student).filter(Student.email == inter_email).first()
+    if not inter_student:
+        inter_student = Student(
+            id="demo-student-uuid-003",
+            name="Priya Nair",
+            email=inter_email,
+            date_of_birth="2007-06-22",
+            location="Secunderabad, Telangana",
+            education_stage="intermediate",
+            target_role="Engineering Aspirant"
+        )
+        db.add(inter_student)
+        db.flush()
+
+        db.add(AcademicProfile(
+            student_id=inter_student.id,
+            school_or_college="Narayana Junior College, Hyderabad",
+            board="Telangana State Board (TSBIE)",
+            university=None,
+            branch=None,
+            year="2nd Year (12th)",
+            percentage=92.4,
+            cgpa=None,
+            stream="MPC",
+            future_direction="Computer Science Engineering"
+        ))
+
+        for interest in ["Mathematics", "Computer Science", "Artificial Intelligence"]:
+            db.add(StudentInterest(student_id=inter_student.id, interest=interest))
+
+        db.add(StudentPreference(
+            student_id=inter_student.id,
+            preferred_location="Hyderabad",
+            available_learning_time="3–4 hours/day"
         ))
 
     db.commit()

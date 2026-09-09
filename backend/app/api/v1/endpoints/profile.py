@@ -287,6 +287,8 @@ def update_student_profile(student_id: str, payload: StudentProfileUpdate, db: S
         student.location = payload.location
     if payload.target_role is not None:
         student.target_role = payload.target_role
+    if payload.education_stage is not None:
+        student.education_stage = payload.education_stage
 
     if payload.academic_profile and student.academic_profile:
         for k, v in payload.academic_profile.dict(exclude_unset=True).items():
@@ -297,6 +299,12 @@ def update_student_profile(student_id: str, payload: StudentProfileUpdate, db: S
             student.preferences = StudentPreference(student_id=student.id)
         for k, v in payload.preferences.dict(exclude_unset=True).items():
             setattr(student.preferences, k, v)
+
+    if payload.financial_context:
+        if not student.financial_context:
+            student.financial_context = StudentFinancialContext(student_id=student.id)
+        for k, v in payload.financial_context.dict(exclude_unset=True).items():
+            setattr(student.financial_context, k, v)
 
     db.commit()
     db.refresh(student)

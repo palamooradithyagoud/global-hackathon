@@ -10,12 +10,26 @@ router = APIRouter(prefix="/scholarships", tags=["Scholarships"])
 
 
 @router.get("/preview", response_model=List[ScholarshipResponse])
-def get_scholarship_preview(limit: int = 5, db: Session = Depends(get_db)):
+def get_scholarship_preview(
+    limit: int = 6,
+    stage: Optional[str] = Query(None, description="Optional education stage to filter preview (class_10, intermediate, b_tech)"),
+    db: Session = Depends(get_db)
+):
     """
-    Returns 3–5 realistic scholarship opportunities for the preview value hook.
+    Returns realistic scholarship opportunities for the preview value hook.
+    Optionally filters strictly by educational stage.
     Status remains 'Eligibility not checked yet' until profile is constructed.
     """
-    scholarships = db.query(Scholarship).limit(limit).all()
+    all_scholarships = db.query(Scholarship).all()
+    if stage:
+        target_stage = stage.strip().lower()
+        scholarships = [
+            s for s in all_scholarships
+            if target_stage in [st.strip().lower() for st in s.eligible_stages.split(",")]
+        ][:limit]
+    else:
+        scholarships = all_scholarships[:limit]
+
     results = []
     for s in scholarships:
         tags = [t.strip() for t in s.tags.split(",")] if s.tags else []
@@ -42,8 +56,9 @@ def get_scholarship_preview(limit: int = 5, db: Session = Depends(get_db)):
 @router.get("/personalized", response_model=List[PersonalizedScholarshipResponse])
 def get_personalized_scholarships(student_id: str = Query(..., description="ID of the student profile"), db: Session = Depends(get_db)):
     """
-    Evaluates all scholarships against the student's authoritative database profile
-    and returns sorted opportunities with match scores, eligibility tags, and reasons.
+    Evaluates scholarships against the student's authoritative database profile.
+    Strictly filters to opportunities matching the student's education stage
+    (Class 10 -> Class 10 only, Intermediate -> 11th/12th only, B.Tech -> B.Tech only).
     """
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
@@ -53,8 +68,16 @@ def get_personalized_scholarships(student_id: str = Query(..., description="ID o
         )
 
     all_scholarships = db.query(Scholarship).all()
+
+    # Strictly filter by student's exact education stage
+    student_stage = student.education_stage.strip().lower()
+    stage_scholarships = [
+        s for s in all_scholarships
+        if student_stage in [st.strip().lower() for st in s.eligible_stages.split(",")]
+    ]
+
     personalized = []
-    for s in all_scholarships:
+    for s in stage_scholarships:
         res = evaluate_scholarship_eligibility(s, student)
         personalized.append(res)
 
