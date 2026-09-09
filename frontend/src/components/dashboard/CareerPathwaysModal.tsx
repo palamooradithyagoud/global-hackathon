@@ -645,6 +645,113 @@ const DEGREE_OPTIONS: DegreeOptionInfo[] = [
   }
 ];
 
+interface ExamItem {
+  name: string;
+  target: string;
+  badge?: string;
+}
+
+interface ExamGroup {
+  category: string;
+  icon: string;
+  color: string;
+  borderColor: string;
+  bgColor: string;
+  exams: ExamItem[];
+}
+
+const ENTRANCE_EXAMS_10TH: ExamItem[] = [
+  { name: "AP POLYCET", target: "Diploma/Polytechnic", badge: "Andhra Pradesh" },
+  { name: "TG POLYCET", target: "Diploma/Polytechnic", badge: "Telangana" }
+];
+
+const ENTRANCE_EXAMS_INTERMEDIATE: ExamGroup[] = [
+  {
+    category: "Engineering / Technology",
+    icon: "💻",
+    color: "#60A5FA",
+    borderColor: "rgba(96, 165, 250, 0.3)",
+    bgColor: "rgba(96, 165, 250, 0.08)",
+    exams: [
+      { name: "AP EAPCET", target: "AP Engineering", badge: "State Level" },
+      { name: "TG EAPCET", target: "Telangana Engineering", badge: "State Level" },
+      { name: "JEE Main", target: "NITs, IIITs, other engineering colleges", badge: "National" },
+      { name: "JEE Advanced", target: "IITs", badge: "Premier National" },
+      { name: "BITSAT", target: "BITS", badge: "Deemed Univ" },
+      { name: "VITEEE", target: "VIT", badge: "Deemed Univ" },
+      { name: "SRMJEEE", target: "SRM", badge: "Deemed Univ" }
+    ]
+  },
+  {
+    category: "Medical",
+    icon: "🩺",
+    color: "#34D399",
+    borderColor: "rgba(52, 211, 153, 0.3)",
+    bgColor: "rgba(52, 211, 153, 0.08)",
+    exams: [
+      { name: "NEET-UG", target: "MBBS, BDS, AYUSH, etc.", badge: "All India Medical" }
+    ]
+  },
+  {
+    category: "Architecture / Design",
+    icon: "🎨",
+    color: "#C084FC",
+    borderColor: "rgba(192, 132, 252, 0.3)",
+    bgColor: "rgba(192, 132, 252, 0.08)",
+    exams: [
+      { name: "NATA", target: "B.Arch", badge: "National Council" },
+      { name: "JEE Main Paper 2", target: "B.Arch/B.Planning", badge: "NTA National" },
+      { name: "UCEED", target: "Undergraduate Design", badge: "IIT Bombay" }
+    ]
+  }
+];
+
+const ENTRANCE_EXAMS_DEGREE: ExamGroup[] = [
+  {
+    category: "Engineering / Technology",
+    icon: "⚙️",
+    color: "#60A5FA",
+    borderColor: "rgba(96, 165, 250, 0.3)",
+    bgColor: "rgba(96, 165, 250, 0.08)",
+    exams: [
+      { name: "AP PGECET", target: "M.Tech/M.Pharm/related PG", badge: "AP State" },
+      { name: "TG PGECET", target: "M.Tech/M.Pharm/related PG", badge: "TG State" },
+      { name: "GATE", target: "M.Tech/MS/PSU opportunities", badge: "National Premier" }
+    ]
+  },
+  {
+    category: "MBA / Management",
+    icon: "📈",
+    color: "#FBBF24",
+    borderColor: "rgba(251, 191, 36, 0.3)",
+    bgColor: "rgba(251, 191, 36, 0.08)",
+    exams: [
+      { name: "AP ICET", target: "MBA/MCA", badge: "AP State" },
+      { name: "TG ICET", target: "MBA/MCA", badge: "TG State" },
+      { name: "CAT", target: "IIMs and other B-schools", badge: "Premier National" },
+      { name: "XAT", target: "XLRI and other B-schools", badge: "XLRI National" },
+      { name: "CMAT", target: "Management institutes", badge: "AICTE / NTA" },
+      { name: "MAT", target: "Management institutes", badge: "AIMA National" }
+    ]
+  },
+  {
+    category: "Government / Competitive",
+    icon: "🏛️",
+    color: "#F472B6",
+    borderColor: "rgba(244, 114, 182, 0.3)",
+    bgColor: "rgba(244, 114, 182, 0.08)",
+    exams: [
+      { name: "UPSC CSE", target: "Civil Services", badge: "Union UPSC" },
+      { name: "SSC CGL", target: "Central Government jobs", badge: "Staff Selection" },
+      { name: "IBPS PO/Clerk", target: "Banking", badge: "Public Sector Banks" },
+      { name: "SBI PO/Clerk", target: "Banking", badge: "State Bank of India" },
+      { name: "RRB exams", target: "Railways", badge: "Railway Recruitment" },
+      { name: "APPSC exams", target: "Andhra Pradesh government", badge: "AP State Public Service" },
+      { name: "TSPSC/TGPSC exams", target: "Telangana government", badge: "TG State Public Service" }
+    ]
+  }
+];
+
 export default function CareerPathwaysModal({
   isOpen,
   onClose,
@@ -698,6 +805,13 @@ export default function CareerPathwaysModal({
   // Search and filter for the 14 subgroups
   const [subgroupSearch, setSubgroupSearch] = useState("");
   const [subgroupStreamFilter, setSubgroupStreamFilter] = useState<string>("ALL");
+
+  // Filter and collapse states for Entrance Exams
+  const [interExamCategoryFilter, setInterExamCategoryFilter] = useState<string>("ALL");
+  const [degreeExamCategoryFilter, setDegreeExamCategoryFilter] = useState<string>("ALL");
+  const [is10thExamsExpanded, setIs10thExamsExpanded] = useState(true);
+  const [isInterExamsExpanded, setIsInterExamsExpanded] = useState(true);
+  const [isDegreeExamsExpanded, setIsDegreeExamsExpanded] = useState(true);
 
   if (!isOpen) return null;
 
@@ -996,6 +1110,55 @@ export default function CareerPathwaysModal({
                     <ArrowUpRight className="w-4 h-4" />
                   </div>
                 </motion.div>
+
+                {/* ENTRANCE EXAMS SECTION: AFTER 10TH */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#161624] to-[#12121C] border border-[#2B2B3C] shadow-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                          <span>Entrance Exams: After 10th</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 font-semibold border border-pink-500/30">
+                            Diploma / Polytechnic
+                          </span>
+                        </h4>
+                        <p className="text-[11px] text-[#8E8E9C]">
+                          State-level entrance examinations for direct admission into 3-Year Technical Polytechnic Diplomas:
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    {ENTRANCE_EXAMS_10TH.map((exam, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 rounded-xl bg-[#181826] border border-[#2B2B3C] hover:border-pink-500/40 hover:bg-[#1B1B2A] transition-all flex items-center justify-between gap-3 group"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-extrabold text-sm text-pink-300 tracking-tight group-hover:text-pink-200">
+                              {exam.name}
+                            </span>
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20 font-bold">
+                              {exam.badge}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[#CBCBD8] mt-0.5 flex items-center gap-1.5">
+                            <span className="text-[#6E6E82]">—</span>
+                            <span className="font-medium text-white/90">{exam.target}</span>
+                          </p>
+                        </div>
+                        <div className="w-6 h-6 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400 shrink-0 group-hover:scale-110 transition-transform">
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
@@ -1627,6 +1790,55 @@ export default function CareerPathwaysModal({
                     )}
                   </AnimatePresence>
                 </div>
+
+                {/* Entrance Exams for Polytechnic / Diploma */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#161624] to-[#12121C] border border-[#2B2B3C] shadow-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-pink-500/10 border border-pink-500/30 flex items-center justify-center text-pink-400">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                          <span>Entrance Exams: After 10th for Polytechnic</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/15 text-pink-300 font-semibold border border-pink-500/30">
+                            State Board Entrances
+                          </span>
+                        </h4>
+                        <p className="text-[11px] text-[#8E8E9C]">
+                          Mandatory state polytechnic entrance tests for Diploma admissions:
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    {ENTRANCE_EXAMS_10TH.map((exam, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 rounded-xl bg-[#181826] border border-[#2B2B3C] hover:border-pink-500/40 hover:bg-[#1B1B2A] transition-all flex items-center justify-between gap-3 group"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-extrabold text-sm text-pink-300 tracking-tight group-hover:text-pink-200">
+                              {exam.name}
+                            </span>
+                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20 font-bold">
+                              {exam.badge}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[#CBCBD8] mt-0.5 flex items-center gap-1.5">
+                            <span className="text-[#6E6E82]">—</span>
+                            <span className="font-medium text-white/90">{exam.target}</span>
+                          </p>
+                        </div>
+                        <div className="w-6 h-6 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400 shrink-0 group-hover:scale-110 transition-transform">
+                          <ArrowUpRight className="w-3.5 h-3.5" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </motion.div>
           )}
@@ -1676,6 +1888,99 @@ export default function CareerPathwaysModal({
                   </button>
                 )}
               </div>
+
+              {/* ENTRANCE EXAMS SECTION: AFTER INTERMEDIATE / DIPLOMA */}
+              {!activeAfterInterSubgroup && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#161624] to-[#12121C] border border-[#2B2B3C] shadow-lg space-y-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                          <span>Entrance Exams: After Intermediate / Diploma</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-semibold border border-amber-500/30">
+                            11 Key Entrances
+                          </span>
+                        </h4>
+                        <p className="text-[11px] text-[#8E8E9C]">
+                          Major entrance tests across Engineering, Medical, and Architecture/Design:
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Category filter pills */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => setInterExamCategoryFilter("ALL")}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                          interExamCategoryFilter === "ALL"
+                            ? "bg-amber-400 text-black font-extrabold shadow-xs"
+                            : "bg-[#181826] text-[#8E8E9C] hover:text-white border border-[#2B2B3C]"
+                        }`}
+                      >
+                        All (11)
+                      </button>
+                      {ENTRANCE_EXAMS_INTERMEDIATE.map((cat) => (
+                        <button
+                          key={cat.category}
+                          type="button"
+                          onClick={() => setInterExamCategoryFilter(cat.category)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                            interExamCategoryFilter === cat.category
+                              ? "bg-amber-400 text-black font-extrabold shadow-xs"
+                              : "bg-[#181826] text-[#8E8E9C] hover:text-white border border-[#2B2B3C]"
+                          }`}
+                        >
+                          <span>{cat.icon}</span>
+                          <span>{cat.category.split(" / ")[0]}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3.5">
+                    {ENTRANCE_EXAMS_INTERMEDIATE
+                      .filter((cat) => interExamCategoryFilter === "ALL" || interExamCategoryFilter === cat.category)
+                      .map((cat) => (
+                        <div key={cat.category} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{cat.icon}</span>
+                            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: cat.color }}>
+                              {cat.category}
+                            </span>
+                            <span className="text-[10px] text-[#6E6E82]">({cat.exams.length} exams)</span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {cat.exams.map((exam, idx) => (
+                              <div
+                                key={idx}
+                                className="p-2.5 rounded-xl bg-[#181826] border border-[#262638] hover:border-[#3E3E56] hover:bg-[#1B1B2A] transition-all flex flex-col justify-between gap-1 group"
+                                style={{ borderLeftColor: cat.color, borderLeftWidth: "3px" }}
+                              >
+                                <div className="flex items-center justify-between gap-1.5">
+                                  <span className="font-extrabold text-xs tracking-tight text-white group-hover:text-amber-300 transition-colors">
+                                    {exam.name}
+                                  </span>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/5 text-[#A6A6BC] font-semibold border border-white/10 shrink-0">
+                                    {exam.badge}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[#A6A6BC] flex items-center gap-1">
+                                  <span className="text-[#6E6E82] shrink-0">—</span>
+                                  <span className="truncate">{exam.target}</span>
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
 
               <div className="p-4 sm:p-5 rounded-2xl bg-[#161622] border border-[#2B2B3C] space-y-4">
                 {/* Header info */}
@@ -1946,6 +2251,99 @@ export default function CareerPathwaysModal({
                   </button>
                 )}
               </div>
+
+              {/* ENTRANCE & COMPETITIVE EXAMS SECTION: AFTER DEGREE / UNDERGRADUATE */}
+              {!activeDegreeOption && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#161624] to-[#12121C] border border-[#2B2B3C] shadow-lg space-y-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                          <span>Entrance & Competitive Exams: After Degree</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 font-semibold border border-blue-500/30">
+                            16 Key Gateways
+                          </span>
+                        </h4>
+                        <p className="text-[11px] text-[#8E8E9C]">
+                          Premier national & state competitive examinations across Engineering, MBA, and Government:
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Category filter pills */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => setDegreeExamCategoryFilter("ALL")}
+                        className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                          degreeExamCategoryFilter === "ALL"
+                            ? "bg-blue-400 text-black font-extrabold shadow-xs"
+                            : "bg-[#181826] text-[#8E8E9C] hover:text-white border border-[#2B2B3C]"
+                        }`}
+                      >
+                        All (16)
+                      </button>
+                      {ENTRANCE_EXAMS_DEGREE.map((cat) => (
+                        <button
+                          key={cat.category}
+                          type="button"
+                          onClick={() => setDegreeExamCategoryFilter(cat.category)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer flex items-center gap-1 ${
+                            degreeExamCategoryFilter === cat.category
+                              ? "bg-blue-400 text-black font-extrabold shadow-xs"
+                              : "bg-[#181826] text-[#8E8E9C] hover:text-white border border-[#2B2B3C]"
+                          }`}
+                        >
+                          <span>{cat.icon}</span>
+                          <span>{cat.category.split(" / ")[0]}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="space-y-3.5">
+                    {ENTRANCE_EXAMS_DEGREE
+                      .filter((cat) => degreeExamCategoryFilter === "ALL" || degreeExamCategoryFilter === cat.category)
+                      .map((cat) => (
+                        <div key={cat.category} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{cat.icon}</span>
+                            <span className="text-xs font-bold uppercase tracking-wider" style={{ color: cat.color }}>
+                              {cat.category}
+                            </span>
+                            <span className="text-[10px] text-[#6E6E82]">({cat.exams.length} exams)</span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            {cat.exams.map((exam, idx) => (
+                              <div
+                                key={idx}
+                                className="p-2.5 rounded-xl bg-[#181826] border border-[#262638] hover:border-[#3E3E56] hover:bg-[#1B1B2A] transition-all flex flex-col justify-between gap-1 group"
+                                style={{ borderLeftColor: cat.color, borderLeftWidth: "3px" }}
+                              >
+                                <div className="flex items-center justify-between gap-1.5">
+                                  <span className="font-extrabold text-xs tracking-tight text-white group-hover:text-blue-300 transition-colors">
+                                    {exam.name}
+                                  </span>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/5 text-[#A6A6BC] font-semibold border border-white/10 shrink-0">
+                                    {exam.badge}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[#A6A6BC] flex items-center gap-1">
+                                  <span className="text-[#6E6E82] shrink-0">—</span>
+                                  <span className="truncate">{exam.target}</span>
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
 
               <div className="p-4 sm:p-5 rounded-2xl bg-[#161622] border border-[#2B2B3C] space-y-3">
                 <div className="flex items-center justify-between">
