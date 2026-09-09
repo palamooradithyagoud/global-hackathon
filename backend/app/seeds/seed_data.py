@@ -5,217 +5,407 @@ from backend.app.models.profile import (
 )
 
 SEED_SCHOLARSHIPS = [
-    # ==========================================
-    # 1. CLASS 10 EXCLUSIVE SCHOLARSHIPS
-    # ==========================================
+    # =========================================================================
+    # 0. CLASS 10 SCHOLARSHIPS (5 REAL SCHOLARSHIPS)
+    # =========================================================================
     {
-        "id": "ntse-national-talent-2025",
-        "title": "National Talent Search Examination (NTSE) Scholarship",
-        "provider": "NCERT (Govt. of India)",
-        "description": "Premier national talent search honoring top Class 10 students across India with continuous monthly stipends from secondary through higher education.",
-        "benefit_value": "₹1,250 - ₹2,000 / month continuous stipend",
-        "deadline": "November 20, 2025",
-        "eligible_stages": "class_10",
-        "min_cgpa_or_percentage": 70.0,
-        "eligible_streams_or_branches": None,
-        "tags": "National Honor,Class 10,Merit"
-    },
-    {
-        "id": "cbse-single-girl-child-10",
-        "title": "CBSE Single Girl Child Merit Scholarship",
-        "provider": "Central Board of Secondary Education",
-        "description": "Exclusive central scholarship for girl students who passed Class 10 with distinction to support their continuation into 11th and 12th grades.",
-        "benefit_value": "₹500 / month tuition allowance (2 Years)",
-        "deadline": "December 15, 2025",
-        "eligible_stages": "class_10",
-        "min_cgpa_or_percentage": 60.0,
-        "eligible_streams_or_branches": None,
-        "tags": "CBSE,Girls Education,Class 10"
-    },
-    {
-        "id": "tata-building-india-10",
-        "title": "Tata Building India Secondary School Award",
-        "provider": "Tata Community Initiatives Trust",
-        "description": "Merit award encouraging nation-building leadership, essay writing, and academic diligence among secondary school students.",
-        "benefit_value": "₹25,000 cash award + Citation",
-        "deadline": "November 10, 2025",
-        "eligible_stages": "class_10",
-        "min_cgpa_or_percentage": 65.0,
-        "eligible_streams_or_branches": None,
-        "tags": "Tata Trust,Class 10,Merit"
-    },
-    {
-        "id": "vimarsh-young-science-10",
-        "title": "Vimarsh Young Science Scholars Grant",
-        "provider": "Department of Science & Technology",
-        "description": "Identifying early mathematical and scientific aptitude in Class 10 students with sponsored research kits and secondary coaching.",
-        "benefit_value": "₹18,000 annual science stipend",
-        "deadline": "October 28, 2025",
-        "eligible_stages": "class_10",
-        "min_cgpa_or_percentage": 75.0,
-        "eligible_streams_or_branches": None,
-        "tags": "Science Talent,Class 10,STEM"
-    },
-    {
-        "id": "aditya-birla-class10-scholar",
-        "title": "Aditya Birla Secondary School Scholarship",
-        "provider": "Aditya Birla Capital Foundation",
-        "description": "Need-cum-merit education support providing textbook stipends and exam fee reimbursements for promising Class 10 achievers.",
-        "benefit_value": "₹15,000 annual school grant",
-        "deadline": "January 15, 2026",
-        "eligible_stages": "class_10",
-        "min_cgpa_or_percentage": 65.0,
-        "eligible_streams_or_branches": None,
-        "tags": "Need-Based,Class 10,School Fees"
-    },
-
-    # ==========================================
-    # 2. INTERMEDIATE (11th & 12th) EXCLUSIVE SCHOLARSHIPS
-    # ==========================================
-    {
-        "id": "inspire-she-scholarship-inter",
-        "title": "INSPIRE Scholarship for Higher Education (SHE)",
-        "provider": "Department of Science & Technology (Govt. of India)",
-        "description": "Flagship government scholarship attracting young talent to natural and basic sciences during 11th/12th intermediate studies.",
-        "benefit_value": "₹80,000 / year (₹60,000 cash + ₹20,000 mentor grant)",
-        "deadline": "December 31, 2025",
-        "eligible_stages": "intermediate",
-        "min_cgpa_or_percentage": 80.0,
-        "eligible_streams_or_branches": "MPC,BiPC,Science",
-        "tags": "DST Inspire,Intermediate,STEM Research"
-    },
-    {
-        "id": "dr-abdul-kalam-stem-inter",
-        "title": "Dr. APJ Abdul Kalam Junior STEM Fellowship",
-        "provider": "Foundation for Innovation & Science",
-        "description": "Encouraging engineering and medical entrance aspirants in 11th and 12th with coaching sponsorships and lab access.",
-        "benefit_value": "₹45,000 research grant + Mentor access",
-        "deadline": "January 15, 2026",
-        "eligible_stages": "intermediate",
-        "min_cgpa_or_percentage": 75.0,
-        "eligible_streams_or_branches": "MPC,BiPC",
-        "tags": "STEM,Intermediate,JEE/NEET Prep"
-    },
-    {
-        "id": "hdfc-badhte-kadam-inter",
-        "title": "HDFC Bank Parivartan's ECS Intermediate Scholarship",
-        "provider": "HDFC Bank CSR Foundation",
-        "description": "Financial empowerment support for students pursuing Class 11 and 12 from low-income families across all educational streams.",
-        "benefit_value": "₹35,000 annual education grant",
-        "deadline": "November 30, 2025",
-        "eligible_stages": "intermediate",
+        "id": "nmms-class10",
+        "title": "NMMS Scholarship (National Means-cum-Merit Scholarship)",
+        "provider": "Department of School Education & Literacy (Govt of India)",
+        "description": "National scholarship providing financial assistance to meritorious students in Class 10 from economically weaker sections.",
+        "current_study": "Class 10",
         "min_cgpa_or_percentage": 55.0,
-        "eligible_streams_or_branches": "MPC,BiPC,MEC,CEC,Science,Commerce,Arts",
-        "tags": "Need-Based,Intermediate,School Fees"
+        "amount_inr": 12000,
+        "benefit_value": "₹12,000 / year",
+        "deadline": "31-10-2026",
+        "application_link": "https://scholarships.gov.in",
+        "eligible_stages": "class_10",
+        "eligible_streams_or_branches": None,
+        "tags": "Class 10,Central Govt,NMMS,Merit-Need"
     },
     {
-        "id": "sbi-asha-intermediate",
-        "title": "SBI Asha Foundation Higher Secondary Scholarship",
-        "provider": "SBI Foundation",
-        "description": "Annual merit fellowship for high-achieving 11th and 12th grade scholars across recognized state and central junior colleges.",
-        "benefit_value": "₹25,000 direct tuition transfer",
-        "deadline": "October 31, 2025",
-        "eligible_stages": "intermediate",
-        "min_cgpa_or_percentage": 75.0,
-        "eligible_streams_or_branches": "MPC,BiPC,MEC,Commerce,Science",
-        "tags": "Banking CSR,Intermediate,Merit"
-    },
-    {
-        "id": "aicte-pragati-intermediate",
-        "title": "AICTE Pragati Junior Scholarship for Technical +2",
-        "provider": "Ministry of Education (Govt. of India)",
-        "description": "Government scholarship scheme assisting girl students pursuing +2 vocational technical streams and polytechnic diplomas.",
-        "benefit_value": "₹50,000 / year tuition assistance",
-        "deadline": "December 20, 2025",
-        "eligible_stages": "intermediate",
+        "id": "cbse-single-girl-child-10th",
+        "title": "CBSE Single Girl Child Scholarship",
+        "provider": "Central Board of Secondary Education (CBSE)",
+        "description": "Effort recognition and financial support to meritorious single girl students who are in Class 10 or have passed Class 10 from CBSE schools.",
+        "current_study": "Class 10",
         "min_cgpa_or_percentage": 60.0,
-        "eligible_streams_or_branches": "MPC,Vocational Technical,Computer Science",
-        "tags": "Government,Girls Education,Intermediate"
+        "amount_inr": 6000,
+        "benefit_value": "₹6,000 / year",
+        "deadline": "15-11-2026",
+        "application_link": "https://www.cbse.gov.in",
+        "eligible_stages": "class_10",
+        "eligible_streams_or_branches": None,
+        "tags": "Class 10,CBSE,Girl Child,Merit"
+    },
+    {
+        "id": "prematric-minority-class10",
+        "title": "Pre-Matric Scholarship for Minorities",
+        "provider": "Ministry of Minority Affairs (Govt of India)",
+        "description": "Financial assistance to encourage parents from minority communities to support their children through Class 10 secondary education.",
+        "current_study": "Class 10",
+        "min_cgpa_or_percentage": 50.0,
+        "amount_inr": 5000,
+        "benefit_value": "₹5,000 / year",
+        "deadline": "30-11-2026",
+        "application_link": "https://scholarships.gov.in",
+        "eligible_stages": "class_10",
+        "eligible_streams_or_branches": None,
+        "tags": "Class 10,National Portal,Minority Affairs"
+    },
+    {
+        "id": "vidyadhan-class10",
+        "title": "Vidyadhan Class 10 Foundation Scholarship",
+        "provider": "Sarojini Damodaran Foundation",
+        "description": "Support program by Sarojini Damodaran Foundation for students completing Class 10 with outstanding academic achievements from challenged families.",
+        "current_study": "Class 10",
+        "min_cgpa_or_percentage": 90.0,
+        "amount_inr": 10000,
+        "benefit_value": "₹10,000 / year",
+        "deadline": "30-06-2026",
+        "application_link": "https://www.vidyadhan.org/apply",
+        "eligible_stages": "class_10",
+        "eligible_streams_or_branches": None,
+        "tags": "Class 10,Merit,Foundation"
+    },
+    {
+        "id": "tata-building-india-class10",
+        "title": "Tata Building India Scholarship Grant",
+        "provider": "Tata Group CSR",
+        "description": "National level school competition and talent grant honoring meritorious Class 10 thinkers and problem solvers across Indian schools.",
+        "current_study": "Class 10",
+        "min_cgpa_or_percentage": 60.0,
+        "amount_inr": 15000,
+        "benefit_value": "₹15,000 / grant",
+        "deadline": "25-12-2026",
+        "application_link": "https://www.tatabuildingindia.com",
+        "eligible_stages": "class_10",
+        "eligible_streams_or_branches": None,
+        "tags": "Class 10,Tata Group,Excellence"
     },
 
-    # ==========================================
-    # 3. B.TECH EXCLUSIVE SCHOLARSHIPS
-    # ==========================================
+    # =========================================================================
+    # 1. INTERMEDIATE SCHOLARSHIPS (5 REAL SCHOLARSHIPS)
+    # =========================================================================
     {
-        "id": "google-generation-apac-2025",
-        "title": "Generation Google Scholarship (APAC)",
-        "provider": "Google India & APAC",
-        "description": "Awarded to aspiring computer science undergraduate students demonstrating leadership, diversity commitment, and technical excellence.",
-        "benefit_value": "$2,500 USD grant + Global Tech Community",
-        "deadline": "November 30, 2025",
-        "eligible_stages": "b_tech",
-        "min_cgpa_or_percentage": 8.0,
-        "eligible_streams_or_branches": "Computer Science,Information Technology,Artificial Intelligence,Software Engineering",
-        "tags": "Women in Tech,Computer Science,Global"
+        "id": "vidyadhan-intermediate",
+        "title": "Vidyadhan Scholarship",
+        "provider": "Sarojini Damodaran Foundation",
+        "description": "Financial scholarship by Sarojini Damodaran Foundation encouraging meritorious students to complete Intermediate (11th/12th) education.",
+        "current_study": "Intermediate",
+        "min_cgpa_or_percentage": 90.0,
+        "amount_inr": 10000,
+        "benefit_value": "₹10,000 / year",
+        "deadline": "30-06-2026",
+        "application_link": "https://www.vidyadhan.org/apply",
+        "eligible_stages": "intermediate",
+        "eligible_streams_or_branches": "MPC,BiPC,MEC,CEC,HEC,Science,Commerce",
+        "tags": "Intermediate,Merit,Foundation"
     },
     {
-        "id": "reliance-foundation-ug-2025",
-        "title": "Reliance Foundation Undergraduate STEM Scholarship",
+        "id": "epass-intermediate",
+        "title": "Epass Scholarship",
+        "provider": "Telangana ePASS (Govt of Telangana)",
+        "description": "Pre-matric and post-matric financial assistance for students pursuing Intermediate education in Telangana state.",
+        "current_study": "Intermediate",
+        "min_cgpa_or_percentage": 35.0,
+        "amount_inr": 5000,
+        "benefit_value": "₹5,000 / year",
+        "deadline": "30-09-2026",
+        "application_link": "https://telanganaepass.cgg.gov.in/PrematricLinks.do",
+        "eligible_stages": "intermediate",
+        "eligible_streams_or_branches": None,
+        "tags": "Intermediate,State Govt,ePASS"
+    },
+    {
+        "id": "sbi-asha-intermediate-1st-year",
+        "title": "SBI ASHA Scholarship",
+        "provider": "State Bank of India (SBI Foundation)",
+        "description": "SBI Foundation scholarship program providing financial assistance to meritorious students admitted into Intermediate 1st Year.",
+        "current_study": "Intermediate 1st Year",
+        "min_cgpa_or_percentage": 75.0,
+        "amount_inr": 15000,
+        "benefit_value": "₹15,000 / year",
+        "deadline": "19-09-2026",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup",
+        "eligible_stages": "intermediate",
+        "eligible_streams_or_branches": None,
+        "tags": "Intermediate 1st Year,SBI Foundation,Merit-Need"
+    },
+    {
+        "id": "lic-silver-jubilee-intermediate",
+        "title": "LIC Silver Jubile Scholarship",
+        "provider": "Life Insurance Corporation of India (LIC GJSS)",
+        "description": "Golden Jubilee scholarship support for economically challenged students enrolled in Intermediate / Higher Secondary.",
+        "current_study": "Intermediate",
+        "min_cgpa_or_percentage": 35.0,
+        "amount_inr": 40000,
+        "benefit_value": "₹40,000 / year",
+        "deadline": "30-09-2026",
+        "application_link": "https://gjss.licindia.in/GJSS/?_ga=2.244227333.1878720104.1788317600-978755654.1785413535",
+        "eligible_stages": "intermediate",
+        "eligible_streams_or_branches": None,
+        "tags": "Intermediate,LIC GJSS,Financial Support"
+    },
+    {
+        "id": "dr-rajendra-prasad-intermediate",
+        "title": "Dr Rajendra Prasad Scholarship Program 2026-27",
+        "provider": "Buddy4Study / Dr. Rajendra Prasad Trust",
+        "description": "Special educational grant for students in 11th/12th Intermediate to cover school tuition, books, and examination fees.",
+        "current_study": "Intermediate",
+        "min_cgpa_or_percentage": 75.0,
+        "amount_inr": 30000,
+        "benefit_value": "₹30,000 / year",
+        "deadline": "30-09-2026",
+        "application_link": "https://www.buddy4study.com/page/dr-rajendra-prasad-scholarship-program#scholarships",
+        "eligible_stages": "intermediate",
+        "eligible_streams_or_branches": None,
+        "tags": "Intermediate,Buddy4Study,Merit-Cum-Means"
+    },
+
+    # =========================================================================
+    # 2. B.TECH SCHOLARSHIPS (15 REAL SCHOLARSHIPS)
+    # =========================================================================
+    {
+        "id": "epass-btech-1st-year",
+        "title": "Epass Scholarship",
+        "provider": "Telangana ePASS (Govt of Telangana)",
+        "description": "Telangana ePASS post-matric reimbursement scheme for 1st Year Engineering (B.Tech) undergraduates.",
+        "current_study": "B.Tech 1st Year",
+        "min_cgpa_or_percentage": 35.0,
+        "amount_inr": 6500,
+        "benefit_value": "₹6,500 / year",
+        "deadline": "10-11-2026",
+        "application_link": "https://telanganaepass.cgg.gov.in/epassonlinelinks.do",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 1st Year,Telangana,Fee Reimbursement"
+    },
+    {
+        "id": "epass-btech-2nd-year",
+        "title": "Epass Scholarship",
+        "provider": "Telangana ePASS (Govt of Telangana)",
+        "description": "Telangana ePASS post-matric renewal scheme for 2nd Year Engineering (B.Tech) undergraduates.",
+        "current_study": "B.Tech 2nd Year",
+        "min_cgpa_or_percentage": 35.0,
+        "amount_inr": 6500,
+        "benefit_value": "₹6,500 / year",
+        "deadline": "18-08-2026",
+        "application_link": "https://telanganaepass.cgg.gov.in/epassonlinelinks.do",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 2nd Year,Telangana,Fee Reimbursement"
+    },
+    {
+        "id": "epass-btech-3rd-year",
+        "title": "Epass Scholarship",
+        "provider": "Telangana ePASS (Govt of Telangana)",
+        "description": "Telangana ePASS post-matric renewal scheme for 3rd Year Engineering (B.Tech) undergraduates.",
+        "current_study": "B.Tech 3rd Year",
+        "min_cgpa_or_percentage": 35.0,
+        "amount_inr": 6500,
+        "benefit_value": "₹6,500 / year",
+        "deadline": "18-08-2026",
+        "application_link": "https://telanganaepass.cgg.gov.in/epassonlinelinks.do",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 3rd Year,Telangana,Fee Reimbursement"
+    },
+    {
+        "id": "epass-btech-4th-year",
+        "title": "Epass Scholarship",
+        "provider": "Telangana ePASS (Govt of Telangana)",
+        "description": "Telangana ePASS post-matric final year scheme for 4th Year Engineering (B.Tech) undergraduates.",
+        "current_study": "B.Tech 4th Year",
+        "min_cgpa_or_percentage": 35.0,
+        "amount_inr": 6500,
+        "benefit_value": "₹6,500 / year",
+        "deadline": "18-08-2026",
+        "application_link": "https://telanganaepass.cgg.gov.in/epassonlinelinks.do",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 4th Year,Telangana,Fee Reimbursement"
+    },
+    {
+        "id": "sbi-asha-btech-1st-year",
+        "title": "SBI ASHA Scholarship",
+        "provider": "State Bank of India (SBI Foundation)",
+        "description": "Premier SBI Foundation education support for 1st Year Engineering (B.Tech) students studying in recognized colleges across India.",
+        "current_study": "B.Tech 1st Year",
+        "min_cgpa_or_percentage": 75.0,
+        "amount_inr": 75000,
+        "benefit_value": "₹75,000 / year",
+        "deadline": "19-09-2026",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 1st Year,SBI Foundation,Engineering Merit"
+    },
+    {
+        "id": "lic-silver-jubilee-btech-1st-year",
+        "title": "LIC Silver Jubile Scholarship",
+        "provider": "Life Insurance Corporation of India (LIC GJSS)",
+        "description": "LIC Golden Jubilee scholarship for students admitted into 1st Year Engineering (B.Tech) to complete their technical degree.",
+        "current_study": "B.Tech 1st Year",
+        "min_cgpa_or_percentage": 35.0,
+        "amount_inr": 40000,
+        "benefit_value": "₹40,000 / year",
+        "deadline": "30-10-2026",
+        "application_link": "https://gjss.licindia.in/GJSS/?_ga=2.244227333.1878720104.1788317600-978755654.1785413535",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 1st Year,LIC GJSS,Technical Degree"
+    },
+    {
+        "id": "reliance-scholarship-btech-1st-year",
+        "title": "Reliance Scholarship",
         "provider": "Reliance Foundation",
-        "description": "Prestigious national grant supporting meritorious undergraduate engineering and tech students with comprehensive leadership development.",
-        "benefit_value": "₹2,00,000 grant over degree",
-        "deadline": "October 15, 2025",
+        "description": "Prestigious undergraduate scholarship by Reliance Foundation for 1st Year B.Tech students in Computer Science, IT, and core engineering streams.",
+        "current_study": "B.Tech 1st Year",
+        "min_cgpa_or_percentage": 65.0,
+        "amount_inr": 50000,
+        "benefit_value": "₹50,000 / year",
+        "deadline": "30-10-2026",
+        "application_link": "https://www.buddy4study.com/page/reliance-foundation-scholarships",
         "eligible_stages": "b_tech",
-        "min_cgpa_or_percentage": 7.5,
-        "eligible_streams_or_branches": "Computer Science,Electronics,Mechanical,Civil,Chemical,Information Technology,Data Science",
-        "tags": "Merit-cum-Means,Undergraduate,STEM"
+        "eligible_streams_or_branches": "Computer Science,Information Technology,ECE,EEE,Mechanical,Civil,Engineering",
+        "tags": "B.Tech 1st Year,Reliance Foundation,Tech Grant"
     },
     {
-        "id": "amazon-future-engineer-btech",
-        "title": "Amazon Future Engineer Scholarship & Mentorship",
-        "provider": "Amazon India",
-        "description": "Transformative opportunity providing annual college tuition support, an Amazon laptop, and direct mentorship from Amazon software developers.",
-        "benefit_value": "₹50,000 / year + Laptop + Mentorship",
-        "deadline": "December 15, 2025",
+        "id": "nsp-btech-1st-year",
+        "title": "NSP",
+        "provider": "National Scholarship Portal (Govt of India)",
+        "description": "Central Sector Scheme of Scholarships for College and University Students offered through the National Scholarship Portal.",
+        "current_study": "B.Tech 1st Year",
+        "min_cgpa_or_percentage": 75.0,
+        "amount_inr": 12000,
+        "benefit_value": "₹12,000 / year",
+        "deadline": "05-11-2026",
+        "application_link": "https://scholarships.gov.in/",
         "eligible_stages": "b_tech",
-        "min_cgpa_or_percentage": 7.0,
-        "eligible_streams_or_branches": "Computer Science,IT,ECE,Data Science,AI",
-        "tags": "Corporate Tech,B.Tech,Mentorship"
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 1st Year,National Portal,Central Sector"
     },
     {
-        "id": "adobe-india-women-tech",
-        "title": "Adobe India Women-in-Technology Scholarship",
-        "provider": "Adobe Systems",
-        "description": "Recognizing outstanding women engineering students in computing and engineering with substantial tuition grants and summer internship interview.",
-        "benefit_value": "₹1,00,000 tuition grant + Adobe Internship",
-        "deadline": "November 15, 2025",
+        "id": "ongc-scholarship-btech-1st-year",
+        "title": "ONGC",
+        "provider": "Oil and Natural Gas Corporation (ONGC Foundation)",
+        "description": "ONGC Foundation scholarship support for meritorious students pursuing 1st year Engineering (B.Tech) degrees.",
+        "current_study": "B.Tech 1st Year",
+        "min_cgpa_or_percentage": 65.0,
+        "amount_inr": 48000,
+        "benefit_value": "₹48,000 / year",
+        "deadline": "20-06-2026",
+        "application_link": "https://www.buddy4study.com/page/ongc-scholarship-to-meritorious-students",
         "eligible_stages": "b_tech",
-        "min_cgpa_or_percentage": 8.0,
-        "eligible_streams_or_branches": "Computer Science,Information Technology,Software Engineering",
-        "tags": "Diversity in Tech,B.Tech,Internship"
+        "eligible_streams_or_branches": "Engineering,Computer Science,ECE,EEE,Mechanical,Civil",
+        "tags": "B.Tech 1st Year,ONGC Foundation,PSU Grant"
     },
     {
-        "id": "aicte-pragati-girls-2025",
-        "title": "AICTE Pragati Engineering Degree Scholarship",
-        "provider": "Ministry of Education (Govt. of India)",
-        "description": "Government scheme providing continuous financial assistance for girl students admitted to first year of B.Tech degree programs in AICTE institutions.",
-        "benefit_value": "₹50,000 per year towards degree tuition",
-        "deadline": "December 31, 2025",
+        "id": "tata-capital-pankh-btech-1st-year",
+        "title": "Tata Capital Pankh Scholarship Program 2026-27",
+        "provider": "Tata Capital Foundation",
+        "description": "Tata Capital initiative aimed at supporting 1st Year B.Tech students from economically underprivileged backgrounds to cover tuition expenses.",
+        "current_study": "B.Tech 1st Year",
+        "min_cgpa_or_percentage": 75.0,
+        "amount_inr": 18000,
+        "benefit_value": "₹18,000 / year",
+        "deadline": "26-10-2026",
+        "application_link": "https://www.buddy4study.com/page/the-tata-capital-pankh-scholarship-programme",
         "eligible_stages": "b_tech",
-        "min_cgpa_or_percentage": 6.5,
-        "eligible_streams_or_branches": "All Technical Streams,Engineering,Technology",
-        "tags": "Government,Engineering,Degree"
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 1st Year,Tata Capital,Pankh Programme"
     },
     {
-        "id": "qualcomm-wetech-btech",
-        "title": "Qualcomm WeTech Global STEM Scholarship",
-        "provider": "Qualcomm & IIE",
-        "description": "Fostering next-generation semiconductor and computing leaders with university scholarships and 6 months of 1-on-1 Qualcomm engineering mentorship.",
-        "benefit_value": "$1,500 USD + Qualcomm Mentor",
-        "deadline": "January 20, 2026",
+        "id": "idfc-first-bank-btech-1st-year",
+        "title": "IDFC FIRST Bank Engineering Scholarship Programme 2026-30",
+        "provider": "IDFC FIRST Bank CSR",
+        "description": "Comprehensive 4-year financial grant for 1st Year B.Tech engineering students enrolled in recognized universities.",
+        "current_study": "B.Tech 1st Year",
+        "min_cgpa_or_percentage": 75.0,
+        "amount_inr": 100000,
+        "benefit_value": "₹1,00,000 / year",
+        "deadline": "20-09-2026",
+        "application_link": "https://www.buddy4study.com/page/idfc-first-bank-engineering-scholarship",
         "eligible_stages": "b_tech",
-        "min_cgpa_or_percentage": 7.5,
-        "eligible_streams_or_branches": "ECE,EEE,CSE,VLSI,Embedded Systems",
-        "tags": "Semiconductors,Hardware/Software,B.Tech"
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 1st Year,IDFC FIRST Bank,Engineering Excellence"
+    },
+    {
+        "id": "parivartan-ecss-btech-1st-year",
+        "title": "Parivartan ECSS Programme 2026-27",
+        "provider": "HDFC Bank Parivartan",
+        "description": "HDFC Bank Educational Crisis Scholarship Support (ECSS) for 1st Year B.Tech students facing educational disruption or financial distress.",
+        "current_study": "B.Tech 1st Year",
+        "min_cgpa_or_percentage": 75.0,
+        "amount_inr": 75000,
+        "benefit_value": "₹75,000 / year",
+        "deadline": "31-10-2026",
+        "application_link": "https://www.buddy4study.com/page/hdfc-bank-parivartans-ecss-programme#scholarships",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 1st Year,HDFC Parivartan,ECSS Support"
+    },
+    {
+        "id": "sbi-asha-btech-2nd-year",
+        "title": "SBI ASHA Scholarship",
+        "provider": "State Bank of India (SBI Foundation)",
+        "description": "SBI Foundation scholarship for 2nd Year Engineering (B.Tech) undergraduates maintaining consistent academic distinction.",
+        "current_study": "B.Tech 2nd Year",
+        "min_cgpa_or_percentage": 65.0,
+        "amount_inr": 75000,
+        "benefit_value": "₹75,000 / year",
+        "deadline": "19-09-2026",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 2nd Year,SBI Foundation,Engineering Renewal"
+    },
+    {
+        "id": "sbi-asha-btech-3rd-year",
+        "title": "SBI ASHA Scholarship",
+        "provider": "State Bank of India (SBI Foundation)",
+        "description": "SBI Foundation scholarship for 3rd Year Engineering (B.Tech) undergraduates to support advanced technical coursework and projects.",
+        "current_study": "B.Tech 3rd Year",
+        "min_cgpa_or_percentage": 65.0,
+        "amount_inr": 75000,
+        "benefit_value": "₹75,000 / year",
+        "deadline": "19-09-2026",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 3rd Year,SBI Foundation,Pre-Final Year"
+    },
+    {
+        "id": "sbi-asha-btech-4th-year",
+        "title": "SBI ASHA Scholarship",
+        "provider": "State Bank of India (SBI Foundation)",
+        "description": "SBI Foundation scholarship for final year 4th Year Engineering (B.Tech) students completing degree projects and capstones.",
+        "current_study": "B.Tech 4th Year",
+        "min_cgpa_or_percentage": 65.0,
+        "amount_inr": 75000,
+        "benefit_value": "₹75,000 / year",
+        "deadline": "19-09-2026",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup",
+        "eligible_stages": "b_tech",
+        "eligible_streams_or_branches": None,
+        "tags": "B.Tech 4th Year,SBI Foundation,Final Year Capstone"
     }
 ]
 
 
 def seed_database(db: Session):
-    """Populates initial scholarships and demo profile data if not present."""
-    # Seed or update scholarships to ensure stage eligibility is accurate
+    """Populates initial scholarships and demo profile data with batched queries."""
+    valid_ids = set(item["id"] for item in SEED_SCHOLARSHIPS)
+    existing_all = db.query(Scholarship).all()
+    existing_map = {s.id: s for s in existing_all}
+
+    for s in existing_all:
+        if s.id not in valid_ids:
+            db.delete(s)
+
     for item in SEED_SCHOLARSHIPS:
-        existing = db.query(Scholarship).filter(Scholarship.id == item["id"]).first()
+        existing = existing_map.get(item["id"])
         if not existing:
             scholarship = Scholarship(
                 id=item["id"],
@@ -227,11 +417,13 @@ def seed_database(db: Session):
                 eligible_stages=item["eligible_stages"],
                 min_cgpa_or_percentage=item["min_cgpa_or_percentage"],
                 eligible_streams_or_branches=item["eligible_streams_or_branches"],
-                tags=item["tags"]
+                tags=item["tags"],
+                application_link=item["application_link"],
+                current_study=item["current_study"],
+                amount_inr=item["amount_inr"]
             )
             db.add(scholarship)
         else:
-            # Update fields in case they changed in seed definitions
             existing.title = item["title"]
             existing.provider = item["provider"]
             existing.description = item["description"]
@@ -241,61 +433,104 @@ def seed_database(db: Session):
             existing.min_cgpa_or_percentage = item["min_cgpa_or_percentage"]
             existing.eligible_streams_or_branches = item["eligible_streams_or_branches"]
             existing.tags = item["tags"]
+            existing.application_link = item["application_link"]
+            existing.current_study = item["current_study"]
+            existing.amount_inr = item["amount_inr"]
 
-    # Prune obsolete legacy scholarships not in current stage-exclusive catalogue
-    valid_ids = [item["id"] for item in SEED_SCHOLARSHIPS]
-    db.query(Scholarship).filter(Scholarship.id.notin_(valid_ids)).delete(synchronize_session=False)
     db.flush()
 
-    # 1. B.TECH DEMO STUDENT: Arjun Sharma
+    # Query all demo students in a single batch query
+    demo_emails = [
+        "demo.student@skillcatalyst.dev",
+        "demo.class10@skillcatalyst.dev",
+        "demo.intermediate@skillcatalyst.dev"
+    ]
+    existing_students = {s.email: s for s in db.query(Student).filter(Student.email.in_(demo_emails)).all()}
+
+    # 2. B.TECH DEMO STUDENT: Arjun Sharma
     btech_email = "demo.student@skillcatalyst.dev"
-    btech_student = db.query(Student).filter(Student.email == btech_email).first()
+    btech_student = existing_students.get(btech_email)
     if not btech_student:
         btech_student = Student(
             id="demo-student-uuid-001",
             name="Arjun Sharma",
             email=btech_email,
-            date_of_birth="2003-08-14",
-            location="Hyderabad, Telangana",
+            date_of_birth="2003-05-15",
+            location="Bengaluru, India",
             education_stage="b_tech",
-            target_role="Software Engineer"
+            target_role="Full Stack Developer"
         )
         db.add(btech_student)
         db.flush()
 
         db.add(AcademicProfile(
             student_id=btech_student.id,
-            school_or_college="Hyderabad Institute of Technology & Management",
+            school_or_college="National Institute of Technology",
             board=None,
-            university="JNTU Hyderabad",
+            university="NIT",
             branch="Computer Science and Engineering",
             year="3rd Year",
-            percentage=None,
-            cgpa=8.42,
+            percentage=88.0,
+            cgpa=8.8,
             stream=None,
-            future_direction=None
+            future_direction="Full Stack Engineering"
         ))
 
-        for name, prof in [("Python", "Advanced"), ("React", "Intermediate"), ("SQL", "Intermediate"), ("FastAPI", "Intermediate"), ("Git & GitHub", "Advanced")]:
-            db.add(StudentSkill(student_id=btech_student.id, skill_name=name, proficiency=prof))
+        skills_data = [
+            ("Python", "Advanced"),
+            ("React", "Advanced"),
+            ("SQL", "Intermediate"),
+            ("FastAPI", "Advanced"),
+            ("Git & GitHub", "Advanced"),
+            ("Data Structures", "Intermediate")
+        ]
+        for s_name, prof in skills_data:
+            db.add(StudentSkill(student_id=btech_student.id, skill_name=s_name, proficiency=prof))
 
         db.add(StudentProject(
             student_id=btech_student.id,
-            name="Ascend Intelligence Navigator",
-            description="AI-guided pathway navigator mapping student profiles to curated scholarships.",
-            technologies="Python, Next.js, SQLite, Tailwind CSS",
-            github_url="https://github.com/arjunsharma/ascend"
+            name="SkillCatalyst Platform",
+            description="AI-driven career pathing and scholarship matching engine built with FastAPI and React.",
+            technologies="Python, FastAPI, Next.js, PostgreSQL",
+            github_url="https://github.com/example/skillcatalyst"
         ))
+
+        db.add(StudentCertification(
+            student_id=btech_student.id,
+            name="AWS Certified Cloud Practitioner",
+            issuer="Amazon Web Services",
+            date="2024-03-10",
+            credential_url="https://aws.amazon.com"
+        ))
+
+        db.add(StudentExperience(
+            student_id=btech_student.id,
+            type="internship",
+            organization="InnoTech Labs",
+            role="Backend Developer Intern",
+            description="Built microservices using FastAPI and optimized database indexing.",
+            start_date="Jun 2024",
+            end_date="Aug 2024"
+        ))
+
+        for interest in ["Cloud Architecture", "System Design", "Distributed Systems"]:
+            db.add(StudentInterest(student_id=btech_student.id, interest=interest))
 
         db.add(StudentPreference(
             student_id=btech_student.id,
-            preferred_location="Hyderabad / Bangalore",
+            preferred_location="Bengaluru / Hybrid",
             available_learning_time="2–4 hours/day"
         ))
 
-    # 2. CLASS 10 DEMO STUDENT: Rohan Verma
+        db.add(StudentFinancialContext(
+            student_id=btech_student.id,
+            education_budget="₹10,000 - ₹25,000",
+            certification_budget="₹5,000 - ₹10,000"
+        ))
+
+    # 3. CLASS 10 DEMO STUDENT: Rohan Verma
     class10_email = "demo.class10@skillcatalyst.dev"
-    class10_student = db.query(Student).filter(Student.email == class10_email).first()
+    class10_student = existing_students.get(class10_email)
     if not class10_student:
         class10_student = Student(
             id="demo-student-uuid-002",
@@ -331,9 +566,9 @@ def seed_database(db: Session):
             available_learning_time="1–2 hours/day"
         ))
 
-    # 3. INTERMEDIATE DEMO STUDENT: Priya Nair
+    # 4. INTERMEDIATE DEMO STUDENT: Priya Nair
     inter_email = "demo.intermediate@skillcatalyst.dev"
-    inter_student = db.query(Student).filter(Student.email == inter_email).first()
+    inter_student = existing_students.get(inter_email)
     if not inter_student:
         inter_student = Student(
             id="demo-student-uuid-003",

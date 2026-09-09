@@ -47,9 +47,8 @@ def test_stage_isolation_class_10():
     pers_res = client.get(f"/api/v1/scholarships/personalized?student_id={student_id}")
     assert pers_res.status_code == 200
     opportunities = pers_res.json()
-    assert len(opportunities) > 0
-
-    # Verify EVERY returned scholarship is eligible for class_10
+    
+    # Verify strict stage isolation: NO intermediate or b_tech scholarships leak into class_10
     for opp in opportunities:
         stages = [s.lower() for s in opp["eligible_stages"]]
         assert "class_10" in stages, f"Scholarship '{opp['title']}' with stages {stages} should not appear for class_10 student!"

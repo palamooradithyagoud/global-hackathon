@@ -16,6 +16,27 @@ class SkillBase(BaseModel):
     skill_name: str = Field(..., min_length=1, max_length=100)
     proficiency: SkillProficiencyType = "Intermediate"
 
+    @field_validator("proficiency", mode="before")
+    @classmethod
+    def normalize_proficiency(cls, v: object) -> str:
+        if isinstance(v, (int, float)) or (isinstance(v, str) and v.isdigit()):
+            num = int(v)
+            if num >= 4:
+                return "Advanced"
+            elif num >= 2:
+                return "Intermediate"
+            else:
+                return "Beginner"
+        if isinstance(v, str):
+            v_lower = v.strip().lower()
+            if "adv" in v_lower:
+                return "Advanced"
+            elif "beg" in v_lower:
+                return "Beginner"
+            elif "inter" in v_lower:
+                return "Intermediate"
+        return v if isinstance(v, str) else "Intermediate"
+
 
 class SkillCreate(SkillBase):
     pass
@@ -275,6 +296,10 @@ class ScholarshipResponse(BaseModel):
     eligible_streams_or_branches: Optional[List[str]] = None
     tags: List[str] = Field(default_factory=list)
     eligibility_status: str = "Eligibility not checked yet"
+    application_link: Optional[str] = None
+    application_url: Optional[str] = None
+    current_study: Optional[str] = None
+    amount_inr: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -296,6 +321,18 @@ class DemoAuthRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=4)
+
+
+class RegisterRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=255)
+    email: EmailStr
+    password: Optional[str] = "password123"
+    education_stage: EducationStageType = "b_tech"
+    year: Optional[str] = "1st Year"  # e.g. "1st Year", "2nd Year", "3rd Year", "4th Year"
+    branch_or_stream: Optional[str] = "Computer Science and Engineering"
+    school_or_college: Optional[str] = "Engineering College"
+    score: Optional[float] = 75.0
+    location: Optional[str] = "Hyderabad, India"
 
 
 class AuthResponse(BaseModel):

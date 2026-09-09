@@ -11,13 +11,17 @@ import { MatchedJoobleJob, JobFitAnalysisResult } from "./jobData";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
+// Client-side in-memory cache for instant navigation between overview, details, and dashboard
+const clientCache = new Map<string, { data: any; timestamp: number }>();
+const CLIENT_CACHE_TTL_MS = 120 * 1000; // 2 minutes
+
 async function fetchJSON<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   try {
     const res = await fetch(url, {
       ...options,
       headers: {
-        "Content-TransType": "application/json",
+        "Content-Type": "application/json",
         ...(options?.headers || {}),
       },
     });
@@ -40,40 +44,80 @@ async function fetchJSON<T>(endpoint: string, options?: RequestInit): Promise<T>
   }
 }
 
+async function cachedFetchJSON<T>(endpoint: string, options?: RequestInit, ttlMs: number = CLIENT_CACHE_TTL_MS): Promise<T> {
+  const method = options?.method || "GET";
+  if (method === "GET") {
+    const entry = clientCache.get(endpoint);
+    if (entry && (Date.now() - entry.timestamp) < ttlMs) {
+      return entry.data as T;
+    }
+  }
+  const result = await fetchJSON<T>(endpoint, options);
+  if (method === "GET") {
+    clientCache.set(endpoint, { data: result, timestamp: Date.now() });
+  } else {
+    clientCache.clear();
+  }
+  return result;
+}
+
 export const api = {
   auth: {
     demoLogin: async (stage: string = "b_tech"): Promise<AuthSession> => {
-      return fetchJSON<AuthSession>("/auth/demo", {
+      const res = await fetchJSON<AuthSession>("/auth/demo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: "demo_student", education_stage: stage }),
       });
+      return res;
     },
 
     login: async (email: string, password: string): Promise<AuthSession> => {
+      clientCache.clear();
       return fetchJSON<AuthSession>("/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
     },
+
+    register: async (data: {
+      name: string;
+      email: string;
+      password?: string;
+      education_stage: string;
+      year?: string;
+      branch_or_stream?: string;
+      school_or_college?: string;
+      score?: number;
+      location?: string;
+    }): Promise<AuthSession> => {
+      clientCache.clear();
+      return fetchJSON<AuthSession>("/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+    },
   },
 
   scholarships: {
-    getPreview: async (limit: number = 6, stage?: string): Promise<Scholarship[]> => {
-      const query = stage
-        ? `/scholarships/preview?limit=${limit}&stage=${encodeURIComponent(stage)}`
-        : `/scholarships/preview?limit=${limit}`;
-      return fetchJSON<Scholarship[]>(query);
+    getPreview: async (limit: number = 50, stage?: string, year?: string): Promise<Scholarship[]> => {
+      const params = new URLSearchParams();
+      params.set("limit", limit.toString());
+      if (stage) params.set("stage", stage);
+      if (year) params.set("year", year);
+      return cachedFetchJSON<Scholarship[]>(`/scholarships/preview?${params.toString()}`);
     },
 
     getPersonalized: async (studentId: string): Promise<PersonalizedScholarship[]> => {
-      return fetchJSON<PersonalizedScholarship[]>(`/scholarships/personalized?student_id=${studentId}`);
+      return cachedFetchJSON<PersonalizedScholarship[]>(`/scholarships/personalized?student_id=${studentId}`);
     },
   },
 
   profile: {
     create: async (payload: StudentProfileCreatePayload): Promise<StudentProfile> => {
+      clientCache.clear();
       return fetchJSON<StudentProfile>("/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,10 +126,11 @@ export const api = {
     },
 
     get: async (studentId: string): Promise<StudentProfile> => {
-      return fetchJSON<StudentProfile>(`/profile/${studentId}`);
+      return cachedFetchJSON<StudentProfile>(`/profile/${studentId}`);
     },
 
     update: async (studentId: string, payload: any): Promise<StudentProfile> => {
+      clientCache.clear();
       return fetchJSON<StudentProfile>(`/profile/${studentId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

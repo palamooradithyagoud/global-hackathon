@@ -1,7 +1,8 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload, selectinload
 from backend.app.core.database import get_db
+from backend.app.core.cache import cache
 from backend.app.models.profile import (
     Student, AcademicProfile, StudentSkill, StudentProject, StudentCertification,
     StudentExperience, StudentInterest, StudentPreference, StudentFinancialContext, Scholarship
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/profile", tags=["Student Profile"])
 
 def build_profile_response(student: Student, db: Session) -> StudentProfileResponse:
     """Helper to convert relational Student entity to comprehensive typed response schema."""
-    all_scholarships = db.query(Scholarship).all()
+    all_scholarships = cache.get_scholarships(db)
     intel_summary = compute_student_intelligence_summary(student, all_scholarships)
 
     acad_res = None
@@ -255,20 +256,42 @@ def create_or_update_student_profile(payload: StudentProfileCreate, db: Session 
 
     db.commit()
     db.refresh(student)
-
-    return build_profile_response(student, db)
+    cache.invalidate_student(student.id)
+    resp = build_profile_response(student, db)
+    cache.set_profile(student.id, resp)
+    return resp
 
 
 @router.get("/{student_id}", response_model=StudentProfileResponse)
 def get_student_profile(student_id: str, db: Session = Depends(get_db)):
-    """Retrieves full student profile by ID."""
-    student = db.query(Student).filter(Student.id == student_id).first()
+    """Retrieves full student profile by ID with caching and eager loading."""
+    cached = cache.get_profile(student_id)
+    if cached is not None:
+        return cached
+
+    student = (
+        db.query(Student)
+        .options(
+            joinedload(Student.academic_profile),
+            selectinload(Student.skills),
+            selectinload(Student.projects),
+            selectinload(Student.certifications),
+            selectinload(Student.experience),
+            selectinload(Student.interests),
+            joinedload(Student.preferences),
+            joinedload(Student.financial_context)
+        )
+        .filter(Student.id == student_id)
+        .first()
+    )
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Student profile with ID '{student_id}' not found."
         )
-    return build_profile_response(student, db)
+    resp = build_profile_response(student, db)
+    cache.set_profile(student_id, resp)
+    return resp
 
 
 @router.patch("/{student_id}", response_model=StudentProfileResponse)
@@ -290,7 +313,10 @@ def update_student_profile(student_id: str, payload: StudentProfileUpdate, db: S
     if payload.education_stage is not None:
         student.education_stage = payload.education_stage
 
-    if payload.academic_profile and student.academic_profile:
+    if payload.academic_profile:
+        if not student.academic_profile:
+            student.academic_profile = AcademicProfile(student_id=student.id)
+            db.add(student.academic_profile)
         for k, v in payload.academic_profile.dict(exclude_unset=True).items():
             setattr(student.academic_profile, k, v)
 
@@ -308,4 +334,7 @@ def update_student_profile(student_id: str, payload: StudentProfileUpdate, db: S
 
     db.commit()
     db.refresh(student)
-    return build_profile_response(student, db)
+    cache.invalidate_student(student.id)
+    resp = build_profile_response(student, db)
+    cache.set_profile(student.id, resp)
+    return resp

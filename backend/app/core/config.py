@@ -24,9 +24,15 @@ class Settings(BaseSettings):
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str) -> str:
-        if isinstance(v, str) and v.startswith("postgres://"):
-            # SQLAlchemy 2.0 requires postgresql:// instead of postgres://
-            return v.replace("postgres://", "postgresql://", 1)
+        if isinstance(v, str):
+            if v.startswith("postgres://"):
+                v = v.replace("postgres://", "postgresql://", 1)
+            if "db.hvsxhkrjnjfmhkvujjyn.supabase.co" in v:
+                v = v.replace("db.hvsxhkrjnjfmhkvujjyn.supabase.co", "aws-0-ap-southeast-2.pooler.supabase.com")
+                if "://postgres:" in v:
+                    v = v.replace("://postgres:", "://postgres.hvsxhkrjnjfmhkvujjyn:")
+                if "adithyagoud@789" in v:
+                    v = v.replace("adithyagoud@789", "adithyagoud%40789")
         return v or "sqlite:///./skillcatalyst.db"
 
     @field_validator("CORS_ORIGINS", mode="before")
