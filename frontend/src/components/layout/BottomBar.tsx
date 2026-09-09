@@ -8,6 +8,7 @@ export default function BottomBar() {
   const pathname = usePathname();
   const router = useRouter();
   const [studentId, setStudentId] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   useEffect(() => {
     const checkSession = () => {
@@ -15,8 +16,9 @@ export default function BottomBar() {
         const saved = localStorage.getItem("skillcatalyst_session");
         if (saved) {
           const parsed = JSON.parse(saved);
-          if (parsed?.student_id) {
-            setStudentId(parsed.student_id);
+          if (parsed?.token || parsed?.student_id || parsed?.email) {
+            setStudentId(parsed.student_id || null);
+            setIsLoggedIn(true);
             return;
           }
         }
@@ -24,22 +26,40 @@ export default function BottomBar() {
         // ignore
       }
       setStudentId(null);
+      setIsLoggedIn(false);
     };
 
     checkSession();
+    window.addEventListener("storage", checkSession);
+    return () => window.removeEventListener("storage", checkSession);
   }, [pathname]);
 
-  // Hide on login screen if appropriate
-  if (pathname === "/login") return null;
+  // Only show the bottom navigation bar after the user has logged in
+  if (!isLoggedIn) return null;
 
-  const isOnboarding = pathname.startsWith("/onboarding");
-  const isProfile = pathname.startsWith("/profile");
-  const isDashboardOverview = pathname === "/dashboard";
-  const isScholarshipsOverview = pathname === "/scholarships";
-  const isLanding = pathname === "/";
+  if (!pathname) return null;
 
-  // Home is active on dashboard/scholarship/landing pages, Hub is active on profile & onboarding
-  const isHubActive = isProfile || isOnboarding;
+  const cleanPath = pathname.toLowerCase().replace(/\/+$/, "") || "/";
+  const isHiddenRoute =
+    cleanPath === "/" ||
+    cleanPath === "/login" ||
+    cleanPath.startsWith("/login/") ||
+    cleanPath === "/signup" ||
+    cleanPath.startsWith("/signup/") ||
+    cleanPath === "/register" ||
+    cleanPath.startsWith("/register/") ||
+    cleanPath === "/onboarding" ||
+    cleanPath.startsWith("/onboarding/");
+
+  if (isHiddenRoute) return null;
+
+  const isProfile = cleanPath.startsWith("/profile");
+  const isDashboardOverview = cleanPath === "/dashboard";
+  const isScholarshipsOverview = cleanPath === "/scholarships";
+  const isLanding = cleanPath === "/";
+
+  // Home is active on dashboard/scholarship/landing pages, Hub is active on profile
+  const isHubActive = isProfile;
   const isHomeActive = !isHubActive;
 
   const handleGoHome = () => {

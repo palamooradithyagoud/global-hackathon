@@ -1,26 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
-import { ArrowRight, Loader2, AlertCircle, Lock, Mail } from "lucide-react";
+import { ArrowRight, Loader2, AlertCircle, Lock, Mail, User, GraduationCap } from "lucide-react";
 import AscendLogo from "@/components/common/AscendLogo";
 
-export default function LoginPage() {
+function AuthForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialMode = searchParams.get("mode") === "signup" ? "signup" : "login";
+
+  const [mode, setMode] = useState<"login" | "signup">(initialMode);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [stage, setStage] = useState("b_tech");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleStandardLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
     const cleanEmail = email.trim();
     if (!cleanEmail || !password) {
-      setErrorMessage("Please enter both your email address and password.");
+      setErrorMessage("Please fill in all required credentials.");
       return;
     }
 
@@ -34,14 +41,31 @@ export default function LoginPage() {
       return;
     }
 
+    if (mode === "signup" && !name.trim()) {
+      setErrorMessage("Please enter your full name.");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const session = await api.auth.login(cleanEmail, password);
-      localStorage.setItem("skillcatalyst_session", JSON.stringify(session));
-      // Redirect directly into the profile builder where student can upload resume or do manual entry
-      router.push("/onboarding");
+      if (mode === "signup") {
+        const session = await api.auth.register({
+          name: name.trim(),
+          email: cleanEmail,
+          password: password,
+          education_stage: stage,
+        });
+        localStorage.setItem("skillcatalyst_session", JSON.stringify(session));
+        window.dispatchEvent(new Event("storage"));
+        router.push(`/onboarding?stage=${stage}`);
+      } else {
+        const session = await api.auth.login(cleanEmail, password);
+        localStorage.setItem("skillcatalyst_session", JSON.stringify(session));
+        window.dispatchEvent(new Event("storage"));
+        router.push("/dashboard");
+      }
     } catch (err: any) {
-      setErrorMessage(err.message || "Failed to log in. Please try again.");
+      setErrorMessage(err.message || `Failed to ${mode === "signup" ? "sign up" : "sign in"}. Please try again.`);
     } finally {
       setIsLoading(false);
     }
@@ -65,14 +89,48 @@ export default function LoginPage() {
           <div>
             <span className="text-xs text-[#8E8E9C] block">Welcome</span>
             <h1 className="text-xl font-bold text-white tracking-tight flex items-center gap-1.5">
-              <span>Sign In to</span>
+              <span>{mode === "signup" ? "Create Account on" : "Sign In to"}</span>
               <span className="text-amber-400">ASCEND</span>
             </h1>
           </div>
         </div>
 
+        {/* Auth Mode Toggle Tabs */}
+        <div className="flex rounded-xl bg-[#0D0D12] p-1 border border-[#222230] mb-6">
+          <button
+            type="button"
+            onClick={() => {
+              setMode("login");
+              setErrorMessage(null);
+            }}
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              mode === "login"
+                ? "bg-white text-black shadow-sm"
+                : "text-[#8E8E9C] hover:text-white"
+            }`}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode("signup");
+              setErrorMessage(null);
+            }}
+            className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
+              mode === "signup"
+                ? "bg-white text-black shadow-sm"
+                : "text-[#8E8E9C] hover:text-white"
+            }`}
+          >
+            Sign Up
+          </button>
+        </div>
+
         <p className="text-xs text-[#8E8E9C] mb-6 leading-relaxed">
-          Enter your email and password to access your student profile, upload your resume, or build your intelligence profile.
+          {mode === "signup"
+            ? "Create your student account to unlock tailored scholarships, career fit intelligence, and stage-specific pathways."
+            : "Enter your email and password to access your student profile, upload your resume, or build your intelligence profile."}
         </p>
 
         {errorMessage && (
@@ -86,8 +144,27 @@ export default function LoginPage() {
           </motion.div>
         )}
 
-        {/* Email and Password Form ONLY */}
-        <form onSubmit={handleStandardLogin} className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === "signup" && (
+            <div>
+              <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">
+                Full Name
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-[#6A6A7E] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Priya Varma"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-sm dark-input placeholder-[#5E5E6E] focus:outline-none"
+                  required
+                />
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">
               Email Address
@@ -98,11 +175,10 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="e.g. palamooradithyagoud@gmail.com"
+                placeholder="e.g. student@example.edu"
                 className="w-full pl-10 pr-3.5 py-2.5 text-sm dark-input placeholder-[#5E5E6E] focus:outline-none"
                 autoComplete="email"
                 required
-                suppressHydrationWarning
               />
             </div>
           </div>
@@ -119,41 +195,99 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full pl-10 pr-3.5 py-2.5 text-sm dark-input placeholder-[#5E5E6E] focus:outline-none"
-                autoComplete="current-password"
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 required
-                suppressHydrationWarning
               />
             </div>
           </div>
+
+          {mode === "signup" && (
+            <div>
+              <label className="block text-xs font-medium text-[#A1A1AA] mb-1.5">
+                Current Education Stage
+              </label>
+              <div className="relative">
+                <GraduationCap className="w-4 h-4 text-[#6A6A7E] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <select
+                  value={stage}
+                  onChange={(e) => setStage(e.target.value)}
+                  className="w-full pl-10 pr-3.5 py-2.5 text-sm dark-input text-white focus:outline-none cursor-pointer"
+                >
+                  <option value="b_tech" className="bg-[#14141C] text-white">B.Tech Engineering (1st–4th Year)</option>
+                  <option value="intermediate" className="bg-[#14141C] text-white">Intermediate (Class 11 & 12)</option>
+                  <option value="class_10" className="bg-[#14141C] text-white">Class 10 (Secondary School)</option>
+                </select>
+              </div>
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={isLoading}
             className="w-full mt-2 py-3 px-4 rounded-xl bg-white text-black text-sm font-semibold hover:bg-neutral-200 disabled:opacity-50 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg"
-            suppressHydrationWarning
           >
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-black" />
-                <span>Signing in...</span>
+                <span>{mode === "signup" ? "Creating account..." : "Signing in..."}</span>
               </>
             ) : (
               <>
-                <span>Sign In & Continue to Profile</span>
+                <span>{mode === "signup" ? "Create Account & Continue" : "Sign In & Continue"}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>
         </form>
 
-        <div className="mt-6 pt-4 border-t border-[#242434] text-center">
+        <div className="mt-6 pt-4 border-t border-[#242434] text-center space-y-2">
+          <p className="text-xs text-[#8E8E9C]">
+            {mode === "login" ? (
+              <>
+                Don&apos;t have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("signup");
+                    setErrorMessage(null);
+                  }}
+                  className="text-amber-400 font-medium hover:underline cursor-pointer"
+                >
+                  Sign Up
+                </button>
+              </>
+            ) : (
+              <>
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("login");
+                    setErrorMessage(null);
+                  }}
+                  className="text-amber-400 font-medium hover:underline cursor-pointer"
+                >
+                  Sign In
+                </button>
+              </>
+            )}
+          </p>
+
           <p className="text-[11px] text-[#6E6E82]">
-            Need quick demo access? You can use{" "}
+            Demo access:{" "}
             <span className="text-amber-400 font-mono">palamooradithyagoud@gmail.com</span> or{" "}
-            <span className="text-violet-400 font-mono">demo.student@skillcatalyst.dev</span> with any password.
+            <span className="text-violet-400 font-mono">demo.student@skillcatalyst.dev</span>
           </p>
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center text-xs text-[#8E8E9C]">Loading authentication...</div>}>
+      <AuthForm />
+    </Suspense>
   );
 }
