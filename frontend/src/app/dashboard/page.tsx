@@ -95,7 +95,7 @@ function DashboardContent() {
       const stage = profile?.education_stage || "class_10";
       router.push(`/jobs?stage=${stage}`);
     } else if (card === "learning") {
-      setModalCategory("Skill & Learning Tracks");
+      router.push(studentId ? `/dashboard/skill-tracks?student_id=${studentId}` : "/dashboard/skill-tracks");
     } else if (card === "explore" || card === "career") {
       setIsCareerModalOpen(true);
     }

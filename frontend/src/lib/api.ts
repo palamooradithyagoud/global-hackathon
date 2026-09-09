@@ -224,5 +224,56 @@ export const api = {
       return fetchJSON(`/jobs/btech/search?${query.toString()}`);
     },
   },
+
+  skillTracks: {
+    getYouTubePlaylist: async (params: {
+      topic: string;
+      job_id?: string;
+      skill_track_id?: string;
+      student_id?: string;
+    }): Promise<{
+      success: boolean;
+      playlist: {
+        topic: string;
+        playlist_id: string;
+        title: string;
+        channel_title: string;
+        description?: string;
+        thumbnail?: string;
+        embed_url: string;
+        is_playlist?: boolean;
+      };
+      saved_in_database: boolean;
+    }> => {
+      return fetchJSON("/skill-tracks/youtube-playlist", {
+        method: "POST",
+        body: JSON.stringify(params),
+      });
+    },
+
+    save: async (data: any) => {
+      return fetchJSON("/skill-tracks/save", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+
+    getAll: async (studentId?: string) => {
+      return fetchJSON(`/skill-tracks${studentId ? `?student_id=${studentId}` : ""}`);
+    },
+
+    toggleLecture: async (params: {
+      job_id: string;
+      topic: string;
+      video_id: string;
+      completed: boolean;
+      student_id?: string;
+    }) => {
+      return fetchJSON("/skill-tracks/toggle-lecture", {
+        method: "POST",
+        body: JSON.stringify(params),
+      });
+    },
+  },
 };
 
