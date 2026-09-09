@@ -9,7 +9,12 @@ import {
 import { MatchedJoobleJob, JobFitAnalysisResult } from "./jobData";
 
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+const getBaseUrl = (): string => {
+  const envUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1").trim().replace(/\/+$/, "");
+  return envUrl.endsWith("/api/v1") ? envUrl : `${envUrl}/api/v1`;
+};
+
+const API_BASE_URL = getBaseUrl();
 
 // Client-side in-memory cache for instant navigation between overview, details, and dashboard
 const clientCache = new Map<string, { data: any; timestamp: number }>();
