@@ -19,15 +19,20 @@ def reset_dispatched_ids() -> None:
 
 
 def format_current_study(student: Student) -> str:
-    """Format human-readable current study field from student and academic profile."""
+    """Format human-readable current study field matching student records and n8n email templates."""
     acad = student.academic_profile
     stage = (student.education_stage or "b_tech").lower()
+    year = (acad.year if acad and acad.year else "").strip()
 
     if stage == "b_tech":
+        if year:
+            return f"B.Tech {year}"
         if acad and acad.branch:
-            return f"B.Tech in {acad.branch}"
-        return "B.Tech"
+            return f"B.Tech ({acad.branch})"
+        return "B.Tech 1st Year"
     elif stage == "intermediate":
+        if year:
+            return f"Intermediate {year}"
         if acad and acad.stream:
             return f"Intermediate ({acad.stream})"
         return "Intermediate"
@@ -41,9 +46,11 @@ def build_student_registered_payload(student: Student, base_url: Optional[str] =
     """
     Constructs the exact JSON payload expected by n8n production webhook.
     Uses real database field names and available student records.
+    Provides aliases for full compatibility with existing n8n email workflows.
     """
     web_base = (base_url or settings.FRONTEND_BASE_URL or "http://localhost:3000").rstrip("/")
     acad = student.academic_profile
+    cur_study = format_current_study(student)
 
     # Extract clean list of skills
     skills_list: List[str] = [s.skill_name for s in student.skills] if student.skills else []
@@ -52,22 +59,30 @@ def build_student_registered_payload(student: Student, base_url: Optional[str] =
     interests_list: List[str] = [i.interest for i in student.interests] if student.interests else []
 
     # Determine year
-    year_val = acad.year if acad and acad.year else None
+    year_val = acad.year if acad and acad.year else "1st Year"
 
     # Determine career goal
     career_goal = student.target_role or (acad.future_direction if acad else None) or "Technology Professional"
+
+    dash_url = f"{web_base}/dashboard?student_id={student.id}"
 
     payload = {
         "event": "student_registered",
         "student_id": student.id,
         "name": student.name,
         "email": student.email,
-        "current_study": format_current_study(student),
+        "current_study": cur_study,
         "year": year_val,
         "skills": skills_list,
         "interests": interests_list,
         "career_goal": career_goal,
-        "profile_url": f"{web_base}/dashboard?student_id={student.id}"
+        "profile_url": dash_url,
+        "dashboard_url": dash_url,
+        "explore_url": dash_url,
+        # Field aliases for backwards compatibility with any existing n8n form-derived workflows
+        "field-0": student.name,
+        "field-1": student.email,
+        "field-2": cur_study,
     }
 
     return payload
@@ -76,6 +91,7 @@ def build_student_registered_payload(student: Student, base_url: Optional[str] =
 def send_n8n_webhook(payload: Dict[str, Any], webhook_url: Optional[str] = None) -> bool:
     """
     Sends the payload to the n8n production webhook via HTTP POST.
+    If production webhook is inactive and returns 404, automatically attempts the test webhook.
     Never throws uncaught exceptions, ensuring database registration always succeeds.
     """
     target_url = webhook_url or settings.N8N_WEBHOOK_URL
@@ -83,19 +99,37 @@ def send_n8n_webhook(payload: Dict[str, Any], webhook_url: Optional[str] = None)
         logger.info("[n8n] Webhook is disabled or URL not configured. Skipping dispatch.")
         return False
 
+    headers = {"Content-Type": "application/json"}
+
     try:
         logger.info(f"[n8n] Dispatching '{payload.get('event')}' webhook for student {payload.get('student_id')} to {target_url}")
         with httpx.Client(timeout=10.0) as client:
-            response = client.post(
-                target_url,
-                json=payload,
-                headers={"Content-Type": "application/json"}
-            )
+            response = client.post(target_url, json=payload, headers=headers)
             
-        if response.is_success:
-            logger.info(f"[n8n] Webhook successfully delivered: HTTP {response.status_code}")
-            return True
-        else:
+            if response.is_success:
+                logger.info(f"[n8n] Webhook successfully delivered: HTTP {response.status_code}")
+                return True
+
+            # If production webhook returns 404 (workflow not active), check test webhook if in editor
+            if response.status_code == 404 and "/webhook/" in target_url:
+                test_url = target_url.replace("/webhook/", "/webhook-test/")
+                logger.info(f"[n8n] Production webhook returned 404 (workflow inactive). Attempting test webhook: {test_url}")
+                try:
+                    test_response = client.post(test_url, json=payload, headers=headers)
+                    if test_response.is_success:
+                        logger.info(f"[n8n] Test webhook successfully delivered: HTTP {test_response.status_code}")
+                        return True
+                    else:
+                        logger.warning(
+                            f"[n8n] Both production and test webhooks returned 404.\n"
+                            f"ACTION REQUIRED IN N8N: Please activate the workflow toggle in the top-right of your n8n canvas "
+                            f"(or click 'Execute workflow' / 'Listen for test event' in the editor) to receive executions."
+                        )
+                        return False
+                except Exception as test_exc:
+                    logger.warning(f"[n8n] Test webhook attempt failed: {test_exc}")
+                    return False
+
             logger.warning(
                 f"[n8n] Webhook returned non-success HTTP {response.status_code}: {response.text[:200]}"
             )
