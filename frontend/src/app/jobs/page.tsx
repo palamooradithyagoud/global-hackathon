@@ -5,43 +5,84 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { EducationStage, STAGE_CONFIGS } from "@/lib/stageIsolation";
 import { JOB_PATHWAYS, getJobsForStage } from "@/lib/jobData";
+import { api } from "@/lib/api";
 import JobPathCards from "@/components/jobs/JobPathCards";
 import {
   ArrowLeft,
   Briefcase,
   ShieldCheck,
   Building,
-  Filter,
   Sparkles,
   Search,
   CheckCircle2,
   Info,
-  Loader2
+  Loader2,
+  Lock
 } from "lucide-react";
 
 function JobsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialStage = (searchParams.get("stage") as EducationStage) || "class_10";
+  const stageParam = searchParams.get("stage") as EducationStage | null;
 
-  const [activeStage, setActiveStage] = useState<EducationStage>(initialStage);
+  const [activeStage, setActiveStage] = useState<EducationStage>(stageParam || "class_10");
   const [searchQuery, setSearchQuery] = useState("");
   const [studentId, setStudentId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Authoritatively resolve the student's educational stage
   useEffect(() => {
-    const saved = localStorage.getItem("skillcatalyst_session");
-    if (saved) {
+    let isMounted = true;
+
+    const resolveStage = async () => {
+      setIsLoading(true);
       try {
-        const parsed = JSON.parse(saved);
-        if (parsed.student_id) setStudentId(parsed.student_id);
-        if (parsed.education_stage && !searchParams.get("stage")) {
-          setActiveStage(parsed.education_stage as EducationStage);
+        // 1. If explicit URL stage parameter is given, prioritize it
+        if (stageParam) {
+          if (isMounted) setActiveStage(stageParam);
+          return;
         }
-      } catch {
-        // ignore
+
+        // 2. Otherwise read the saved session and profile
+        const saved = localStorage.getItem("skillcatalyst_session");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed?.student_id) {
+            if (isMounted) setStudentId(parsed.student_id);
+
+            // Fetch live student profile to get authoritative education_stage
+            try {
+              const fullProfile = await api.profile.get(parsed.student_id);
+              if (fullProfile?.education_stage && isMounted) {
+                setActiveStage(fullProfile.education_stage as EducationStage);
+                return;
+              }
+            } catch {
+              // fallback to session field
+            }
+          }
+
+          if (parsed?.education_stage && isMounted) {
+            setActiveStage(parsed.education_stage as EducationStage);
+            return;
+          }
+        }
+
+        // 3. Fallback default
+        if (isMounted) setActiveStage("class_10");
+      } catch (err) {
+        console.error("Error resolving education stage for jobs:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
       }
-    }
-  }, [searchParams]);
+    };
+
+    resolveStage();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [stageParam]);
 
   const currentStageConfig = STAGE_CONFIGS[activeStage] || STAGE_CONFIGS.class_10;
   const rawJobs = getJobsForStage(activeStage);
@@ -60,7 +101,7 @@ function JobsPageContent() {
   return (
     <div className="min-h-screen bg-[#0C0C10] text-white pb-28 pt-6">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
-        {/* Top bar with back button & stage badge */}
+        {/* Top Bar: Back navigation & Class Isolation status badge */}
         <div className="flex items-center justify-between">
           <button
             type="button"
@@ -72,96 +113,84 @@ function JobsPageContent() {
           </button>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-amber-300 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 flex items-center gap-1.5 shadow-sm">
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-              <span>{currentStageConfig.gradeBadge} Job Pathways</span>
+            <span className={`text-xs font-bold px-3.5 py-1.5 rounded-full border flex items-center gap-1.5 shadow-sm ${currentStageConfig.badgeBg}`}>
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{currentStageConfig.gradeBadge} Only</span>
             </span>
           </div>
         </div>
 
-        {/* Big Heading */}
-        <div className="space-y-2">
+        {/* Big Heading - Dynamically tailored to the active educational class */}
+        <div className="space-y-2.5">
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-400">
             <Briefcase className="w-4 h-4" />
-            <span>Public Sector & Career Opportunities</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
-            Job Pathways &amp; <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-300 to-yellow-400">
-              {activeStage === "class_10" ? "Government Jobs for 10th Pass" : "Verified Career Tracks"}
+            <span>
+              {activeStage === "class_10"
+                ? "Class 10th Public Sector Pathways"
+                : activeStage === "intermediate"
+                ? "Higher Secondary (+2) Career Pathways"
+                : "Undergraduate Engineering Pathways"}
             </span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+            {activeStage === "class_10" ? (
+              <>
+                Government Jobs for <br className="hidden sm:inline" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-orange-300 to-yellow-400">
+                  Class 10th Pass Candidates
+                </span>
+              </>
+            ) : activeStage === "intermediate" ? (
+              <>
+                Career Pathways for <br className="hidden sm:inline" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-indigo-400">
+                  Class 11th &amp; 12th (Intermediate)
+                </span>
+              </>
+            ) : (
+              <>
+                Technology &amp; PSU Careers for <br className="hidden sm:inline" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 via-cyan-300 to-indigo-400">
+                  B.Tech Undergraduates
+                </span>
+              </>
+            )}
           </h1>
+
           <p className="text-xs sm:text-sm text-[#A0A0B8] max-w-2xl leading-relaxed">
             {activeStage === "class_10"
-              ? "Official Government of India, State Police, Railway & Postal recruitments strictly open for candidates with 10th Pass minimum qualification."
-              : `Stage-isolated employment tracks and examinations customized for ${currentStageConfig.label}.`}
+              ? "Official Government of India, State Police, Railway, Postal and Forest recruitments strictly open for candidates with 10th Pass qualification."
+              : activeStage === "intermediate"
+              ? "Competitive national examinations & defence officer academy entries (SSC CHSL, NDA & Naval Academy) for 12th Pass students."
+              : "Enterprise software development roles and Maharatna PSU executive trainee recruitments via GATE."}
           </p>
         </div>
 
-        {/* Education Stage Selector */}
-        <div className="p-4 rounded-3xl bg-[#14141E] border border-[#252538] space-y-3 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-white flex items-center gap-1.5">
-              <Filter className="w-3.5 h-3.5 text-amber-400" />
-              <span>Filter Job Paths by Educational Level</span>
-            </span>
-            <span className="text-[11px] text-[#8E8E9C]">
-              Showing {filteredJobs.length} Verified Posts
-            </span>
+        {/* Strict Class Isolation Banner */}
+        <div className="p-4 rounded-2xl bg-[#14141E] border border-[#2B2B3E] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-xl border ${currentStageConfig.badgeBg}`}>
+              <Lock className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-white">
+                  Strict Class Isolation Active: {currentStageConfig.label}
+                </span>
+                <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                  Zero Leaks
+                </span>
+              </div>
+              <p className="text-[11px] text-[#8E8E9C] mt-0.5">
+                Displaying only opportunities eligible for {currentStageConfig.shortLabel}. Other educational classes are strictly isolated.
+              </p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2.5">
-            {/* Class 10th */}
-            <button
-              type="button"
-              id="job-stage-class-10"
-              onClick={() => setActiveStage("class_10")}
-              className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
-                activeStage === "class_10"
-                  ? "bg-amber-500/15 border-amber-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.2)] ring-1 ring-amber-500/50"
-                  : "bg-[#181824] border-[#262638] text-[#8E8E9C] hover:text-white hover:border-[#38384C]"
-              }`}
-            >
-              <span className="block text-xs sm:text-sm font-bold">Class 10th</span>
-              <span className="block text-[10px] mt-0.5 text-amber-400 font-semibold">
-                8 Government Jobs
-              </span>
-            </button>
-
-            {/* Intermediate */}
-            <button
-              type="button"
-              id="job-stage-intermediate"
-              onClick={() => setActiveStage("intermediate")}
-              className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
-                activeStage === "intermediate"
-                  ? "bg-purple-500/15 border-purple-500 text-white shadow-[0_0_20px_rgba(168,85,247,0.2)] ring-1 ring-purple-500/50"
-                  : "bg-[#181824] border-[#262638] text-[#8E8E9C] hover:text-white hover:border-[#38384C]"
-              }`}
-            >
-              <span className="block text-xs sm:text-sm font-bold">11th &amp; 12th</span>
-              <span className="block text-[10px] mt-0.5 text-purple-400 font-semibold">
-                CHSL / NDA
-              </span>
-            </button>
-
-            {/* B.Tech */}
-            <button
-              type="button"
-              id="job-stage-btech"
-              onClick={() => setActiveStage("b_tech")}
-              className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
-                activeStage === "b_tech"
-                  ? "bg-blue-500/15 border-blue-500 text-white shadow-[0_0_20px_rgba(59,130,246,0.2)] ring-1 ring-blue-500/50"
-                  : "bg-[#181824] border-[#262638] text-[#8E8E9C] hover:text-white hover:border-[#38384C]"
-              }`}
-            >
-              <span className="block text-xs sm:text-sm font-bold">B.Tech</span>
-              <span className="block text-[10px] mt-0.5 text-blue-400 font-semibold">
-                SDE &amp; PSUs
-              </span>
-            </button>
-          </div>
+          <span className="text-xs font-mono font-bold text-white px-3 py-1.5 rounded-xl bg-[#1A1A28] border border-[#2C2C40] self-start sm:self-auto whitespace-nowrap">
+            {filteredJobs.length} Verified {activeStage === "class_10" ? "Government Jobs" : "Pathways"}
+          </span>
         </div>
 
         {/* Search Input Bar */}
@@ -180,7 +209,7 @@ function JobsPageContent() {
           />
         </div>
 
-        {/* Stage Notification Callout for Class 10th */}
+        {/* Highlight Callout for Class 10th Government Jobs */}
         {activeStage === "class_10" && (
           <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-3">
             <Sparkles className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
@@ -196,8 +225,15 @@ function JobsPageContent() {
         )}
 
         {/* List of Job Path Cards */}
-        <div className="pt-2">
-          <JobPathCards jobs={filteredJobs} />
+        <div className="pt-1">
+          {isLoading ? (
+            <div className="py-20 flex flex-col items-center justify-center gap-2 text-xs text-[#8E8E9C]">
+              <Loader2 className="w-8 h-8 animate-spin text-amber-400" />
+              <span>Verifying class isolation for jobs...</span>
+            </div>
+          ) : (
+            <JobPathCards jobs={filteredJobs} />
+          )}
         </div>
       </div>
     </div>
