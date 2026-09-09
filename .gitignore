@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+/.pnp
+.pnp.*
+.yarn/*
+
+# Python
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Testing & Cache
+.pytest_cache/
+frontend/coverage/
+
+# Next.js & Build outputs
+frontend/.next/
+frontend/out/
+frontend/build/
+.vercel/
+*.tsbuildinfo
+
+# SQLite databases & local files
+*.db
+*.sqlite
+*.sqlite3
+backend/app/temp_uploads/
+
+# Environment files (keep examples tracked)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
