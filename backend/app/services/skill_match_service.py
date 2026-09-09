@@ -173,3 +173,109 @@ def calculate_skill_gap(
             "total": total_reqs
         }
     }
+
+
+def calculate_career_skill_gap_by_ids(
+    student_id: str,
+    career_id: str,
+    db: Any
+) -> Dict[str, Any]:
+    """
+    Deterministic skill gap analysis comparing authenticated student's profile skills
+    against canonical Career required skills in PostgreSQL/SQLite.
+    """
+    from backend.app.models.profile import Student, StudentSkill
+    from backend.app.models.agent import Career, CareerSkill
+
+    student = db.query(Student).filter(Student.id == student_id).first()
+    if not student:
+        return {"error": f"Student with ID {student_id} not found."}
+
+    career = db.query(Career).filter(Career.id == career_id).first()
+    if not career:
+        # Fallback: search by name/prefix
+        career = db.query(Career).filter(Career.name.ilike(f"%{career_id}%")).first()
+        if not career:
+            return {"error": f"Career '{career_id}' not found."}
+
+    # Extract student skills
+    student_skills_list = []
+    for s_skill in student.skills:
+        student_skills_list.append({
+            "skill_name": s_skill.skill_name,
+            "proficiency": s_skill.proficiency
+        })
+
+    # Extract career required skills
+    career_skills_records = db.query(CareerSkill).filter(CareerSkill.career_id == career.id).all()
+    job_required_skills = []
+    for cs in career_skills_records:
+        s_name = cs.skill.name if cs.skill else "Unknown"
+        imp_label = "high" if cs.importance >= 0.8 else ("medium" if cs.importance >= 0.5 else "low")
+        job_required_skills.append({
+            "skill": s_name,
+            "required_proficiency": cs.target_level,
+            "importance": imp_label,
+            "raw_importance": cs.importance
+        })
+
+    gap_result = calculate_skill_gap(student_skills_list, job_required_skills)
+    total_reqs = gap_result["summary_counts"]["total"]
+    matched_count = gap_result["summary_counts"]["matched"]
+    readiness_percentage = round((matched_count / max(1, total_reqs)) * 100, 1)
+
+    return {
+        "student_id": student.id,
+        "student_name": student.name,
+        "career_id": career.id,
+        "career_name": career.name,
+        "category": career.category,
+        "readiness_percentage": readiness_percentage,
+        "matched_skills": gap_result["matched_skills"],
+        "partial_skills": gap_result["partial_skills"],
+        "missing_skills": gap_result["missing_skills"],
+        "priority_gaps": gap_result["priority_gaps"],
+        "status": gap_result["status"],
+        "status_label": gap_result["status_label"],
+        "summary_counts": gap_result["summary_counts"]
+    }
+
+
+def calculate_skill_gap_for_career_name(
+    student_id: str,
+    career_name: str,
+    db: Any
+) -> Dict[str, Any]:
+    """
+    Deterministic skill gap analysis searching canonical careers by semantic name query.
+    """
+    from backend.app.models.agent import Career
+
+    clean_name = career_name.strip()
+    career = db.query(Career).filter(Career.name.ilike(f"%{clean_name}%")).first()
+    if not career:
+        # Common aliases
+        aliases = {
+            "ml engineer": "Machine Learning Engineer",
+            "ai engineer": "AI Research Scientist",
+            "sde": "Full Stack Developer",
+            "frontend dev": "Frontend Engineer",
+            "backend dev": "Backend Systems Engineer",
+            "devops": "DevOps / SRE Engineer",
+            "cloud engineer": "Cloud Solutions Architect",
+            "data analyst": "Data Analyst"
+        }
+        mapped = aliases.get(clean_name.lower())
+        if mapped:
+            career = db.query(Career).filter(Career.name.ilike(f"%{mapped}%")).first()
+
+    if not career:
+        # Default to first available career in similar category or list available
+        available = [c.name for c in db.query(Career).limit(5).all()]
+        return {
+            "error": f"Career '{career_name}' not found.",
+            "available_careers": available
+        }
+
+    return calculate_career_skill_gap_by_ids(student_id, career.id, db)
+

@@ -291,5 +291,104 @@ class JoobleService:
             "is_live_jooble": True
         }
 
+    def search_jobs(
+        self,
+        db: Session,
+        keyword: str = "Software Engineer",
+        location: str = "India",
+        limit: int = 5
+    ) -> Dict[str, Any]:
+        """
+        Synchronous job search for agent tools.
+        Tries Jooble API, falls back to DB cached jobs, and then curated verified jobs.
+        """
+        raw_items = []
+        if self.api_key:
+            try:
+                with httpx.Client(timeout=6.0) as client:
+                    resp = client.post(
+                        self.base_url,
+                        json={
+                            "keywords": keyword,
+                            "location": location or "India",
+                            "page": 1
+                        },
+                        headers={
+                            "Content-Type": "application/json",
+                            "User-Agent": "SkillCatalyst-Agent/1.0"
+                        }
+                    )
+                    if resp.status_code == 200:
+                        raw_items = resp.json().get("jobs", [])
+            except Exception as exc:
+                logger.warning(f"[Jooble API sync] Request exception: {exc}")
+
+        if raw_items:
+            results = []
+            for item in raw_items[:limit]:
+                title = item.get("title", "").strip()
+                snippet = clean_html_snippet(item.get("snippet", ""))
+                extracted = extract_skills_from_text(title, snippet)
+                results.append({
+                    "id": str(item.get("id")),
+                    "title": title,
+                    "company": item.get("company", "Tech Enterprise").strip(),
+                    "location": item.get("location") or location or "India",
+                    "salary": item.get("salary") or "Competitive / Industry Standard",
+                    "required_skills": [s["skill"] for s in extracted],
+                    "link": item.get("link") or "https://jooble.org",
+                    "source": "Jooble Live API"
+                })
+            return {"jobs": results, "total_count": len(results)}
+
+        # Fallback to database cached jobs matching keyword
+        if db:
+            try:
+                cached = db.query(Job).filter(
+                    or_(
+                        Job.title.ilike(f"%{keyword}%"),
+                        Job.description.ilike(f"%{keyword}%")
+                    )
+                ).limit(limit).all()
+                if not cached:
+                    cached = db.query(Job).order_by(Job.created_at.desc()).limit(limit).all()
+                if cached:
+                    results = []
+                    for c in cached:
+                        extracted = extract_skills_from_text(c.title, c.description or "")
+                        results.append({
+                            "id": str(c.id),
+                            "title": c.title,
+                            "company": c.company,
+                            "location": c.location,
+                            "salary": c.salary_raw or "Competitive / Industry Standard",
+                            "required_skills": [s["skill"] for s in extracted],
+                            "link": c.source_url or "https://jooble.org",
+                            "source": f"Cached Database ({c.source})"
+                        })
+                    return {"jobs": results, "total_count": len(results)}
+            except Exception as exc:
+                logger.warning(f"[Jooble sync fallback] DB query failed: {exc}")
+
+        # Curated verified jobs pool
+        results = []
+        kw_lower = keyword.lower()
+        matched_fb = [j for j in FALLBACK_JOBS if kw_lower in j["title"].lower() or kw_lower in j["snippet"].lower()]
+        fb_pool = matched_fb if matched_fb else FALLBACK_JOBS
+        for item in fb_pool[:limit]:
+            extracted = extract_skills_from_text(item["title"], item["snippet"])
+            results.append({
+                "id": item["id"],
+                "title": item["title"],
+                "company": item["company"],
+                "location": item["location"],
+                "salary": item["salary"],
+                "required_skills": [s["skill"] for s in extracted],
+                "link": item["link"],
+                "source": "Verified Tech Jobs Pool"
+            })
+        return {"jobs": results, "total_count": len(results)}
+
 
 jooble_service = JoobleService()
+

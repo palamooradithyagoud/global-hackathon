@@ -1,9 +1,12 @@
+import json
+import logging
 from typing import Optional, List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from backend.app.core.database import get_db
+from backend.app.models.assistant import AssistantMessage
 from backend.app.services.assistant_service import (
     ask_assistant,
     get_conversation_history,
@@ -11,9 +14,13 @@ from backend.app.services.assistant_service import (
     get_student_memory,
     update_student_memory,
     clear_student_memory,
+    extract_memory_from_query,
 )
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/assistant", tags=["AI Assistant"])
+
 
 
 class AssistantChatRequest(BaseModel):
@@ -21,6 +28,9 @@ class AssistantChatRequest(BaseModel):
     student_id: Optional[str] = Field(None, description="Optional ID of authenticated student")
     stage: Optional[str] = Field(None, description="Current education stage (class_10, intermediate, b_tech)")
 
+
+from backend.app.services.agent import agent_orchestrator, build_server_agent_context
+from backend.app.models.profile import Student
 
 class AssistantChatResponse(BaseModel):
     reply: str
@@ -32,6 +42,10 @@ class AssistantChatResponse(BaseModel):
     education_stage: str
     history_length: int = 0
     memory: Optional[Dict[str, Any]] = None
+    sources: Optional[List[Dict[str, Any]]] = None
+    verification: Optional[Dict[str, Any]] = None
+    tools_used: Optional[List[str]] = None
+    latency_ms: Optional[float] = None
 
 
 class StudentMemoryUpdateRequest(BaseModel):
@@ -49,25 +63,110 @@ async def chat_with_assistant(
     db: Session = Depends(get_db)
 ):
     """
-    Sends message to Ascend AI Assistant with per-user memory isolation:
-    - Queries OpenRouter API (falls back to Groq or deterministic engine).
-    - Incorporates student's verified profile data and private personal memory.
-    - Persists conversation turns into AssistantMessage memory for continuous context.
-    - Enforces short, clear, and direct responses unless details are requested.
+    SkillCatalyst Grounded AI Agent Chatbot:
+    - Server-controlled AgentContext prevents IDOR and unauthorized access.
+    - Native typed tools: Skill Engine, Scholarship Engine, Live Jobs, RAG, Verification, Memory.
+    - Ground-truth evidence verification; never hallucinates unverified claims.
+    - Gracefully degrades to deterministic rule engines if external LLM is offline.
     """
     try:
-        result = await ask_assistant(
+        # 1. Construct server-controlled execution context (IDOR defense)
+        context = build_server_agent_context(
             db=db,
-            user_query=payload.message,
-            student_id=payload.student_id,
+            authenticated_student_id=None,
+            client_student_id_param=payload.student_id,
             stage=payload.stage
         )
-        return result
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error generating assistant response: {str(e)}"
+
+        student_name = None
+        if context.authenticated_student_id:
+            student = db.query(Student).filter(Student.id == context.authenticated_student_id).first()
+            if student:
+                student_name = student.name
+
+        # 2. Run Grounded Agent Orchestrator
+        agent_res = await agent_orchestrator.run(
+            user_message=payload.message,
+            context=context,
+            db=db
         )
+
+        # 3. Synchronize legacy conversation history & memory for backward compatibility
+        history_len = 0
+        if context.authenticated_student_id:
+            try:
+                # Sync legacy AssistantMemory
+                new_facts = extract_memory_from_query(payload.message)
+                if new_facts:
+                    update_student_memory(db, context.authenticated_student_id, new_facts)
+
+                # Sync legacy AssistantMessage turns
+                user_msg_rec = AssistantMessage(
+                    student_id=context.authenticated_student_id,
+                    role="user",
+                    content=payload.message,
+                    suggestions=None
+                )
+                ai_msg_rec = AssistantMessage(
+                    student_id=context.authenticated_student_id,
+                    role="assistant",
+                    content=agent_res.reply,
+                    suggestions=json.dumps(agent_res.suggestions)
+                )
+                db.add(user_msg_rec)
+                db.add(ai_msg_rec)
+                db.commit()
+
+                history_len = (
+                    db.query(AssistantMessage)
+                    .filter(AssistantMessage.student_id == context.authenticated_student_id)
+                    .count()
+                )
+            except Exception as e:
+                db.rollback()
+                logger.warning(f"Error syncing legacy chat history/memory: {e}")
+
+        return AssistantChatResponse(
+            reply=agent_res.reply,
+            suggestions=agent_res.suggestions,
+            ai_generated=agent_res.ai_generated,
+            provider=agent_res.provider,
+            student_context_loaded=bool(context.authenticated_student_id),
+            student_name=student_name,
+            education_stage=context.stage or "b_tech",
+            history_length=history_len,
+            memory=agent_res.memory,
+            sources=agent_res.sources,
+            verification=agent_res.verification,
+            tools_used=agent_res.tools_used,
+            latency_ms=agent_res.latency_ms
+        )
+
+    except Exception as exc:
+        # Safe fallback to existing assistant service if catastrophic error
+        try:
+            result = await ask_assistant(
+                db=db,
+                user_query=payload.message,
+                student_id=payload.student_id,
+                stage=payload.stage
+            )
+            return AssistantChatResponse(
+                reply=result.reply,
+                suggestions=result.suggestions,
+                ai_generated=result.ai_generated,
+                provider=result.provider,
+                student_context_loaded=result.student_context_loaded,
+                student_name=result.student_name,
+                education_stage=result.education_stage,
+                history_length=result.history_length,
+                memory=result.memory
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error generating assistant response: {str(e)}"
+            )
 
 
 @router.get("/history/{student_id}")

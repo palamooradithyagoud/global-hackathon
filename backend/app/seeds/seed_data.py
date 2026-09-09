@@ -400,10 +400,6 @@ def seed_database(db: Session):
     existing_all = db.query(Scholarship).all()
     existing_map = {s.id: s for s in existing_all}
 
-    for s in existing_all:
-        if s.id not in valid_ids:
-            db.delete(s)
-
     for item in SEED_SCHOLARSHIPS:
         existing = existing_map.get(item["id"])
         if not existing:

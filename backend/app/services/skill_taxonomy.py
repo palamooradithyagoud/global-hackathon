@@ -153,19 +153,72 @@ for norm_key, info in TAXONOMY.items():
     for alias in info.get("aliases", []):
         ALIAS_INDEX[alias.lower()] = norm_key
 
+# In-memory dynamic cache for database-loaded skills
+_DB_SKILL_CACHE: Dict[str, Dict[str, Any]] = {}
+_DB_ALIAS_INDEX: Dict[str, str] = {}
 
-def normalize_skill(raw_name: str) -> Dict[str, Any]:
+
+def load_db_skills_cache(db) -> None:
+    """Loads all canonical skills from the database into memory for microsecond lookups."""
+    global _DB_SKILL_CACHE, _DB_ALIAS_INDEX
+    try:
+        import json
+        from backend.app.models.agent import Skill
+        skills = db.query(Skill).all()
+        cache = {}
+        alias_index = {}
+        for s in skills:
+            slug = re.sub(r"[^a-z0-9]+", "_", s.name.strip().lower()).strip("_")
+            cache[slug] = {
+                "id": s.id,
+                "name": s.name,
+                "normalized_name": slug,
+                "category": s.category
+            }
+            alias_index[s.name.strip().lower()] = slug
+            alias_index[slug] = slug
+            if s.aliases:
+                try:
+                    aliases = json.loads(s.aliases) if isinstance(s.aliases, str) else s.aliases
+                    for al in aliases:
+                        alias_index[al.strip().lower()] = slug
+                except Exception:
+                    pass
+        _DB_SKILL_CACHE = cache
+        _DB_ALIAS_INDEX = alias_index
+    except Exception:
+        pass
+
+
+def normalize_skill(raw_name: str, db=None) -> Dict[str, Any]:
     """
     Normalizes a skill name string into its canonical taxonomy representation.
-    E.g., "React.js" -> {"name": "React", "normalized_name": "react", "category": "Frontend"}
+    Checks DB cache first (350+ skills), then static taxonomy, then slug fallback.
+    E.g., "Python3" -> {"name": "Python", "normalized_name": "python", "category": "Programming"}
     """
     if not raw_name:
         return {"name": "General Tech", "normalized_name": "general_tech", "category": "Other"}
     
     clean = raw_name.strip().lower()
-    # Remove surrounding punctuation
     clean = re.sub(r"^[\s\-_.,]+|[\s\-_.,]+$", "", clean)
 
+    # 1. Check DB Cache if loaded, or load if db is provided
+    if db and not _DB_SKILL_CACHE:
+        load_db_skills_cache(db)
+
+    if clean in _DB_ALIAS_INDEX:
+        slug = _DB_ALIAS_INDEX[clean]
+        if slug in _DB_SKILL_CACHE:
+            return _DB_SKILL_CACHE[slug]
+
+    # Simplified variant check on DB cache
+    simplified = re.sub(r"[\._\-]", " ", clean).strip()
+    if simplified in _DB_ALIAS_INDEX:
+        slug = _DB_ALIAS_INDEX[simplified]
+        if slug in _DB_SKILL_CACHE:
+            return _DB_SKILL_CACHE[slug]
+
+    # 2. Check Static Taxonomy
     if clean in ALIAS_INDEX:
         canonical_key = ALIAS_INDEX[clean]
         item = TAXONOMY[canonical_key]
@@ -175,8 +228,6 @@ def normalize_skill(raw_name: str) -> Dict[str, Any]:
             "category": item["category"]
         }
     
-    # Try removing special characters (.js, js, etc.)
-    simplified = re.sub(r"[\._\-]", " ", clean).strip()
     if simplified in ALIAS_INDEX:
         canonical_key = ALIAS_INDEX[simplified]
         item = TAXONOMY[canonical_key]
@@ -186,7 +237,7 @@ def normalize_skill(raw_name: str) -> Dict[str, Any]:
             "category": item["category"]
         }
 
-    # Fallback for unregistered skills: Title-cased display with slugified key
+    # 3. Fallback for unregistered skills: Title-cased display with slugified key
     slug = re.sub(r"[^a-z0-9]+", "_", clean).strip("_")
     display_title = raw_name.strip().title()
     return {
@@ -194,3 +245,4 @@ def normalize_skill(raw_name: str) -> Dict[str, Any]:
         "normalized_name": slug or "tech_skill",
         "category": "Domain Skill"
     }
+

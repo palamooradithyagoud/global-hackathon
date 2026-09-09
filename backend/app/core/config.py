@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
 import os
@@ -31,6 +31,18 @@ class Settings(BaseSettings):
     JOOBLE_API_URL: str = os.getenv("JOOBLE_API_URL", "https://jooble.org/api")
     YOUTUBE_API_KEY: str = os.getenv("YOUTUBE_API_KEY", "")
 
+    # ChromaDB Vector Store & Embedding Configuration
+    CHROMA_PERSIST_DIR: str = os.getenv("CHROMA_PERSIST_DIR", "./data/chroma")
+    CHROMA_COLLECTION_NAME: str = os.getenv("CHROMA_COLLECTION_NAME", "scholarships")
+    EMBEDDING_PROVIDER: str = os.getenv("EMBEDDING_PROVIDER", "sentence_transformers")
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+
+    # Chroma Cloud Configuration
+    CHROMA_API_KEY: Optional[str] = os.getenv("CHROMA_API_KEY", None)
+    CHROMA_TENANT: Optional[str] = os.getenv("CHROMA_TENANT", "214d5420-8e7c-4134-a9a5-f3b1689c790b")
+    CHROMA_DATABASE: Optional[str] = os.getenv("CHROMA_DATABASE", "GlobalHackathon")
+    CHROMA_USE_CLOUD: bool = os.getenv("CHROMA_USE_CLOUD", "false").lower() in ("true", "1", "yes")
+
     # CORS
     CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
@@ -44,8 +56,6 @@ class Settings(BaseSettings):
                 v = v.replace("db.hvsxhkrjnjfmhkvujjyn.supabase.co", "aws-0-ap-southeast-2.pooler.supabase.com")
                 if "://postgres:" in v:
                     v = v.replace("://postgres:", "://postgres.hvsxhkrjnjfmhkvujjyn:")
-                if "adithyagoud@789" in v:
-                    v = v.replace("adithyagoud@789", "adithyagoud%40789")
         return v or "sqlite:///./skillcatalyst.db"
 
     @field_validator("CORS_ORIGINS", mode="before")

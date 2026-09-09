@@ -34,12 +34,22 @@ frontend/build/
 *.sqlite
 *.sqlite3
 backend/app/temp_uploads/
+/data/
+backend/data/chroma/
+backend/data/chroma*/
 
 # Environment files (keep examples tracked)
 .env
+.env*
+*.env
+backend/.env
+backend/.env*
+frontend/.env
+frontend/.env*
 .env.local
 .env.*.local
 !.env.example
+!**/.env.example
 
 # OS / Editor
 .DS_Store

@@ -1,0 +1,302 @@
+{
+  "collection_name": "scholarships",
+  "count": 20,
+  "records": [
+    {
+      "id": "scholarship_001",
+      "document": "Vidyadhan Scholarship for Intrmediate students. Minimum qualifying percentage: 90%. Award amount: INR 10000. Application deadline: 30-06-2026. Apply at: https://www.vidyadhan.org/apply",
+      "metadata": {
+        "scholarship_name": "Vidyadhan Scholarship",
+        "current_study": "Intrmediate",
+        "education_level": "Other",
+        "minimum_percentage": 90,
+        "amount_inr": 10000,
+        "deadline": "30-06-2026",
+        "deadline_iso": "2026-06-30",
+        "application_link": "https://www.vidyadhan.org/apply"
+      }
+    },
+    {
+      "id": "scholarship_002",
+      "document": "Epass Scholarship for Intermeadiate students. Minimum qualifying percentage: 35%. Award amount: INR 5000. Application deadline: 30-09-2026. Apply at: https://telanganaepass.cgg.gov.in/PrematricLinks.do",
+      "metadata": {
+        "scholarship_name": "Epass Scholarship",
+        "current_study": "Intermeadiate",
+        "education_level": "Intermediate",
+        "minimum_percentage": 35,
+        "amount_inr": 5000,
+        "deadline": "30-09-2026",
+        "deadline_iso": "2026-09-30",
+        "application_link": "https://telanganaepass.cgg.gov.in/PrematricLinks.do"
+      }
+    },
+    {
+      "id": "scholarship_003",
+      "document": "SBI ASHA Scholarship for Intermediate 1st Year students. Minimum qualifying percentage: 75%. Award amount: INR 15000. Application deadline: 19-09-2026. Apply at: https://www.sbiashascholarship.co.in/auth?mode=signup",
+      "metadata": {
+        "scholarship_name": "SBI ASHA Scholarship",
+        "current_study": "Intermediate 1st Year",
+        "education_level": "Intermediate",
+        "year_of_study": 1,
+        "minimum_percentage": 75,
+        "amount_inr": 15000,
+        "deadline": "19-09-2026",
+        "deadline_iso": "2026-09-19",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup"
+      }
+    },
+    {
+      "id": "scholarship_004",
+      "document": "LIC Silver Jubile Scholarship for Intermediate students. Minimum qualifying percentage: 35%. Award amount: INR 40000. Application deadline: 30-09-2026. Apply at: https://gjss.licindia.in/GJSS/?_ga=2.244227333.1878720104.1788317600-978755654.1785413535",
+      "metadata": {
+        "scholarship_name": "LIC Silver Jubile Scholarship",
+        "current_study": "Intermediate",
+        "education_level": "Intermediate",
+        "minimum_percentage": 35,
+        "amount_inr": 40000,
+        "deadline": "30-09-2026",
+        "deadline_iso": "2026-09-30",
+        "application_link": "https://gjss.licindia.in/GJSS/?_ga=2.244227333.1878720104.1788317600-978755654.1785413535"
+      }
+    },
+    {
+      "id": "scholarship_005",
+      "document": "Dr Rajendra Prasad Scholarship Program   2026-27 for Intermediate students. Minimum qualifying percentage: 75%. Award amount: INR 30000. Application deadline: 30-09-2026. Apply at: https://www.buddy4study.com/page/dr-rajendra-prasad-scholarship-program#scholarships",
+      "metadata": {
+        "scholarship_name": "Dr Rajendra Prasad Scholarship Program   2026-27",
+        "current_study": "Intermediate",
+        "education_level": "Intermediate",
+        "minimum_percentage": 75,
+        "amount_inr": 30000,
+        "deadline": "30-09-2026",
+        "deadline_iso": "2026-09-30",
+        "application_link": "https://www.buddy4study.com/page/dr-rajendra-prasad-scholarship-program#scholarships"
+      }
+    },
+    {
+      "id": "scholarship_006",
+      "document": "Epass Scholarship for B.Tech 1st Year students. Minimum qualifying percentage: 35%. Award amount: INR 6500. Application deadline: 10-11-2026. Apply at: https://telanganaepass.cgg.gov.in/epassonlinelinks.do",
+      "metadata": {
+        "scholarship_name": "Epass Scholarship",
+        "current_study": "B.Tech 1st Year",
+        "education_level": "B.Tech",
+        "year_of_study": 1,
+        "minimum_percentage": 35,
+        "amount_inr": 6500,
+        "deadline": "10-11-2026",
+        "deadline_iso": "2026-11-10",
+        "application_link": "https://telanganaepass.cgg.gov.in/epassonlinelinks.do"
+      }
+    },
+    {
+      "id": "scholarship_007",
+      "document": "Epass Scholarship for B.Tech 2nd Year students. Minimum qualifying percentage: 35%. Award amount: INR 6500. Application deadline: 18-08-2026. Apply at: https://telanganaepass.cgg.gov.in/epassonlinelinks.do",
+      "metadata": {
+        "scholarship_name": "Epass Scholarship",
+        "current_study": "B.Tech 2nd Year",
+        "education_level": "B.Tech",
+        "year_of_study": 2,
+        "minimum_percentage": 35,
+        "amount_inr": 6500,
+        "deadline": "18-08-2026",
+        "deadline_iso": "2026-08-18",
+        "application_link": "https://telanganaepass.cgg.gov.in/epassonlinelinks.do"
+      }
+    },
+    {
+      "id": "scholarship_008",
+      "document": "Epass Scholarship for B.Tech 3trd Year students. Minimum qualifying percentage: 35%. Award amount: INR 6500. Application deadline: 18-08-2026. Apply at: https://telanganaepass.cgg.gov.in/epassonlinelinks.do",
+      "metadata": {
+        "scholarship_name": "Epass Scholarship",
+        "current_study": "B.Tech 3trd Year",
+        "education_level": "B.Tech",
+        "year_of_study": 3,
+        "minimum_percentage": 35,
+        "amount_inr": 6500,
+        "deadline": "18-08-2026",
+        "deadline_iso": "2026-08-18",
+        "application_link": "https://telanganaepass.cgg.gov.in/epassonlinelinks.do"
+      }
+    },
+    {
+      "id": "scholarship_009",
+      "document": "Epass Scholarship for B.Tech 4 th year students. Minimum qualifying percentage: 35%. Award amount: INR 6500. Application deadline: 18-08-2026. Apply at: https://telanganaepass.cgg.gov.in/epassonlinelinks.do",
+      "metadata": {
+        "scholarship_name": "Epass Scholarship",
+        "current_study": "B.Tech 4 th year",
+        "education_level": "B.Tech",
+        "year_of_study": 4,
+        "minimum_percentage": 35,
+        "amount_inr": 6500,
+        "deadline": "18-08-2026",
+        "deadline_iso": "2026-08-18",
+        "application_link": "https://telanganaepass.cgg.gov.in/epassonlinelinks.do"
+      }
+    },
+    {
+      "id": "scholarship_010",
+      "document": "SBI ASHA Scholarship for B.Tech 1st Year students. Minimum qualifying percentage: 75%. Award amount: INR 75000. Application deadline: 19-09-2026. Apply at: https://www.sbiashascholarship.co.in/auth?mode=signup",
+      "metadata": {
+        "scholarship_name": "SBI ASHA Scholarship",
+        "current_study": "B.Tech 1st Year",
+        "education_level": "B.Tech",
+        "year_of_study": 1,
+        "minimum_percentage": 75,
+        "amount_inr": 75000,
+        "deadline": "19-09-2026",
+        "deadline_iso": "2026-09-19",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup"
+      }
+    },
+    {
+      "id": "scholarship_011",
+      "document": "LIC Silver Jubile Scholarship for B.Tech 1st Year students. Minimum qualifying percentage: 35%. Award amount: INR 40000. Application deadline: 30-10-2026. Apply at: https://gjss.licindia.in/GJSS/?_ga=2.244227333.1878720104.1788317600-978755654.1785413535",
+      "metadata": {
+        "scholarship_name": "LIC Silver Jubile Scholarship",
+        "current_study": "B.Tech 1st Year",
+        "education_level": "B.Tech",
+        "year_of_study": 1,
+        "minimum_percentage": 35,
+        "amount_inr": 40000,
+        "deadline": "30-10-2026",
+        "deadline_iso": "2026-10-30",
+        "application_link": "https://gjss.licindia.in/GJSS/?_ga=2.244227333.1878720104.1788317600-978755654.1785413535"
+      }
+    },
+    {
+      "id": "scholarship_012",
+      "document": "Reliance Scholarship for B.Tech 1st Year students. Minimum qualifying percentage: 65%. Award amount: INR 50000. Application deadline: 30-10-2026. Apply at: https://www.buddy4study.com/page/reliance-foundation-scholarships",
+      "metadata": {
+        "scholarship_name": "Reliance Scholarship",
+        "current_study": "B.Tech 1st Year",
+        "education_level": "B.Tech",
+        "year_of_study": 1,
+        "minimum_percentage": 65,
+        "amount_inr": 50000,
+        "deadline": "30-10-2026",
+        "deadline_iso": "2026-10-30",
+        "application_link": "https://www.buddy4study.com/page/reliance-foundation-scholarships"
+      }
+    },
+    {
+      "id": "scholarship_013",
+      "document": "NSP for B.Tech 1st Year students. Minimum qualifying percentage: 75%. Award amount: INR 12000. Application deadline: 05-11-2026. Apply at: https://scholarships.gov.in/",
+      "metadata": {
+        "scholarship_name": "NSP",
+        "current_study": "B.Tech 1st Year",
+        "education_level": "B.Tech",
+        "year_of_study": 1,
+        "minimum_percentage": 75,
+        "amount_inr": 12000,
+        "deadline": "05-11-2026",
+        "deadline_iso": "2026-11-05",
+        "application_link": "https://scholarships.gov.in/"
+      }
+    },
+    {
+      "id": "scholarship_014",
+      "document": "ONGC for B.Tech 1st Year students. Minimum qualifying percentage: 65%. Award amount: INR 48000. Application deadline: 20-06-2026. Apply at: https://www.buddy4study.com/page/ongc-scholarship-to-meritorious-students",
+      "metadata": {
+        "scholarship_name": "ONGC",
+        "current_study": "B.Tech 1st Year",
+        "education_level": "B.Tech",
+        "year_of_study": 1,
+        "minimum_percentage": 65,
+        "amount_inr": 48000,
+        "deadline": "20-06-2026",
+        "deadline_iso": "2026-06-20",
+        "application_link": "https://www.buddy4study.com/page/ongc-scholarship-to-meritorious-students"
+      }
+    },
+    {
+      "id": "scholarship_015",
+      "document": "Tata Capital Pankh Scholarship Program 2026-27 for B.Tech 1st Year students. Minimum qualifying percentage: 75%. Award amount: INR 18000. Application deadline: 26-10-2026. Apply at: https://www.buddy4study.com/page/the-tata-capital-pankh-scholarship-programme",
+      "metadata": {
+        "scholarship_name": "Tata Capital Pankh Scholarship Program 2026-27",
+        "current_study": "B.Tech 1st Year",
+        "education_level": "B.Tech",
+        "year_of_study": 1,
+        "minimum_percentage": 75,
+        "amount_inr": 18000,
+        "deadline": "26-10-2026",
+        "deadline_iso": "2026-10-26",
+        "application_link": "https://www.buddy4study.com/page/the-tata-capital-pankh-scholarship-programme"
+      }
+    },
+    {
+      "id": "scholarship_016",
+      "document": "IDFC FIRST Bank Engineering Scholarship   Programme 2026-30 for B.Tech 1st Year students. Minimum qualifying percentage: 75%. Award amount: INR 100000. Application deadline: 20-09-2026. Apply at: https://www.buddy4study.com/page/idfc-first-bank-engineering-scholarship",
+      "metadata": {
+        "scholarship_name": "IDFC FIRST Bank Engineering Scholarship   Programme 2026-30",
+        "current_study": "B.Tech 1st Year",
+        "education_level": "B.Tech",
+        "year_of_study": 1,
+        "minimum_percentage": 75,
+        "amount_inr": 100000,
+        "deadline": "20-09-2026",
+        "deadline_iso": "2026-09-20",
+        "application_link": "https://www.buddy4study.com/page/idfc-first-bank-engineering-scholarship"
+      }
+    },
+    {
+      "id": "scholarship_017",
+      "document": "Parivartan   ECSS Programme 2026-27 for B.Tech 1st Year students. Minimum qualifying percentage: 75%. Award amount: INR 75000. Application deadline: 31-10-2026. Apply at: https://www.buddy4study.com/page/hdfc-bank-parivartans-ecss-programme#scholarships",
+      "metadata": {
+        "scholarship_name": "Parivartan   ECSS Programme 2026-27",
+        "current_study": "B.Tech 1st Year",
+        "education_level": "B.Tech",
+        "year_of_study": 1,
+        "minimum_percentage": 75,
+        "amount_inr": 75000,
+        "deadline": "31-10-2026",
+        "deadline_iso": "2026-10-31",
+        "application_link": "https://www.buddy4study.com/page/hdfc-bank-parivartans-ecss-programme#scholarships"
+      }
+    },
+    {
+      "id": "scholarship_018",
+      "document": "SBI ASHA Scholarship for B.Tech 2nd Year students. Minimum qualifying percentage: 65%. Award amount: INR 75000. Application deadline: 19-09-2026. Apply at: https://www.sbiashascholarship.co.in/auth?mode=signup",
+      "metadata": {
+        "scholarship_name": "SBI ASHA Scholarship",
+        "current_study": "B.Tech 2nd Year",
+        "education_level": "B.Tech",
+        "year_of_study": 2,
+        "minimum_percentage": 65,
+        "amount_inr": 75000,
+        "deadline": "19-09-2026",
+        "deadline_iso": "2026-09-19",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup"
+      }
+    },
+    {
+      "id": "scholarship_019",
+      "document": "SBI ASHA Scholarship for B.Tech 3rd Year students. Minimum qualifying percentage: 65%. Award amount: INR 75000. Application deadline: 19-09-2026. Apply at: https://www.sbiashascholarship.co.in/auth?mode=signup",
+      "metadata": {
+        "scholarship_name": "SBI ASHA Scholarship",
+        "current_study": "B.Tech 3rd Year",
+        "education_level": "B.Tech",
+        "year_of_study": 3,
+        "minimum_percentage": 65,
+        "amount_inr": 75000,
+        "deadline": "19-09-2026",
+        "deadline_iso": "2026-09-19",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup"
+      }
+    },
+    {
+      "id": "scholarship_020",
+      "document": "SBI ASHA Scholarship for B.Tech 4th Year students. Minimum qualifying percentage: 65%. Award amount: INR 75000. Application deadline: 19-09-2026. Apply at: https://www.sbiashascholarship.co.in/auth?mode=signup",
+      "metadata": {
+        "scholarship_name": "SBI ASHA Scholarship",
+        "current_study": "B.Tech 4th Year",
+        "education_level": "B.Tech",
+        "year_of_study": 4,
+        "minimum_percentage": 65,
+        "amount_inr": 75000,
+        "deadline": "19-09-2026",
+        "deadline_iso": "2026-09-19",
+        "application_link": "https://www.sbiashascholarship.co.in/auth?mode=signup"
+      }
+    }
+  ]
+}

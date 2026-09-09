@@ -269,3 +269,164 @@ def compute_student_intelligence_summary(student: Student, all_scholarships: Lis
         completeness_percentage=completeness,
         stage_label=stage_labels.get(student.education_stage, "Student")
     )
+
+
+def check_scholarship_eligibility(scholarship: Scholarship, student: Student) -> Dict[str, Any]:
+    """
+    Deterministic rule-based eligibility verification for a specific scholarship and student.
+    Returns:
+    {
+      "scholarship_id": str,
+      "title": str,
+      "provider": str,
+      "amount": str,
+      "deadline": str,
+      "source_url": str,
+      "eligible": bool,
+      "matched_rules": list[str],
+      "failed_rules": list[str],
+      "missing_information": list[str],
+      "match_score": int
+    }
+    """
+    matched_rules = []
+    failed_rules = []
+    missing_info = []
+    match_score = 50
+
+    # Check status
+    if getattr(scholarship, "status", None) == "expired":
+        failed_rules.append("Scholarship application cycle is currently closed/expired.")
+        return {
+            "scholarship_id": scholarship.id,
+            "title": scholarship.title,
+            "provider": scholarship.provider,
+            "amount": scholarship.benefit_value,
+            "deadline": scholarship.deadline,
+            "source_url": getattr(scholarship, "source_url", None) or scholarship.application_link,
+            "eligible": False,
+            "matched_rules": matched_rules,
+            "failed_rules": failed_rules,
+            "missing_information": missing_info,
+            "match_score": 0
+        }
+
+    # 1. Stage Check
+    stages = [s.strip().lower() for s in (scholarship.eligible_stages or "").split(",") if s.strip()]
+    student_stage = (student.education_stage or "").strip().lower()
+    if not student_stage:
+        missing_info.append("Student education stage is not defined.")
+    elif student_stage in stages or not stages:
+        matched_rules.append(f"Education stage matches ({student_stage.replace('_', ' ').title()}).")
+        match_score += 20
+    else:
+        failed_rules.append(f"Requires stage in: {', '.join(stages)}; student is in {student_stage}.")
+        match_score -= 30
+
+    # 2. Academic Score Check
+    acad = student.academic_profile
+    req_score = scholarship.min_cgpa_or_percentage
+    if req_score is not None:
+        if not acad or (acad.cgpa is None and acad.percentage is None):
+            missing_info.append("Student academic score (CGPA/Percentage) not recorded.")
+        else:
+            if student_stage == "b_tech":
+                student_cgpa = acad.cgpa
+                student_perc = acad.percentage or ((student_cgpa * 9.5) if student_cgpa else None)
+                req_cgpa = req_score if req_score <= 10.0 else (req_score / 10.0)
+                req_perc = req_score if req_score > 10.0 else (req_score * 9.5)
+
+                if (student_cgpa and student_cgpa >= req_cgpa) or (student_perc and student_perc >= req_perc):
+                    matched_rules.append(f"Academic score qualifies (Required: {req_score}, student has CGPA {student_cgpa} / {student_perc}%).")
+                    match_score += 20
+                else:
+                    failed_rules.append(f"Academic score does not meet minimum {req_score} (Student has CGPA {student_cgpa}).")
+                    match_score -= 20
+            else:
+                student_perc = acad.percentage or ((acad.cgpa * 9.5) if acad.cgpa else None)
+                req_perc = req_score if req_score > 10.0 else (req_score * 10.0)
+                if student_perc and student_perc >= req_perc:
+                    matched_rules.append(f"Academic percentage qualifies (Required: {req_perc}%, student has {student_perc}%).")
+                    match_score += 20
+                else:
+                    failed_rules.append(f"Academic score does not meet minimum {req_perc}% (Student has {student_perc}%).")
+                    match_score -= 20
+
+    # 3. Income Ceiling Check
+    max_income = getattr(scholarship, "max_income", None)
+    if max_income:
+        # Check student financial context
+        fin = student.financial_context
+        # If student has annual income or budget specified
+        if fin and getattr(fin, "annual_family_income", None):
+            student_income = fin.annual_family_income
+            if student_income <= max_income:
+                matched_rules.append(f"Family income ₹{student_income:,} is within ceiling of ₹{max_income:,}.")
+                match_score += 15
+            else:
+                failed_rules.append(f"Family income ₹{student_income:,} exceeds ceiling of ₹{max_income:,}.")
+                match_score -= 25
+        else:
+            # We don't fail immediately if not stated, but note missing info
+            missing_info.append(f"Family income document needed (Maximum ceiling: ₹{max_income:,}).")
+
+    # 4. State Check
+    eligible_states = getattr(scholarship, "eligible_states", None)
+    if eligible_states and eligible_states.strip():
+        states_list = [st.strip().lower() for st in eligible_states.split(",") if st.strip()]
+        if "all" not in states_list and "pan-india" not in states_list:
+            student_loc = (student.location or "").lower()
+            if not student_loc:
+                missing_info.append(f"Domicile verification required for states: {eligible_states}")
+            elif any(st in student_loc for st in states_list):
+                matched_rules.append(f"Domicile state matches ({eligible_states}).")
+                match_score += 15
+            else:
+                failed_rules.append(f"Restricted to residents of: {eligible_states} (Student located in: {student.location}).")
+                match_score -= 25
+
+    # 5. Gender Check
+    gender_req = getattr(scholarship, "gender_requirements", None)
+    if gender_req and gender_req.lower() not in ["all", "any", "none"]:
+        # If student gender is recorded or in tags
+        student_tags = (student.target_role or "").lower()
+        if "girl" in gender_req.lower() or "female" in gender_req.lower():
+            # If not recorded, note as missing
+            missing_info.append(f"Gender eligibility requirement: {gender_req}")
+
+    # Final eligibility determination: no hard failures
+    is_eligible = len(failed_rules) == 0
+
+    return {
+        "scholarship_id": scholarship.id,
+        "title": scholarship.title,
+        "provider": scholarship.provider,
+        "amount": scholarship.benefit_value,
+        "deadline": scholarship.deadline,
+        "source_url": getattr(scholarship, "source_url", None) or scholarship.application_link,
+        "eligible": is_eligible,
+        "matched_rules": matched_rules,
+        "failed_rules": failed_rules,
+        "missing_information": missing_info,
+        "match_score": max(10, min(100, match_score))
+    }
+
+
+def find_eligible_scholarships(student: Student, db: Any, limit: int = 10) -> List[Dict[str, Any]]:
+    """
+    Deterministically queries all available scholarships, evaluates eligibility,
+    and returns top ranked opportunities.
+    """
+    scholarships = db.query(Scholarship).all()
+    results = []
+
+    for s in scholarships:
+        eval_result = check_scholarship_eligibility(s, student)
+        # We include scholarships that are eligible or have only missing information (not hard failed)
+        if eval_result["eligible"]:
+            results.append(eval_result)
+
+    # Sort by match score descending
+    results.sort(key=lambda x: x["match_score"], reverse=True)
+    return results[:limit]
+
