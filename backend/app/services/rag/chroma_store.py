@@ -3,8 +3,12 @@ import logging
 import threading
 from typing import List, Dict, Any, Optional
 
-import chromadb
-from chromadb.config import Settings as ChromaSettings
+try:
+    import chromadb
+    from chromadb.config import Settings as ChromaSettings
+except ImportError:
+    chromadb = None
+    ChromaSettings = None
 
 from backend.app.core.config import settings
 from backend.app.services.rag.base import BaseVectorStore
@@ -53,6 +57,9 @@ class ChromaVectorStore(BaseVectorStore):
         if self._collection is None:
             with self._lock:
                 if self._collection is None:
+                    if chromadb is None:
+                        logger.warning("[ChromaVectorStore] chromadb is not installed. Vector store operations will be unavailable.")
+                        return
                     if self.is_cloud and hasattr(chromadb, "CloudClient"):
                         logger.info(
                             f"[ChromaVectorStore] Initializing Chroma CloudClient (tenant={self.tenant}, database={self.database})..."
@@ -335,6 +342,13 @@ class ChromaVectorStore(BaseVectorStore):
 
     def health_check(self) -> Dict[str, Any]:
         """Provides a comprehensive health status of the persistent Chroma store."""
+        if chromadb is None:
+            return {
+                "status": "unavailable",
+                "error": "chromadb package is not installed",
+                "mode": "cloud" if self.is_cloud else "local_persistent",
+                "collection_name": self.collection_name
+            }
         try:
             self._ensure_initialized()
             count = self.total_chunks
