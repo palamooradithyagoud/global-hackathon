@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
 from backend.app.models.profile import Student, AcademicProfile, StudentSkill
 from backend.app.schemas.profile import DemoAuthRequest, LoginRequest, RegisterRequest, AuthResponse
+from backend.app.services.n8n_service import trigger_student_registration_webhook
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -96,7 +97,11 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest, db: Session = Depends(get_db)):
+def register(
+    payload: RegisterRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
     """
     Creates a brand new student account with stage and year details.
     """
@@ -143,6 +148,9 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
 
     db.commit()
     db.refresh(student)
+
+    # Trigger n8n Welcome Email automation workflow in background (non-blocking & fail-safe)
+    trigger_student_registration_webhook(student.id, db=db, background_tasks=background_tasks)
 
     return AuthResponse(
         token=f"auth-token-reg-{student.id}",

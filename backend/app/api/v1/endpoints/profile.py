@@ -1,6 +1,7 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload, selectinload
+from backend.app.services.n8n_service import trigger_student_registration_webhook
 from backend.app.core.database import get_db
 from backend.app.core.cache import cache
 from backend.app.models.profile import (
@@ -135,7 +136,11 @@ def build_profile_response(student: Student, db: Session) -> StudentProfileRespo
 
 
 @router.post("", response_model=StudentProfileResponse, status_code=status.HTTP_201_CREATED)
-def create_or_update_student_profile(payload: StudentProfileCreate, db: Session = Depends(get_db)):
+def create_or_update_student_profile(
+    payload: StudentProfileCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
     """
     Persists a comprehensive student intelligence profile across relational tables.
     Validates stage-specific criteria authoritatively.
@@ -256,6 +261,10 @@ def create_or_update_student_profile(payload: StudentProfileCreate, db: Session 
 
     db.commit()
     db.refresh(student)
+    
+    # Trigger n8n Welcome Email automation workflow in background (deduped automatically)
+    trigger_student_registration_webhook(student.id, db=db, background_tasks=background_tasks)
+
     cache.invalidate_student(student.id)
     resp = build_profile_response(student, db)
     cache.set_profile(student.id, resp)
