@@ -45,7 +45,7 @@ class AgentOrchestrator:
         durable_memories = get_student_memories(context, db)
 
         # 2. Check if LLM API is available
-        has_llm_key = bool(settings.GROQ_API_KEY or settings.OPENROUTER_API_KEY)
+        has_llm_key = bool(settings.GROQ_API_KEY or settings.GEMINI_API_KEY or settings.OPENROUTER_API_KEY)
         if not has_llm_key:
             logger.info("[AgentOrchestrator] No LLM API key detected; executing deterministic rule fallback.")
             return await self._run_deterministic_fallback(user_message, context, db, durable_memories, start_time)
@@ -246,7 +246,109 @@ class AgentOrchestrator:
                     logger.warning(f"[AgentOrchestrator] Groq call with model '{model_to_use}' failed: {e}")
                     continue
 
-        # 2. Try OpenRouter
+        # 2. Try Gemini API (Automatic failover when Groq reaches limits, rate-limits 429, or fails)
+        if settings.GEMINI_API_KEY:
+            try:
+                logger.info("[AgentOrchestrator] Groq unavailable/rate-limited; executing failover to Gemini API...")
+                gemini_url = f"{settings.GEMINI_BASE_URL.rstrip('/')}/chat/completions"
+                headers = {
+                    "Authorization": f"Bearer {settings.GEMINI_API_KEY}",
+                    "Content-Type": "application/json"
+                }
+
+                # Adapt messages for Gemini if needed:
+                # If any tool call is missing 'extra_content' (e.g. executed by Groq) OR if allow_tools is False
+                # and there are tool outputs in messages, convert to clear context format to avoid Gemini 400 thought_signature error.
+                needs_adaptation = False
+                for m in messages:
+                    if m.get("role") == "assistant" and m.get("tool_calls"):
+                        for tc in m["tool_calls"]:
+                            if "extra_content" not in tc:
+                                needs_adaptation = True
+                                break
+                    elif m.get("role") == "tool" and not allow_tools:
+                        needs_adaptation = True
+
+                if needs_adaptation:
+                    gemini_messages: List[Dict[str, Any]] = []
+                    tool_data_chunks: List[str] = []
+                    for m in messages:
+                        if m.get("role") in ("system", "user"):
+                            gemini_messages.append(m)
+                        elif m.get("role") == "tool":
+                            tool_data_chunks.append(f"[{m.get('name', 'tool')} output]: {m.get('content')}")
+
+                    if tool_data_chunks:
+                        gemini_messages.append({
+                            "role": "user",
+                            "content": (
+                                "Verified Database & API Tool Results:\n"
+                                + "\n".join(tool_data_chunks)
+                                + "\n\nPlease synthesize the final comprehensive response based on these verified tool results, "
+                                "strictly adhering to all domain guidelines, single-intent focus, and markdown formatting rules."
+                            )
+                        })
+                else:
+                    gemini_messages = messages
+
+                gemini_candidates = [
+                    settings.GEMINI_MODEL,
+                    "gemini-flash-latest",
+                    "gemini-3.5-flash",
+                    "gemini-3.6-flash"
+                ]
+                seen_gemini_models = set()
+                gemini_models_to_try = []
+                for gm in gemini_candidates:
+                    if gm and gm not in seen_gemini_models:
+                        seen_gemini_models.add(gm)
+                        gemini_models_to_try.append(gm)
+
+                for g_model in gemini_models_to_try:
+                    body: Dict[str, Any] = {
+                        "model": g_model,
+                        "messages": gemini_messages,
+                        "temperature": 0.3,
+                        "max_tokens": 800
+                    }
+                    if allow_tools and tools_list and not needs_adaptation:
+                        body["tools"] = tools_list
+                        body["tool_choice"] = "auto"
+
+                    async with httpx.AsyncClient(timeout=30.0) as client:
+                        resp = await client.post(gemini_url, headers=headers, json=body)
+                        if resp.status_code == 200:
+                            data = resp.json()
+                            msg = data["choices"][0]["message"]
+                            tool_calls_data = None
+                            if msg.get("tool_calls") and allow_tools and not needs_adaptation:
+                                tool_calls_data = []
+                                for i, tc in enumerate(msg["tool_calls"]):
+                                    call_item = {
+                                        "id": tc.get("id", f"call_gemini_{i}"),
+                                        "type": "function",
+                                        "function": {
+                                            "name": tc.get("function", {}).get("name"),
+                                            "arguments": tc.get("function", {}).get("arguments")
+                                        }
+                                    }
+                                    if "extra_content" in tc:
+                                        call_item["extra_content"] = tc["extra_content"]
+                                    tool_calls_data.append(call_item)
+
+                            logger.info(f"[AgentOrchestrator] Gemini model '{g_model}' successfully served request as primary/fallback LLM.")
+                            return {
+                                "role": "assistant",
+                                "content": msg.get("content") or None,
+                                "tool_calls": tool_calls_data
+                            }
+                        else:
+                            logger.warning(f"[AgentOrchestrator] Gemini model '{g_model}' returned status {resp.status_code}: {resp.text[:200]}")
+                            continue
+            except Exception as ge:
+                logger.warning(f"[AgentOrchestrator] Gemini API fallback encountered error: {ge}")
+
+        # 3. Try OpenRouter
         if settings.OPENROUTER_API_KEY:
             try:
                 async with httpx.AsyncClient(timeout=15.0) as client:

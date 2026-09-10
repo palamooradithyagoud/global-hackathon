@@ -27,6 +27,12 @@ class Settings(BaseSettings):
 
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    
+    # Gemini AI Fallback API
+    GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+    GEMINI_BASE_URL: str = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai")
+
     JOOBLE_API_KEY: str = os.getenv("JOOBLE_API_KEY", "")
     JOOBLE_API_URL: str = os.getenv("JOOBLE_API_URL", "https://jooble.org/api")
     YOUTUBE_API_KEY: str = os.getenv("YOUTUBE_API_KEY", "")
