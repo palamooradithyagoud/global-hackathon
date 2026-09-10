@@ -287,6 +287,11 @@ export default function CreateAccountModal({
                       placeholder="e.g. 8.5"
                       className="w-full px-3 py-1.5 text-xs rounded-xl bg-[#14141E] border border-[#2B2B3E] text-white focus:outline-none focus:border-amber-400 font-mono"
                     />
+                    {score && !isNaN(parseFloat(score)) && parseFloat(score) > 0 && parseFloat(score) <= 10 && (
+                      <p className="text-[10px] text-emerald-400 mt-1 font-mono">
+                        ✓ Equivalent: {Math.round(parseFloat(score) * 9.5 * 100) / 100}% (CGPA × 9.5)
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

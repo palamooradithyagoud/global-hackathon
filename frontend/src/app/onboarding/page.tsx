@@ -47,7 +47,7 @@ function OnboardingContent() {
       branch: "Computer Science and Engineering",
       year: "3rd Year",
       cgpa: 8.42,
-      percentage: null,
+      percentage: 79.99,
       stream: "MPC",
       future_direction: "Engineering",
     },
@@ -183,7 +183,12 @@ function OnboardingContent() {
     setSubmissionError(null);
 
     try {
-      const response = await api.profile.create(formData);
+      const payload = { ...formData };
+      if (payload.academic_profile.cgpa && !payload.academic_profile.percentage) {
+        payload.academic_profile.percentage = Math.round(Number(payload.academic_profile.cgpa) * 9.5 * 100) / 100;
+      }
+
+      const response = await api.profile.create(payload);
       setCreatedProfile(response);
 
       const currentSession = localStorage.getItem("skillcatalyst_session");

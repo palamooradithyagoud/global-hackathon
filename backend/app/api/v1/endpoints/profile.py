@@ -1,7 +1,10 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.orm import Session, joinedload, selectinload
-from backend.app.services.n8n_service import trigger_student_registration_webhook
+from backend.app.services.n8n_service import (
+    trigger_student_registration_webhook,
+    trigger_scholarship_eligibility_webhook
+)
 from backend.app.core.database import get_db
 from backend.app.core.cache import cache
 from backend.app.models.profile import (
@@ -176,8 +179,12 @@ def create_or_update_student_profile(
         db.query(StudentPreference).filter(StudentPreference.student_id == student.id).delete()
         db.query(StudentFinancialContext).filter(StudentFinancialContext.student_id == student.id).delete()
 
-    # 1. Academic Profile
+    # 1. Academic Profile with CGPA to percentage conversion
     acad_data = payload.academic_profile
+    calc_percentage = acad_data.percentage
+    if acad_data.cgpa is not None:
+        calc_percentage = round(acad_data.cgpa * 9.5, 2)
+
     academic = AcademicProfile(
         student_id=student.id,
         school_or_college=acad_data.school_or_college,
@@ -185,7 +192,7 @@ def create_or_update_student_profile(
         university=acad_data.university,
         branch=acad_data.branch,
         year=acad_data.year,
-        percentage=acad_data.percentage,
+        percentage=calc_percentage,
         cgpa=acad_data.cgpa,
         stream=acad_data.stream,
         future_direction=acad_data.future_direction
@@ -262,8 +269,8 @@ def create_or_update_student_profile(
     db.commit()
     db.refresh(student)
     
-    # Trigger n8n Welcome Email automation workflow in background (deduped automatically)
-    trigger_student_registration_webhook(student.id, db=db, background_tasks=background_tasks)
+    # Trigger n8n Scholarship Eligibility & Email automation workflow upon profile save (forced)
+    trigger_scholarship_eligibility_webhook(student.id, db=db, background_tasks=background_tasks, force=True)
 
     cache.invalidate_student(student.id)
     resp = build_profile_response(student, db)
@@ -304,8 +311,13 @@ def get_student_profile(student_id: str, db: Session = Depends(get_db)):
 
 
 @router.patch("/{student_id}", response_model=StudentProfileResponse)
-def update_student_profile(student_id: str, payload: StudentProfileUpdate, db: Session = Depends(get_db)):
-    """Applies partial updates to an existing profile."""
+def update_student_profile(
+    student_id: str,
+    payload: StudentProfileUpdate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
+    """Applies partial updates to an existing profile and triggers scholarship evaluation."""
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
         raise HTTPException(
@@ -328,6 +340,9 @@ def update_student_profile(student_id: str, payload: StudentProfileUpdate, db: S
             db.add(student.academic_profile)
         for k, v in payload.academic_profile.dict(exclude_unset=True).items():
             setattr(student.academic_profile, k, v)
+        # Automatic CGPA to Percentage conversion
+        if student.academic_profile.cgpa is not None:
+            student.academic_profile.percentage = round(student.academic_profile.cgpa * 9.5, 2)
 
     if payload.preferences:
         if not student.preferences:
@@ -343,6 +358,10 @@ def update_student_profile(student_id: str, payload: StudentProfileUpdate, db: S
 
     db.commit()
     db.refresh(student)
+    
+    # Trigger n8n Scholarship Eligibility & Email automation workflow upon profile update (forced)
+    trigger_scholarship_eligibility_webhook(student.id, db=db, background_tasks=background_tasks, force=True)
+
     cache.invalidate_student(student.id)
     resp = build_profile_response(student, db)
     cache.set_profile(student.id, resp)

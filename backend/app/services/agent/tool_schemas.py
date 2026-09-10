@@ -5,7 +5,7 @@ AGENT_TOOLS_DEFINITIONS: List[Dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "getStudentProfile",
-            "description": "Retrieves the authenticated student's profile, academic status, skills, and projects. Only operates on the server-authenticated session. NEVER accepts an arbitrary student_id.",
+            "description": "Retrieves the authenticated student's profile, academic status, skills, and projects. Only operates on the server-authenticated session. Only call when the user specifically asks about their personal profile, saved skills, or user account. NEVER call for general queries about degree fees, salaries, or career options.",
             "parameters": {
                 "type": "object",
                 "properties": {},
@@ -229,6 +229,94 @@ AGENT_TOOLS_DEFINITIONS: List[Dict[str, Any]] = [
                     }
                 },
                 "required": ["key", "value"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "getEducationCost",
+            "description": "Returns structured, verified benchmark education costs (tuition, hostel, mess, books, transport, annual total, and 2/4-year program total) for academic degrees and programs in India (e.g. M.Tech, B.Tech, MCA, MBA, Intermediate).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "program": {
+                        "type": "string",
+                        "description": "Program or degree (e.g. 'M.Tech CSE', 'B.Tech', 'MCA', 'MBA', 'Intermediate')"
+                    },
+                    "institution_type": {
+                        "type": "string",
+                        "description": "Optional: 'government_premier' (IIT/NIT/IIIT), 'private_tier1' (BITS/VIT/SRM), 'state_university', or 'all'"
+                    },
+                    "location": {
+                        "type": "string",
+                        "description": "Optional city or state (e.g. 'Hyderabad', 'Bengaluru', 'India')"
+                    }
+                },
+                "required": ["program"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "getSalaryEstimate",
+            "description": "Returns realistic, verified market CTC and salary benchmark packages across Fresher (0-2 yrs), Mid-Level (2-5 yrs), Senior (5+ yrs), and Tier-1 Product Companies for specific careers and degree pathways.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "career_or_role": {
+                        "type": "string",
+                        "description": "Target career or role (e.g. 'AI Engineer', 'Software Engineer', 'Machine Learning Engineer', 'M.Tech Graduate', 'Data Scientist')"
+                    },
+                    "location": {
+                        "type": "string",
+                        "description": "Optional location (e.g. 'India', 'Bengaluru', 'Hyderabad')"
+                    }
+                },
+                "required": ["career_or_role"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculateEducationROI",
+            "description": "Calculates return on investment (ROI), net savings, and estimated payback period (in years) by comparing total education cost against expected starting salary packages.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "program": {
+                        "type": "string",
+                        "description": "Degree or program (e.g. 'M.Tech CSE', 'B.Tech', 'MCA')"
+                    },
+                    "career_goal": {
+                        "type": "string",
+                        "description": "Target job role after graduation (e.g. 'AI Engineer', 'Software Engineer')"
+                    }
+                },
+                "required": ["program", "career_goal"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "compareCareerPathways",
+            "description": "Provides a side-by-side structured financial and career comparison between two educational or degree pathways (e.g. 'M.Tech CSE' vs 'MCA', 'B.Tech CSE' vs 'B.Tech ECE').",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "pathway_a": {
+                        "type": "string",
+                        "description": "First degree or path (e.g. 'M.Tech CSE')"
+                    },
+                    "pathway_b": {
+                        "type": "string",
+                        "description": "Second degree or path (e.g. 'MCA')"
+                    }
+                },
+                "required": ["pathway_a", "pathway_b"]
             }
         }
     }

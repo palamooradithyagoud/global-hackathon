@@ -301,16 +301,16 @@ function ProfilePageContent() {
 
             <div className="p-4 rounded-2xl bg-[#161622] border border-[#242436] space-y-1">
               <span className="text-[#8E8E9C]">
-                {stage === "b_tech" ? "Cumulative CGPA" : "Board Percentage"}
+                {stage === "b_tech" ? "Cumulative CGPA & Percentage" : "Board Percentage"}
               </span>
               <p className="font-bold text-emerald-400 text-sm font-mono">
                 {acad?.cgpa
-                  ? `${acad.cgpa} / 10.0 CGPA`
+                  ? `${acad.cgpa} CGPA (${acad.percentage ?? Math.round(Number(acad.cgpa) * 9.5 * 10) / 10}%)`
                   : acad?.percentage
                   ? `${acad.percentage}%`
                   : stage === "class_10"
                   ? "91.4% Board"
-                  : "8.75 CGPA"}
+                  : "8.75 CGPA (83.1%)"}
               </p>
             </div>
 

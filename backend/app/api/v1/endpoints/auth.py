@@ -3,7 +3,10 @@ from sqlalchemy.orm import Session
 from backend.app.core.database import get_db
 from backend.app.models.profile import Student, AcademicProfile, StudentSkill
 from backend.app.schemas.profile import DemoAuthRequest, LoginRequest, RegisterRequest, AuthResponse
-from backend.app.services.n8n_service import trigger_student_registration_webhook
+from backend.app.services.n8n_service import (
+    trigger_student_registration_webhook,
+    trigger_scholarship_eligibility_webhook
+)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -70,8 +73,8 @@ def login(
     student = db.query(Student).filter(Student.email == credentials.email).first()
     if student:
         has_prof = bool(student.academic_profile)
-        # Safely trigger welcome workflow if student has not received it yet
-        trigger_student_registration_webhook(student.id, db=db, background_tasks=background_tasks)
+        # Whenever user logs in, automatically send the greetings/welcome email from our side
+        trigger_student_registration_webhook(student.id, db=db, background_tasks=background_tasks, force=True)
         return AuthResponse(
             token=f"auth-token-{student.id}",
             student_id=student.id,
@@ -90,11 +93,24 @@ def login(
         location="Hyderabad, India"
     )
     db.add(new_student)
+    db.flush()
+
+    # Starter academic profile with converted percentage
+    starter_cgpa = 8.0
+    starter_percentage = round(starter_cgpa * 9.5, 2)
+    acad = AcademicProfile(
+        student_id=new_student.id,
+        year="1st Year",
+        branch="Computer Science and Engineering",
+        percentage=starter_percentage,
+        cgpa=starter_cgpa
+    )
+    db.add(acad)
     db.commit()
     db.refresh(new_student)
 
-    # Automatically trigger n8n Welcome Email for new user login
-    trigger_student_registration_webhook(new_student.id, db=db, background_tasks=background_tasks)
+    # Trigger greetings/welcome email for newly signed up / logged in user
+    trigger_student_registration_webhook(new_student.id, db=db, background_tasks=background_tasks, force=True)
 
     return AuthResponse(
         token=f"auth-token-{new_student.id}",
@@ -145,8 +161,8 @@ def register(
     if stage == "b_tech":
         acad.branch = payload.branch_or_stream or "Computer Science and Engineering"
         score_val = payload.score or 8.0
-        acad.cgpa = float(score_val) if score_val <= 10.0 else (score_val / 10.0)
-        acad.percentage = (acad.cgpa * 9.5) if acad.cgpa else 76.0
+        acad.cgpa = float(score_val) if score_val <= 10.0 else round(score_val / 10.0, 2)
+        acad.percentage = round(acad.cgpa * 9.5, 2) if acad.cgpa else 76.0
     else:
         acad.stream = payload.branch_or_stream or "MPC"
         acad.percentage = float(payload.score) if payload.score else 80.0
@@ -159,8 +175,11 @@ def register(
     db.commit()
     db.refresh(student)
 
-    # Trigger n8n Welcome Email automation workflow in background (non-blocking & fail-safe)
-    trigger_student_registration_webhook(student.id, db=db, background_tasks=background_tasks)
+    # 1. Trigger n8n Greetings / Welcome Email automation workflow in background
+    trigger_student_registration_webhook(student.id, db=db, background_tasks=background_tasks, force=True)
+
+    # 2. Trigger n8n Scholarship Eligibility & Recommendation Email workflow in background
+    trigger_scholarship_eligibility_webhook(student.id, db=db, background_tasks=background_tasks, force=True)
 
     return AuthResponse(
         token=f"auth-token-reg-{student.id}",

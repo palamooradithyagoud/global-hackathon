@@ -19,6 +19,10 @@ TOOL_PERMISSION_MAP: Dict[str, str] = {
     "searchLearningResources": "read_public",
     "searchKnowledgeBase": "read_public",
     "verifyClaim": "read_public",
+    "getEducationCost": "read_public",
+    "getSalaryEstimate": "read_public",
+    "calculateEducationROI": "read_public",
+    "compareCareerPathways": "read_public",
 }
 
 
@@ -33,3 +37,12 @@ def check_tool_permission(tool_name: str, context: AgentContext) -> None:
             f"Permission denied: Tool '{tool_name}' requires '{required_perm}' privilege, "
             f"but current session only holds: {sorted(list(context.permissions))}."
         )
+
+
+def get_authorized_tools_definitions(context: AgentContext, all_tools: list) -> list:
+    """Returns only the tool schemas that the current session context is authorized to invoke."""
+    return [
+        t for t in all_tools
+        if TOOL_PERMISSION_MAP.get(t.get("function", {}).get("name"), "require_student_auth") in context.permissions
+    ]
+

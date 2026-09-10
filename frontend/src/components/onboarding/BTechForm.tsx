@@ -235,17 +235,29 @@ export default function BTechForm({ formData, onChange, errors }: BTechFormProps
               min="0"
               max="10"
               value={formData.academic_profile.cgpa ?? ""}
-              onChange={(e) =>
+              onChange={(e) => {
+                const val = e.target.value ? parseFloat(e.target.value) : null;
+                const converted = val !== null && !isNaN(val) ? Math.round(val * 9.5 * 100) / 100 : null;
                 onChange({
                   academic_profile: {
                     ...formData.academic_profile,
-                    cgpa: e.target.value ? parseFloat(e.target.value) : null,
+                    cgpa: val,
+                    percentage: converted,
                   },
-                })
-              }
+                });
+              }}
               placeholder="e.g. 8.42"
               className="w-full px-3.5 py-2 text-xs dark-input focus:outline-none font-mono"
             />
+            {formData.academic_profile.cgpa !== null && formData.academic_profile.cgpa !== undefined && !isNaN(Number(formData.academic_profile.cgpa)) && Number(formData.academic_profile.cgpa) > 0 && (
+              <div className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-400 font-mono bg-emerald-950/40 border border-emerald-800/40 px-2.5 py-1 rounded-lg">
+                <span>✓ Equivalent Percentage:</span>
+                <span className="font-bold">
+                  {formData.academic_profile.percentage ?? Math.round(Number(formData.academic_profile.cgpa) * 9.5 * 100) / 100}%
+                </span>
+                <span className="text-[10px] text-emerald-500/80">(CGPA × 9.5)</span>
+              </div>
+            )}
             {errors.cgpa && <p className="text-[11px] text-red-400 mt-1">{errors.cgpa}</p>}
           </div>
 

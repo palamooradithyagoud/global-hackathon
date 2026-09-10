@@ -151,11 +151,11 @@ export default function ProfileReviewStep({
 
             <div>
               <span className="text-[#8E8E9C] block">
-                {formData.education_stage === "b_tech" ? "CGPA (10.0 scale)" : "Percentage"}
+                {formData.education_stage === "b_tech" ? "Academic Score" : "Percentage"}
               </span>
               <span className="font-bold text-emerald-400 font-mono text-sm">
                 {formData.academic_profile.cgpa
-                  ? `${formData.academic_profile.cgpa} / 10.0`
+                  ? `${formData.academic_profile.cgpa} CGPA (${formData.academic_profile.percentage ?? Math.round(Number(formData.academic_profile.cgpa) * 9.5 * 100) / 100}%)`
                   : formData.academic_profile.percentage
                   ? `${formData.academic_profile.percentage}%`
                   : "—"}

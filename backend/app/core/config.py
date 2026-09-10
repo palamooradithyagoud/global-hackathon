@@ -60,6 +60,13 @@ class Settings(BaseSettings):
     N8N_WEBHOOK_ENABLED: bool = os.getenv("N8N_WEBHOOK_ENABLED", "true").lower() in ("true", "1", "yes")
     FRONTEND_BASE_URL: str = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
 
+    # ASCEND / n8n Scholarship Eligibility Webhook Integration
+    ASCEND_SCHOLARSHIP_WEBHOOK_URL: str = os.getenv(
+        "ASCEND_SCHOLARSHIP_WEBHOOK_URL",
+        "https://shivanallela36367677777.app.n8n.cloud/webhook/scholarship-check-api"
+    )
+    N8N_SCHOLARSHIP_WEBHOOK_ENABLED: bool = os.getenv("N8N_SCHOLARSHIP_WEBHOOK_ENABLED", "true").lower() in ("true", "1", "yes")
+
     @field_validator("DATABASE_URL", mode="before")
     @classmethod
     def assemble_db_connection(cls, v: str) -> str:
