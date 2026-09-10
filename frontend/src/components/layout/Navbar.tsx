@@ -38,9 +38,6 @@ export default function Navbar() {
         {/* Brand with ASCEND Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <AscendLogo size="sm" showText={true} />
-          <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300">
-            Phase 1.1
-          </span>
         </Link>
 
         {/* Center Pill Navigation */}

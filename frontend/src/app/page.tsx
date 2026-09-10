@@ -22,7 +22,7 @@ export default function LandingPage() {
           >
             <AscendLogo size="xs" variant="icon" />
             <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span>Phase 1.1 · Student Onboarding & Intelligence Profile</span>
+            <span>Student Onboarding & Intelligence Profile</span>
           </motion.div>
 
           {/* Headline inspired by "Learn more & improve your skills." */}

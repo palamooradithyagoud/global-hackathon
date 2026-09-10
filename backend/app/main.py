@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    description="SkillCatalyst Phase 1.1 Backend: Student Onboarding & Intelligence Profile API",
+    description="SkillCatalyst Backend: Student Onboarding & Intelligence Profile API",
     version="1.1.0",
     lifespan=lifespan
 )
