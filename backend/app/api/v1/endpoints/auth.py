@@ -56,15 +56,22 @@ def demo_login(payload: DemoAuthRequest = DemoAuthRequest(), db: Session = Depen
 
 
 @router.post("/login", response_model=AuthResponse)
-def login(credentials: LoginRequest, db: Session = Depends(get_db)):
+def login(
+    credentials: LoginRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db)
+):
     """
     Standard email/password login endpoint.
     If the user exists, returns their profile status.
     If new, initializes a student record in the database for seamless onboarding.
+    Automatically triggers the welcome email workflow for new or un-notified users.
     """
     student = db.query(Student).filter(Student.email == credentials.email).first()
     if student:
         has_prof = bool(student.academic_profile)
+        # Safely trigger welcome workflow if student has not received it yet
+        trigger_student_registration_webhook(student.id, db=db, background_tasks=background_tasks)
         return AuthResponse(
             token=f"auth-token-{student.id}",
             student_id=student.id,
@@ -85,6 +92,9 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
     db.add(new_student)
     db.commit()
     db.refresh(new_student)
+
+    # Automatically trigger n8n Welcome Email for new user login
+    trigger_student_registration_webhook(new_student.id, db=db, background_tasks=background_tasks)
 
     return AuthResponse(
         token=f"auth-token-{new_student.id}",

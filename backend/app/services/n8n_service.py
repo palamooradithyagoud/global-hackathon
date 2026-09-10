@@ -187,8 +187,9 @@ def process_student_registration_webhook(student_id: str, db: Optional[Session] 
         payload = build_student_registered_payload(student)
         success = send_n8n_webhook(payload)
         
-        # Mark as dispatched even if webhook had remote issue, to avoid spamming on retries
-        _dispatched_student_ids.add(student_id)
+        # Only mark as dispatched if webhook was successfully accepted by n8n
+        if success:
+            _dispatched_student_ids.add(student_id)
         return success
 
     finally:
