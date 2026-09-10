@@ -28,7 +28,7 @@ def format_current_study(student: Student) -> str:
         if year:
             return f"B.Tech {year}"
         if acad and acad.branch:
-            return f"B.Tech ({acad.branch})"
+            return f"B.Tech in {acad.branch}"
         return "B.Tech 1st Year"
     elif stage == "intermediate":
         if year:
@@ -48,7 +48,7 @@ def build_student_registered_payload(student: Student, base_url: Optional[str] =
     Uses real database field names and available student records.
     Provides aliases for full compatibility with existing n8n email workflows.
     """
-    web_base = (base_url or settings.FRONTEND_BASE_URL or "http://localhost:3000").rstrip("/")
+    web_base = (base_url or settings.ASCEND_WEB_URL or settings.FRONTEND_BASE_URL or "http://localhost:3000").rstrip("/")
     acad = student.academic_profile
     cur_study = format_current_study(student)
 
@@ -64,6 +64,7 @@ def build_student_registered_payload(student: Student, base_url: Optional[str] =
     # Determine career goal
     career_goal = student.target_role or (acad.future_direction if acad else None) or "Technology Professional"
 
+    # Actual valid existing ASCEND dashboard route inspected from frontend/src/app/dashboard/page.tsx
     dash_url = f"{web_base}/dashboard?student_id={student.id}"
 
     payload = {
@@ -91,15 +92,26 @@ def build_student_registered_payload(student: Student, base_url: Optional[str] =
 def send_n8n_webhook(payload: Dict[str, Any], webhook_url: Optional[str] = None) -> bool:
     """
     Sends the payload to the n8n production webhook via HTTP POST.
+    Includes Header Auth if ASCEND_WEBHOOK_KEY is configured.
     If production webhook is inactive and returns 404, automatically attempts the test webhook.
     Never throws uncaught exceptions, ensuring database registration always succeeds.
     """
-    target_url = webhook_url or settings.N8N_WEBHOOK_URL
+    target_url = webhook_url or settings.ASCEND_WEBHOOK_URL or settings.N8N_WEBHOOK_URL
     if not settings.N8N_WEBHOOK_ENABLED or not target_url:
         logger.info("[n8n] Webhook is disabled or URL not configured. Skipping dispatch.")
         return False
 
     headers = {"Content-Type": "application/json"}
+
+    # Include Header Auth if configured
+    if settings.ASCEND_WEBHOOK_KEY:
+        header_name = settings.ASCEND_WEBHOOK_HEADER_NAME or "X-Webhook-Key"
+        headers[header_name] = settings.ASCEND_WEBHOOK_KEY
+        # Also provide standard authorization aliases if custom header is used
+        if header_name.lower() != "authorization":
+            headers["Authorization"] = settings.ASCEND_WEBHOOK_KEY
+        if header_name.lower() != "x-api-key":
+            headers["X-API-KEY"] = settings.ASCEND_WEBHOOK_KEY
 
     try:
         logger.info(f"[n8n] Dispatching '{payload.get('event')}' webhook for student {payload.get('student_id')} to {target_url}")

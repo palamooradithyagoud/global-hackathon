@@ -46,11 +46,17 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: Union[List[str], str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
-    # n8n Automation Integration
-    N8N_WEBHOOK_URL: str = os.getenv(
-        "N8N_WEBHOOK_URL",
-        "https://shivanallela36367677777.app.n8n.cloud/webhook/a08e294f-15d2-41e8-b4fa-591cea88a801"
+    # ASCEND / n8n Webhook Integration
+    ASCEND_WEBHOOK_URL: str = os.getenv(
+        "ASCEND_WEBHOOK_URL",
+        os.getenv(
+            "N8N_WEBHOOK_URL",
+            "https://shivanallela36367677777.app.n8n.cloud/webhook/a08e294f-15d2-41e8-b4fa-591cea88a801"
+        )
     )
+    ASCEND_WEBHOOK_KEY: Optional[str] = os.getenv("ASCEND_WEBHOOK_KEY", None)
+    ASCEND_WEBHOOK_HEADER_NAME: str = os.getenv("ASCEND_WEBHOOK_HEADER_NAME", "X-Webhook-Key")
+    ASCEND_WEB_URL: str = os.getenv("ASCEND_WEB_URL", os.getenv("FRONTEND_BASE_URL", "http://localhost:3000"))
     N8N_WEBHOOK_ENABLED: bool = os.getenv("N8N_WEBHOOK_ENABLED", "true").lower() in ("true", "1", "yes")
     FRONTEND_BASE_URL: str = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
 

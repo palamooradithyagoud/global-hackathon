@@ -64,7 +64,7 @@ def test_build_student_registered_payload():
     assert payload["student_id"] == "test-student-n8n-001"
     assert payload["name"] == "Shiva Nallela"
     assert payload["email"] == "shiva.test@ascend.dev"
-    assert payload["current_study"] == "B.Tech in Computer Science and Engineering"
+    assert payload["current_study"] == "B.Tech 1st Year"
     assert payload["year"] == "1st Year"
     assert "Python" in payload["skills"]
     assert "PyTorch" in payload["skills"]
@@ -88,6 +88,30 @@ def test_send_n8n_webhook_success():
         success = send_n8n_webhook(payload, webhook_url="https://mock.n8n.cloud/webhook/test")
         assert success is True
         mock_post.assert_called_once()
+
+
+def test_send_n8n_webhook_header_auth():
+    from backend.app.core.config import settings
+
+    payload = {
+        "event": "student_registered",
+        "student_id": "test-auth-123",
+        "name": "Auth Test"
+    }
+
+    mock_resp = MagicMock()
+    mock_resp.is_success = True
+    mock_resp.status_code = 200
+
+    with patch.object(settings, "ASCEND_WEBHOOK_KEY", "secret-test-key-123"), \
+         patch.object(settings, "ASCEND_WEBHOOK_HEADER_NAME", "X-Custom-Webhook-Key"), \
+         patch("httpx.Client.post", return_value=mock_resp) as mock_post:
+        success = send_n8n_webhook(payload, webhook_url="https://mock.n8n.cloud/webhook/test")
+        assert success is True
+        mock_post.assert_called_once()
+        call_kwargs = mock_post.call_args[1]
+        headers = call_kwargs["headers"]
+        assert headers["X-Custom-Webhook-Key"] == "secret-test-key-123"
 
 
 def test_send_n8n_webhook_failure_resilience():
